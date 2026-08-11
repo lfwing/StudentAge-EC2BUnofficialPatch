@@ -1,0 +1,34 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+
+# Build
+bin/
+obj/
+
+# Debug
+Debug/
+Release/
+
+# Logs
+*.log
+Logs/
+
+# BepInEx runtime
+BepInEx/config/
+BepInEx/cache/
+BepInEx/LogOutput.log
+
+# Personal environment
+GamePath.props
+
+# Game files
+Assembly-CSharp.dll
+Assembly-CSharp-firstpass.dll
+UnityEngine*.dll
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

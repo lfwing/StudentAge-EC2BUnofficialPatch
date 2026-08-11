@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>EC2BUnofficialPatch</AssemblyName>
+    <RootNamespace>EC2BUnofficialPatch</RootNamespace>
+    <Version>1.0.16.2</Version>
+    <FileVersion>1.0.16.2</FileVersion>
+    <AssemblyVersion>1.0.9.0</AssemblyVersion>
+    <Deterministic>true</Deterministic>
+	<GameDir Condition="'$(GameDir)' == ''"></GameDir>    
+	<ManagedDir>$(GameDir)\StudentAge_Data\Managed</ManagedDir>
+    <BepInExCoreDir>$(GameDir)\BepInEx\core</BepInExCoreDir>
+  </PropertyGroup>
+
+  <Target Name="ValidateGameReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(GameDir)' == ''" Text="未找到游戏目录。请使用 /p:GameDir=&quot;你的 StudentAge 游戏目录&quot; 指定路径。" />
+    <Error Condition="!Exists('$(ManagedDir)\Assembly-CSharp.dll')" Text="GameDir 无效：缺少 StudentAge_Data\Managed\Assembly-CSharp.dll。" />
+    <Error Condition="!Exists('$(BepInExCoreDir)\BepInEx.dll')" Text="GameDir 无效或尚未安装 BepInEx：缺少 BepInEx\core\BepInEx.dll。" />
+  </Target>
+
+  <ItemGroup>
+    <!-- 覆盖旧源码工程时，压缩包无法自动删除迁移前的同名文件。 -->
+    <Compile Remove="Features\Mechanics\LoveTopicLimitModule.cs" />
+    <Compile Remove="Features\Mechanics\RelationFocusCountModule.cs" />
+
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCoreDir)\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Harmony">
+      <HintPath>$(BepInExCoreDir)\BepInEx.Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>$(ManagedDir)\DOTween.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween.Modules">
+      <HintPath>$(ManagedDir)\DOTween.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="UIEffect">
+      <HintPath>$(ManagedDir)\UIEffect.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ManagedDir)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ManagedDir)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(ManagedDir)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(ManagedDir)\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreModule">
+      <HintPath>$(ManagedDir)\UnityEngine.TextCoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ManagedDir)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ManagedDir)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>$(ManagedDir)\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

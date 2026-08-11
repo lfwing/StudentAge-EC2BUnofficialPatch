@@ -1,0 +1,14 @@
+{
+  "lyrics": [
+    {
+      "id": 1001,
+      "audio": 2,
+      "text": "第一行\n第二行",
+      "fontSize": 50,
+      "lineSpacing": 50,
+      "fontColor": "#FFFFFFFF",
+      "alignH": 2,
+      "alignV": 256
+    }
+  ]
+}

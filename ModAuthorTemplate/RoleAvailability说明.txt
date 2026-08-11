@@ -1,0 +1,11 @@
+将 RoleAvailabilityCfg.json 放到 Mod根目录/EC2BUnofficialPatch 下。
+
+roles 条目格式：
+{
+  "personId": 103,
+  "cond": [[2, 110, 2007, 9]],
+  "takeExam": true
+}
+
+cond 使用原版 Condition 数组。takeExam=false 不要求考试数据；takeExam=true 必须提供完整 Person、PersonGrow、当前学段 ExamRank 与对应 Classmate 数据。
+重复 personId、非法字段或不完整考试数据会记录日志并安全排除。

@@ -1,0 +1,18 @@
+{
+  "minigames": [
+    { "id": 14, "type": "direct" },
+    { "id": 110, "type": "alias", "targetId": 5 },
+    { "id": 114, "type": "alias", "targetId": 5 },
+    { "id": 54, "type": "dialogue" },
+    {
+      "id": 200,
+      "type": "external",
+      "dll": "TankBattleMinigame.dll",
+      "class": "Example.TankBattleMinigame",
+      "parameters": {
+        "difficulty": 2,
+        "timeLimit": 60
+      }
+    }
+  ]
+}
