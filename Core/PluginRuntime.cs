@@ -1,5 +1,6 @@
 using System;
 using BepInEx.Logging;
+using EC2BUnofficialPatch.Core.Updates;
 using EC2BUnofficialPatch.Features.ActionCommands;
 using EC2BUnofficialPatch.Features.Effects;
 using EC2BUnofficialPatch.Features.Mechanics;
@@ -64,7 +65,8 @@ namespace EC2BUnofficialPatch.Core
 
                     PatchLog.Info(
                         "EC2BUnofficialPatch 启动完成：" +
-                        $"version=1.0.16.2, runtimeHost={DescribeRuntimeHost()}");
+                        $"version={PluginMetadata.Version}, runtimeHost={DescribeRuntimeHost()}");
+                    UpdateService.Start();
                 }
                 catch (Exception exception)
                 {
@@ -200,6 +202,8 @@ namespace EC2BUnofficialPatch.Core
 
             _shutdownCompleted = true;
             PatchLog.Debug($"底层服务模块-开始退出清理：reason={reason}");
+
+            UpdateService.Stop();
 
             try
             {

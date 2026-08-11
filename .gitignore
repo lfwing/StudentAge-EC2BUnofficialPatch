@@ -6,6 +6,7 @@
 # Build
 bin/
 obj/
+dist/
 
 # Debug
 Debug/
@@ -22,6 +23,7 @@ BepInEx/LogOutput.log
 
 # Personal environment
 GamePath.props
+/git
 
 # Game files
 Assembly-CSharp.dll

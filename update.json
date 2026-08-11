@@ -1,0 +1,13 @@
+{
+	"schema": 1,
+	"version": "1.0.17",
+	"channel": "stable",
+	"gameVersion": "1.93",
+	"assetName": "EC2BUnofficialPatch.dll",
+	"size": 298496,
+	"sha256": "478522d83afdbf0c7b9286753a556f7af71124264f67fba7d84721aa458e5ebf",
+	"releasePage": "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/tag/1.0.17",
+	"downloadUrls": [
+		"https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/download/1.0.17/EC2BUnofficialPatch.dll"
+	]
+}

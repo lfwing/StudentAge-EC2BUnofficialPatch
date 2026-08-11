@@ -6,8 +6,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
     <RootNamespace>EC2BUnofficialPatch</RootNamespace>
-    <Version>1.0.16.2</Version>
-    <FileVersion>1.0.16.2</FileVersion>
+    <Version>1.0.17</Version>
+    <FileVersion>1.0.17.0</FileVersion>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
     <Deterministic>true</Deterministic>
 	<GameDir Condition="'$(GameDir)' == ''"></GameDir>    
@@ -25,6 +25,7 @@
     <!-- 覆盖旧源码工程时，压缩包无法自动删除迁移前的同名文件。 -->
     <Compile Remove="Features\Mechanics\LoveTopicLimitModule.cs" />
     <Compile Remove="Features\Mechanics\RelationFocusCountModule.cs" />
+    <Compile Remove="UpdaterHelper\**\*.cs" />
 
     <Reference Include="0Harmony">
       <HintPath>$(BepInExCoreDir)\0Harmony.dll</HintPath>

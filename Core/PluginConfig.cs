@@ -29,6 +29,10 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> RelationEffects { get; private set; }
         internal static ConfigEntry<bool> RelationFocusCount { get; private set; }
         internal static ConfigEntry<bool> RoleAvailability { get; private set; }
+        internal static ConfigEntry<bool> UpdateAutoCheck { get; private set; }
+        internal static ConfigEntry<bool> UpdateAutoInstall { get; private set; }
+        internal static ConfigEntry<int> UpdateCheckIntervalHours { get; private set; }
+        internal static ConfigEntry<string> UpdateManifestMirrors { get; private set; }
 
         internal static void Initialize(ConfigFile config)
         {
@@ -158,6 +162,10 @@ namespace EC2BUnofficialPatch.Core
                 bool relationFocusCount = ReadRawValue(config, "优化", "关注人数统计优化", oldRelationFocusCount);
                 bool oldRoleAvailability = ReadRawValue(config, "机制", "外置角色可用性", true);
                 bool roleAvailability = ReadRawValue(config, "机制", "控制角色在列表显示", oldRoleAvailability);
+                bool updateAutoCheck = ReadRawValue(config, "更新", "启动时自动检查更新", true);
+                bool updateAutoInstall = ReadRawValue(config, "更新", "发现新版本后自动下载并安装", true);
+                int updateCheckIntervalHours = ReadRawInt(config, "更新", "检查间隔小时", 24);
+                string updateManifestMirrors = ReadRawString(config, "更新", "备用更新清单地址", string.Empty);
 
                 ResetConfigFile(config);
 
@@ -286,6 +294,29 @@ namespace EC2BUnofficialPatch.Core
                     roleAvailability,
                     "控制某角色何时在社交列表显示及是否参加考试（参考慈/谢，本插件使用RoleAvailabilityCfg.json）。");
 
+                UpdateAutoCheck = Bind(
+                    config,
+                    "更新",
+                    "启动时自动检查更新",
+                    updateAutoCheck,
+                    "插件启动后异步检查正式版本；网络不可用不会影响插件本体。");
+                UpdateAutoInstall = Bind(
+                    config,
+                    "更新",
+                    "发现新版本后自动下载并安装",
+                    updateAutoInstall,
+                    "下载文件通过大小与 SHA-256 校验后，将在游戏退出后替换 DLL，并保留上一版本备份。");
+                UpdateCheckIntervalHours = config.Bind(
+                    "更新",
+                    "检查间隔小时",
+                    Math.Max(1, Math.Min(168, updateCheckIntervalHours)),
+                    "两次联网检查之间的最短间隔，范围 1～168 小时。默认：24。");
+                UpdateManifestMirrors = config.Bind(
+                    "更新",
+                    "备用更新清单地址",
+                    updateManifestMirrors ?? string.Empty,
+                    "可填写一个或多个 HTTPS update.json 地址，以英文分号分隔；会优先于 GitHub 使用。默认：空。");
+
                 config.Save();
                 RewriteSectionOrder(config.ConfigFilePath);
             }
@@ -351,7 +382,7 @@ namespace EC2BUnofficialPatch.Core
                     index = next;
                 }
 
-                string[] desiredOrder = { "优化", "屏幕特效", "效果", "机制", "行动指令" };
+                string[] desiredOrder = { "优化", "屏幕特效", "效果", "机制", "行动指令", "更新" };
                 var output = new List<string>(lines.Length);
                 output.AddRange(header);
                 foreach (string sectionName in desiredOrder.Concat(discoveredOrder).Distinct())
@@ -406,6 +437,19 @@ namespace EC2BUnofficialPatch.Core
             string section,
             string key,
             string defaultValue)
+        {
+            return config.Bind(
+                section,
+                key,
+                defaultValue,
+                "旧版配置迁移占位项；保存时会自动移除。").Value;
+        }
+
+        private static int ReadRawInt(
+            ConfigFile config,
+            string section,
+            string key,
+            int defaultValue)
         {
             return config.Bind(
                 section,

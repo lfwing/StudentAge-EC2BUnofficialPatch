@@ -3,7 +3,7 @@ using EC2BUnofficialPatch.Core;
 
 namespace EC2BUnofficialPatch
 {
-    [BepInPlugin("sa.EC2B.UnofficialPatch", "EC2BUnofficialPatch", "1.0.16.2")]
+    [BepInPlugin(PluginMetadata.Guid, PluginMetadata.Name, PluginMetadata.Version)]
     public sealed class Plugin : BaseUnityPlugin
     {
         private int _bootstrapInstanceId;
@@ -17,7 +17,7 @@ namespace EC2BUnofficialPatch
             _bootstrapHostName = gameObject != null ? gameObject.name : "<null>";
 
             Logger.LogDebug(
-                $"EC2BUnofficialPatch 引导组件启动：version=1.0.16.2, " +
+                $"EC2BUnofficialPatch 引导组件启动：version={PluginMetadata.Version}, " +
                 $"host={_bootstrapHostName}, componentId={_bootstrapInstanceId}");
 
             PluginRuntime.Start(Logger, _bootstrapHostName, _bootstrapInstanceId);
