@@ -26,6 +26,8 @@
 
 图片与视频路径必须相对于 `LoveDraw` 目录，不能使用 `..`。
 
+视频文件名允许中文、空格、撇号等字符。插件会先把未经 URI 转义的绝对路径交给 Unity；若旧版原生视频后端仍然拒绝读取，会自动在 `BepInEx/cache/EC2BUnofficialPatch/NativeMedia` 创建纯 ASCII 文件名副本并重试，不修改 Mod 原文件。
+
 ## 1.0.14 双版本 CFG
 
 如果同一个 Workshop Mod 需要兼容未安装 EC2BUnofficialPatch 的玩家，可把兼容版继续放在：

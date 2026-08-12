@@ -69,6 +69,8 @@ namespace EC2BUnofficialPatch.Core
             "\"video\": \"paint/alice_01.mp4\"\r\n\r\n" +
             "也可以省略扩展名，例如 paint/alice_01；插件会自动匹配支持的格式。\r\n" +
             "图片支持 PNG、JPG、JPEG；视频支持 MP4、WEBM、MOV、M4V、OGV。\r\n" +
+            "视频文件名允许中文、空格等字符；若旧版 Unity 无法直接读取，插件会自动使用纯英文缓存副本重试。\r\n" +
+            "兼容缓存位于 BepInEx/cache/EC2BUnofficialPatch/NativeMedia，不会修改 Mod 原文件。\r\n" +
             "目录名 LoveDraw/Lovedraw 大小写均可。禁止使用 .. 跳出本目录。\r\n\r\n" +
             "资源目录支持：\r\n" +
             "1. Steam Workshop Mod 根目录/LoveDraw\r\n" +

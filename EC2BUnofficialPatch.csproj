@@ -6,8 +6,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
     <RootNamespace>EC2BUnofficialPatch</RootNamespace>
-    <Version>1.0.17</Version>
-    <FileVersion>1.0.17.0</FileVersion>
+    <Version>1.0.18</Version>
+    <FileVersion>1.0.18.0</FileVersion>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
     <Deterministic>true</Deterministic>
 	<GameDir Condition="'$(GameDir)' == ''"></GameDir>    

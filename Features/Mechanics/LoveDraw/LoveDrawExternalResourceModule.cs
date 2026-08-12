@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using EC2BUnofficialPatch.Core;
+using EC2BUnofficialPatch.Resources;
 using EC2BUnofficialPatch.Workshop;
 using HarmonyLib;
 using Sdk;
@@ -295,14 +296,17 @@ namespace EC2BUnofficialPatch.Features.Mechanics.LoveDraw
                 null,
                 false);
 
-            ExternalVideoState state = new ExternalVideoState(view, player, fullPath);
+            string playbackPath = Path.GetFullPath(fullPath);
+            ExternalVideoState state = new ExternalVideoState(view, player, playbackPath);
             VideoStates.Add(view, state);
             state.Attach();
 
             player.Stop();
             player.clip = null;
             player.source = VideoSource.Url;
-            player.url = new Uri(Path.GetFullPath(fullPath)).AbsoluteUri;
+            // Windows 原生平台允许直接传入绝对文件路径。不要转成 file:// URI，
+            // 否则中文、空格和撇号会被百分号转义，旧版 Unity 视频后端可能无法还原。
+            player.url = playbackPath;
             player.isLooping = false;
             player.gameObject.SetActive(true);
             player.Prepare();
@@ -424,6 +428,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.LoveDraw
             private readonly string _fullPath;
             private bool _attached;
             private bool _finished;
+            private bool _fallbackAttempted;
+            private string _directError;
 
             internal ExternalVideoState(PaintView view, VideoPlayer player, string fullPath)
             {
@@ -488,6 +494,38 @@ namespace EC2BUnofficialPatch.Features.Mechanics.LoveDraw
                     return;
                 }
 
+                if (!_fallbackAttempted && source != null)
+                {
+                    _fallbackAttempted = true;
+                    _directError = message;
+                    if (NativeMediaCache.TryCreateFallback(
+                        _fullPath,
+                        out string cachedPath,
+                        out string cacheReason))
+                    {
+                        PatchLog.Warning(
+                            "机制模块-情侣画视频直接路径播放失败，改用兼容缓存重试：" +
+                            $"source={_fullPath}, cache={cachedPath}, reason={message}");
+                        try
+                        {
+                            source.Stop();
+                            source.url = cachedPath;
+                            source.Prepare();
+                            return;
+                        }
+                        catch (Exception exception)
+                        {
+                            message = exception.Message;
+                        }
+                    }
+                    else
+                    {
+                        PatchLog.Warning(
+                            "机制模块-情侣画视频兼容缓存创建失败：" +
+                            $"source={_fullPath}, reason={cacheReason ?? "<unknown>"}");
+                    }
+                }
+
                 _finished = true;
                 CleanupVideoState(_view, this);
                 if (source != null)
@@ -495,7 +533,10 @@ namespace EC2BUnofficialPatch.Features.Mechanics.LoveDraw
                     source.Stop();
                 }
 
-                CompleteVideoAfterError(_view, source, message);
+                string reason = string.IsNullOrWhiteSpace(_directError)
+                    ? message
+                    : $"direct={_directError}; cache={message}";
+                CompleteVideoAfterError(_view, source, reason);
             }
 
             private void OnCompleted(VideoPlayer source)
