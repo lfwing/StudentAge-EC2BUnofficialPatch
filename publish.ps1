@@ -18,17 +18,15 @@ if ([string]::IsNullOrWhiteSpace($version))
 & (Join-Path $projectRoot "build.ps1") -GameDir $GameDir
 
 $pluginDll = Join-Path $projectRoot "bin\Release\net472\EC2BUnofficialPatch.dll"
-$updaterExe = Join-Path $projectRoot "UpdaterHelper\bin\Release\net472\EC2BUnofficialPatch.Updater.exe"
-if (!(Test-Path -LiteralPath $pluginDll) -or !(Test-Path -LiteralPath $updaterExe))
+if (!(Test-Path -LiteralPath $pluginDll))
 {
-    throw "Release binaries were not generated."
+    throw "Release binary was not generated."
 }
 
 $distRoot = Join-Path $projectRoot "dist"
 $releaseRoot = Join-Path $distRoot "EC2BUnofficialPatch-$version"
 $pluginRoot = Join-Path $releaseRoot "BepInEx\plugins"
 $contentRoot = Join-Path $pluginRoot "EC2BUnofficialPatch"
-$updaterRoot = Join-Path $contentRoot "Updater"
 if (Test-Path -LiteralPath $releaseRoot)
 {
     $resolvedDist = [IO.Path]::GetFullPath($distRoot).TrimEnd('\')
@@ -40,9 +38,8 @@ if (Test-Path -LiteralPath $releaseRoot)
     Remove-Item -LiteralPath $releaseRoot -Recurse -Force
 }
 
-New-Item -ItemType Directory -Path $updaterRoot -Force | Out-Null
+New-Item -ItemType Directory -Path $contentRoot -Force | Out-Null
 Copy-Item -LiteralPath $pluginDll -Destination (Join-Path $pluginRoot "EC2BUnofficialPatch.dll")
-Copy-Item -LiteralPath $updaterExe -Destination (Join-Path $updaterRoot "EC2BUnofficialPatch.Updater.exe")
 Copy-Item -Path (Join-Path $projectRoot "ModAuthorTemplate\*") -Destination $contentRoot -Recurse
 Copy-Item -LiteralPath (Join-Path $projectRoot "README.md") -Destination $releaseRoot
 
@@ -66,7 +63,6 @@ $utf8NoBom = New-Object Text.UTF8Encoding $false
 [IO.File]::WriteAllText((Join-Path $projectRoot "update.json"), $manifestJson + [Environment]::NewLine, $utf8NoBom)
 [IO.File]::WriteAllText((Join-Path $distRoot "update.json"), $manifestJson + [Environment]::NewLine, $utf8NoBom)
 Copy-Item -LiteralPath $pluginDll -Destination (Join-Path $distRoot "EC2BUnofficialPatch.dll") -Force
-Copy-Item -LiteralPath $updaterExe -Destination (Join-Path $distRoot "EC2BUnofficialPatch.Updater.exe") -Force
 
 $zipPath = Join-Path $distRoot "EC2BUnofficialPatch-$version-release.zip"
 if (Test-Path -LiteralPath $zipPath)
@@ -80,4 +76,4 @@ Write-Host "  $zipPath"
 Write-Host "  $(Join-Path $distRoot 'EC2BUnofficialPatch.dll')"
 Write-Host "  $(Join-Path $distRoot 'update.json')"
 Write-Host "DLL SHA-256: $hash"
-Write-Host "Upload the DLL, update.json, and release.zip to GitHub Release $version."
+Write-Host "Upload the DLL to GitHub Release $version; commit update.json to the main branch."

@@ -9,6 +9,8 @@ namespace EC2BUnofficialPatch.Core
 {
     internal static class PluginConfig
     {
+        internal const int DefaultUpdateCheckIntervalHours = 4;
+
         internal static ConfigEntry<bool> ScreenDynamicWaitText { get; private set; }
         internal static ConfigEntry<bool> ScreenComicExtension { get; private set; }
         internal static ConfigEntry<bool> ScreenBackgroundEffects { get; private set; }
@@ -164,7 +166,11 @@ namespace EC2BUnofficialPatch.Core
                 bool roleAvailability = ReadRawValue(config, "机制", "控制角色在列表显示", oldRoleAvailability);
                 bool updateAutoCheck = ReadRawValue(config, "更新", "启动时自动检查更新", true);
                 bool updateAutoInstall = ReadRawValue(config, "更新", "发现新版本后自动下载并安装", true);
-                int updateCheckIntervalHours = ReadRawInt(config, "更新", "检查间隔小时", 24);
+                int updateCheckIntervalHours = ReadRawInt(
+                    config,
+                    "更新",
+                    "检查间隔小时",
+                    DefaultUpdateCheckIntervalHours);
                 string updateManifestMirrors = ReadRawString(config, "更新", "备用更新清单地址", string.Empty);
 
                 ResetConfigFile(config);
@@ -309,8 +315,10 @@ namespace EC2BUnofficialPatch.Core
                 UpdateCheckIntervalHours = config.Bind(
                     "更新",
                     "检查间隔小时",
-                    Math.Max(1, Math.Min(168, updateCheckIntervalHours)),
-                    "两次联网检查之间的最短间隔，范围 1～168 小时。默认：24。");
+                    DefaultUpdateCheckIntervalHours,
+                    "两次联网检查之间的最短间隔，范围 1～168 小时；支持玩家自定义。");
+                UpdateCheckIntervalHours.Value =
+                    Math.Max(1, Math.Min(168, updateCheckIntervalHours));
                 UpdateManifestMirrors = config.Bind(
                     "更新",
                     "备用更新清单地址",

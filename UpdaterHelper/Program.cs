@@ -26,7 +26,7 @@ namespace EC2BUnofficialPatch.Updater
                 string expectedHash = args[4];
                 logPath = Path.GetFullPath(args[5]);
                 ValidatePaths(targetPath, pendingPath, backupPath);
-                Log(logPath, $"等待游戏进程退出：pid={processId}, target={targetPath}");
+                Log(logPath, $"等待游戏进程退出：pid={processId}, helper={Path.GetFullPath(typeof(Program).Assembly.Location)}, target={targetPath}");
                 WaitForExit(processId);
 
                 if (!File.Exists(pendingPath))

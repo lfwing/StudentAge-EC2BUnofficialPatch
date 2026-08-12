@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Bootstrap;
 using Newtonsoft.Json;
 
 namespace EC2BUnofficialPatch.Core.Updates
@@ -133,21 +134,21 @@ namespace EC2BUnofficialPatch.Core.Updates
                 return;
             }
 
-            string assemblyPath = Path.GetFullPath(typeof(UpdateService).Assembly.Location);
+            string assemblyPath = ResolveAssemblyPath();
             if (!string.Equals(Path.GetFileName(assemblyPath), AssetName, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("当前插件程序集文件名不是 " + AssetName + "，拒绝自动替换");
 
             string pendingPath = assemblyPath + ".pending";
             DownloadPackage(manifest, pendingPath, token);
-            string helperPath = Path.Combine(
-                Paths.PluginPath,
-                "EC2BUnofficialPatch",
-                "Updater",
-                "EC2BUnofficialPatch.Updater.exe");
-            if (!File.Exists(helperPath))
+            string helperPath;
+            try
+            {
+                helperPath = EmbeddedUpdater.ExtractNextTo(assemblyPath);
+            }
+            catch (Exception exception)
             {
                 PatchLog.Error(
-                    $"更新模块-更新文件已校验但缺少替换助手，无法自动安装：helper={helperPath}, pending={pendingPath}");
+                    "更新模块-无法从插件 DLL 提取更新助手：" + ModuleHost.GetReason(exception));
                 SaveState(statePath, state);
                 return;
             }
@@ -162,12 +163,14 @@ namespace EC2BUnofficialPatch.Core.Updates
             SaveState(statePath, state);
             PatchLog.Info(
                 $"更新模块-新版本已下载并校验，将在游戏退出后安装：" +
-                $"current={PluginMetadata.Version}, latest={manifest.version}, source={manifestUrl}");
+                $"current={PluginMetadata.Version}, latest={manifest.version}, source={manifestUrl}, " +
+                $"target={assemblyPath}");
         }
 
         private static bool ShouldCheck(UpdateState state)
         {
-            int hours = PluginConfig.UpdateCheckIntervalHours?.Value ?? 24;
+            int hours = PluginConfig.UpdateCheckIntervalHours?.Value ??
+                        PluginConfig.DefaultUpdateCheckIntervalHours;
             hours = Math.Max(1, Math.Min(168, hours));
             if (state == null || string.IsNullOrWhiteSpace(state.lastAttemptUtc))
                 return true;
@@ -313,6 +316,33 @@ namespace EC2BUnofficialPatch.Core.Updates
                     return false;
                 }
             }
+        }
+
+        private static string ResolveAssemblyPath()
+        {
+            string location = null;
+            try
+            {
+                if (Chainloader.PluginInfos != null &&
+                    Chainloader.PluginInfos.TryGetValue(PluginMetadata.Guid, out BepInEx.PluginInfo info))
+                {
+                    location = info?.Location;
+                }
+            }
+            catch
+            {
+                // 极早期或非标准桥接加载器可能尚未建立 PluginInfos，继续使用程序集位置。
+            }
+
+            if (string.IsNullOrWhiteSpace(location))
+                location = typeof(UpdateService).Assembly.Location;
+            if (string.IsNullOrWhiteSpace(location))
+                throw new InvalidOperationException("无法取得当前插件 DLL 的真实来源路径，拒绝自动更新");
+
+            string fullPath = Path.GetFullPath(location);
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException("当前插件来源 DLL 不存在，拒绝自动更新", fullPath);
+            return fullPath;
         }
 
         private static UpdateState LoadState(string path)

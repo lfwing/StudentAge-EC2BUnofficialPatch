@@ -6,8 +6,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
     <RootNamespace>EC2BUnofficialPatch</RootNamespace>
-    <Version>1.0.18</Version>
-    <FileVersion>1.0.18.0</FileVersion>
+    <Version>1.0.19</Version>
+    <FileVersion>1.0.19.0</FileVersion>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
     <Deterministic>true</Deterministic>
 	<GameDir Condition="'$(GameDir)' == ''"></GameDir>    
@@ -26,6 +26,9 @@
     <Compile Remove="Features\Mechanics\LoveTopicLimitModule.cs" />
     <Compile Remove="Features\Mechanics\RelationFocusCountModule.cs" />
     <Compile Remove="UpdaterHelper\**\*.cs" />
+    <EmbeddedResource
+      Include="UpdaterHelper\bin\$(Configuration)\net472\EC2BUnofficialPatch.Updater.exe"
+      LogicalName="EC2BUnofficialPatch.Embedded.Updater.exe" />
 
     <Reference Include="0Harmony">
       <HintPath>$(BepInExCoreDir)\0Harmony.dll</HintPath>
@@ -47,6 +50,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Live2D.Cubism">
+      <HintPath>$(ManagedDir)\Live2D.Cubism.dll</HintPath>
     </Reference>
     <Reference Include="UIEffect">
       <HintPath>$(ManagedDir)\UIEffect.dll</HintPath>
@@ -82,4 +88,11 @@
       <HintPath>$(ManagedDir)\UnityEngine.VideoModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <Target Name="BuildAndEmbedUpdater" BeforeTargets="PrepareForBuild">
+    <MSBuild
+      Projects="$(MSBuildProjectDirectory)\UpdaterHelper\EC2BUnofficialPatch.Updater.csproj"
+      Targets="Restore;Build"
+      Properties="Configuration=$(Configuration)" />
+  </Target>
 </Project>
