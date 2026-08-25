@@ -114,6 +114,11 @@ namespace EC2BUnofficialPatch.Features.Mechanics.LoveDraw
             }
         }
 
+        internal static void ReplaceServices(PluginServices services)
+        {
+            _services = services ?? throw new ArgumentNullException(nameof(services));
+        }
+
         internal static IEnumerable<CodeInstruction> OnOpenTranspiler(
             IEnumerable<CodeInstruction> instructions)
         {

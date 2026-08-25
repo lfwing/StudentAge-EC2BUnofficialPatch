@@ -6,11 +6,13 @@ using EC2BUnofficialPatch.Features.Effects;
 using EC2BUnofficialPatch.Features.Mechanics;
 using EC2BUnofficialPatch.Features.Mechanics.LoveDraw;
 using EC2BUnofficialPatch.Features.Mechanics.AudioTrace;
+using EC2BUnofficialPatch.Features.Mechanics.Minigames;
 using EC2BUnofficialPatch.Features.Optimization.StaticPortraitOptimization;
 using EC2BUnofficialPatch.Features.Optimization.CGOptimization;
 using EC2BUnofficialPatch.Features.Optimization;
 using EC2BUnofficialPatch.Features.ScreenEffects;
 using EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis;
+using EC2BUnofficialPatch.Services;
 using UnityEngine;
 
 namespace EC2BUnofficialPatch.Core
@@ -138,7 +140,11 @@ namespace EC2BUnofficialPatch.Core
 
             // 必须在游戏开始读取 Workshop CFG 之前挂接。该补丁为每个 Mod 构建运行时 CFG 视图：
             // 有增强版时替代同名兼容 CFG；原版同名 CFG 不存在时也能主动注入。Workshop 原文件始终不修改。
-            if (PluginConfig.LoveDrawExternalResources.Value || PluginConfig.MinigameMechanics.Value)
+            if (PluginConfig.LoveDrawExternalResources.Value ||
+                PluginConfig.MinigameMechanics.Value ||
+                PluginConfig.JsonHotReload.Value ||
+                PluginConfig.MapFloorCompatibility.Value ||
+                PluginConfig.MapFloorHierarchyExtension.Value)
             {
                 _moduleHost.Load(new ModCfgOverrideModule());
             }
@@ -167,6 +173,16 @@ namespace EC2BUnofficialPatch.Core
             }
             LoadIf(PluginConfig.StaticPortraitOptimization.Value, new StaticPortraitOptimizationModule(), "优化/静态立绘优化");
             LoadIf(PluginConfig.CGOptimization.Value, new CGOptimizationModule(), "优化/CG播放与图鉴排序优化");
+            LoadIf(PluginConfig.JsonHotReload.Value, new JsonHotReloadModule(), "优化/.json文件热重载");
+            LoadIf(
+                PluginConfig.MapFloorCompatibility.Value ||
+                PluginConfig.MapFloorHierarchyExtension.Value,
+                new MapFloorCompatibilityModule(),
+                "优化/地图子地点兼容");
+            LoadIf(
+                PluginConfig.SteamNicknameDialogueReplacement.Value,
+                new SteamNicknameDialogueModule(),
+                "优化/Steam昵称对话替换");
             LoadIf(PluginConfig.ExamManualScore.Value, new ExamManualScoreModule(), "优化/普通考试允许手动输入成绩");
             _moduleHost.Load(new global::EC2BUnofficialPatch.Features.Optimization.LoveTopicLimitModule());
             LoadIf(
@@ -179,6 +195,113 @@ namespace EC2BUnofficialPatch.Core
             int loveTopicLimit =
                 global::EC2BUnofficialPatch.Features.Optimization.LoveTopicPatches.GetSocialTopicLimit();
             PatchLog.Info($"优化模块-情侣话题每回合次数：value={loveTopicLimit}");
+            if (PluginConfig.JsonHotReload.Value)
+            {
+                try
+                {
+                    UpExtensionJsonHotReload.CaptureBaseline(_services.ContentRoots);
+                }
+                catch (Exception exception)
+                {
+                    PatchLog.Warning(
+                        "优化模块-UP JSON 热重载基线建立失败；首次按 F9 时将重试：" +
+                        ModuleHost.GetReason(exception));
+                }
+            }
+        }
+
+        internal static JsonHotReloadResult ReloadExtensionJson()
+        {
+            PluginServices replacement = null;
+            try
+            {
+                UpJsonChangeSet changes;
+                int entryCount = 0;
+                ScreenPaperRegistry paperRegistry = null;
+                LyricRegistry lyricRegistry = null;
+                RoleAvailabilityService roleService = null;
+                CustomMinigameRegistry minigameRegistry = null;
+
+                using (PatchLog.SuppressInformational())
+                {
+                    changes = UpExtensionJsonHotReload.Prepare(_services.ContentRoots);
+                    if (!changes.HasChanges)
+                        return JsonHotReloadResult.Skip("UP JSON 未变化");
+
+                    replacement = PluginServices.Create();
+
+                    if (PluginConfig.ScreenPaper.Value)
+                    {
+                        paperRegistry = ScreenPaperRegistry.Load(replacement.ContentRoots.Roots);
+                        entryCount += paperRegistry.Count;
+                    }
+
+                    if (PluginConfig.ScreenLyrics.Value)
+                    {
+                        lyricRegistry = LyricRegistry.Load(replacement.ResourceIndex.LyricFiles);
+                        if (lyricRegistry.Errors.Count > 0)
+                        {
+                            throw new InvalidOperationException(
+                                "歌词 JSON 校验失败：" + string.Join("；", lyricRegistry.Errors));
+                        }
+                        entryCount += lyricRegistry.Count;
+                    }
+
+                    if (PluginConfig.RoleAvailability.Value)
+                    {
+                        roleService = RoleAvailabilityService.Load(replacement.ContentRoots);
+                        entryCount += roleService.Count;
+                    }
+
+                    if (PluginConfig.MinigameMechanics.Value)
+                    {
+                        minigameRegistry = CustomMinigameRegistry.Load(replacement.ContentRoots);
+                        entryCount += minigameRegistry.ExplicitCount;
+                    }
+                }
+
+                // 以上所有文件与注册表均成功构建后才切换运行时引用。
+                if (paperRegistry != null)
+                    ScreenPaperModule.ReplaceRuntime(replacement, paperRegistry);
+                if (lyricRegistry != null)
+                    ScreenLyrcisModule.ReplaceRegistry(lyricRegistry);
+                if (roleService != null)
+                    RoleAvailabilityPatches.Initialize(roleService);
+                if (minigameRegistry != null)
+                    MiniGameMechanicsPatches.Initialize(minigameRegistry);
+                if (PluginConfig.ScreenComicExtension.Value)
+                    ComicExtensionModule.ReplaceServices(replacement);
+                if (PluginConfig.LoveDrawExternalResources.Value)
+                    LoveDrawExternalResourcePatches.ReplaceServices(replacement);
+
+                PluginServices previous = _services;
+                _services = replacement;
+                replacement = null;
+                UpExtensionJsonHotReload.Commit(changes);
+                try
+                {
+                    previous?.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    PatchLog.Warning(
+                        "优化模块-.json热重载旧图片缓存释放失败，不影响新注册表生效：" +
+                        ModuleHost.GetReason(exception));
+                }
+
+                return JsonHotReloadResult.Completed(
+                    changes.ChangedPaths.Count,
+                    entryCount,
+                    "UP变更=" + changes.DescribeChanges());
+            }
+            catch (Exception exception)
+            {
+                replacement?.Dispose();
+                return JsonHotReloadResult.Failed(
+                    string.IsNullOrWhiteSpace(exception.Message)
+                        ? exception.GetType().Name
+                        : exception.Message.Replace(Environment.NewLine, " "));
+            }
         }
 
 

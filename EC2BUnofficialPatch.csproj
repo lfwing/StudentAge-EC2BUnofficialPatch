@@ -6,11 +6,11 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
     <RootNamespace>EC2BUnofficialPatch</RootNamespace>
-    <Version>1.0.19</Version>
-    <FileVersion>1.0.19.0</FileVersion>
+    <Version>1.0.20</Version>
+    <FileVersion>1.0.20.0</FileVersion>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
     <Deterministic>true</Deterministic>
-	<GameDir Condition="'$(GameDir)' == ''"></GameDir>    
+	<GameDir Condition="'$(GameDir)' == ''"></GameDir>
 	<ManagedDir>$(GameDir)\StudentAge_Data\Managed</ManagedDir>
     <BepInExCoreDir>$(GameDir)\BepInEx\core</BepInExCoreDir>
   </PropertyGroup>
@@ -51,6 +51,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="UniTask">
+      <HintPath>$(ManagedDir)\UniTask.dll</HintPath>
+    </Reference>
     <Reference Include="Live2D.Cubism">
       <HintPath>$(ManagedDir)\Live2D.Cubism.dll</HintPath>
     </Reference>
@@ -71,6 +74,9 @@
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(ManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(ManagedDir)\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>$(ManagedDir)\UnityEngine.ParticleSystemModule.dll</HintPath>

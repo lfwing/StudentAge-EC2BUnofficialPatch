@@ -1,4 +1,5 @@
 using UnityEngine;
+using EC2BUnofficialPatch.Features.Optimization;
 
 namespace EC2BUnofficialPatch.Core
 {
@@ -17,6 +18,11 @@ namespace EC2BUnofficialPatch.Core
 
             DontDestroyOnLoad(host);
             return host.AddComponent<PluginRuntimeHost>();
+        }
+
+        private void Update()
+        {
+            JsonHotReloadRuntime.Tick();
         }
 
         private void OnApplicationQuit()

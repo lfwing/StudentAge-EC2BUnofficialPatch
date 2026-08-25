@@ -26,6 +26,10 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> AudioUnityChannel { get; private set; }
         internal static ConfigEntry<bool> StaticPortraitOptimization { get; private set; }
         internal static ConfigEntry<bool> CGOptimization { get; private set; }
+        internal static ConfigEntry<bool> JsonHotReload { get; private set; }
+        internal static ConfigEntry<bool> MapFloorCompatibility { get; private set; }
+        internal static ConfigEntry<bool> MapFloorHierarchyExtension { get; private set; }
+        internal static ConfigEntry<bool> SteamNicknameDialogueReplacement { get; private set; }
         internal static ConfigEntry<bool> ExamManualScore { get; private set; }
         internal static ConfigEntry<string> LoveTopicLimit { get; private set; }
         internal static ConfigEntry<bool> RelationEffects { get; private set; }
@@ -153,6 +157,18 @@ namespace EC2BUnofficialPatch.Core
                     "CG播放与图鉴排序优化",
                     "优化",
                     "CG播放优化");
+                bool jsonHotReload = ReadRawValue(config, "优化", ".json文件热重载", true);
+                bool legacyMapFloorCompatibility = ReadRawValue(
+                    config, "优化", "地图楼层兼容扩展", true);
+                bool mapFloorCompatibility = ReadRawValue(
+                    config, "优化", "多mod地图子地点兼容", legacyMapFloorCompatibility);
+                bool mapFloorHierarchyExtension = ReadRawValue(
+                    config, "优化", "地图子地点扩展", false);
+                bool steamNicknameDialogueReplacement = ReadRawValue(
+                    config,
+                    "优化",
+                    "Steam昵称对话替换",
+                    true);
 
                 bool examManualScore = ReadRawValue(config, "优化", "普通考试允许手动输入成绩", true);
                 string oldLoveTopicLimit = ReadRawString(config, "机制", "情侣话题每回合次数", "1");
@@ -269,6 +285,31 @@ namespace EC2BUnofficialPatch.Core
                     "CG播放与图鉴排序优化",
                     cgOptimization,
                     "为连续播放的CG自动添加过渡效果；自动排序MOD CG图鉴。");
+                JsonHotReload = Bind(
+                    config,
+                    "优化",
+                    ".json文件热重载",
+                    jsonHotReload,
+                    "游戏内按F9可实现.json文件热重载，其余插件新增.json可按规则兼容。");
+                MapFloorCompatibility = Bind(
+                    config,
+                    "优化",
+                    "多mod地图子地点兼容",
+                    mapFloorCompatibility,
+                    "将多个mod中声明的父地图地点合并，未声明的子地图将按照官方规则进行注册。");
+                MapFloorHierarchyExtension = Bind(
+                    config,
+                    "优化",
+                    "地图子地点扩展",
+                    mapFloorHierarchyExtension,
+                    "支持子地点下套子地点，此功能必须要模组作者和玩家同时启用才有效，否则会报错，因此默认关闭。",
+                    false);
+                SteamNicknameDialogueReplacement = Bind(
+                    config,
+                    "优化",
+                    "Steam昵称对话替换",
+                    steamNicknameDialogueReplacement,
+                    "对话文本中连续且顺序完全一致的 {1}{2}{3} 将整体显示为当前 Steam 昵称。");
 
                 ExamManualScore = Bind(
                     config,
@@ -471,13 +512,14 @@ namespace EC2BUnofficialPatch.Core
             string section,
             string key,
             bool value,
-            string description)
+            string description,
+            bool declaredDefault = true)
         {
             ConfigEntry<bool> entry = config.Bind(
                 section,
                 key,
-                true,
-                description + " 默认：True。");
+                declaredDefault,
+                description + (declaredDefault ? " 默认：True。" : " 默认：false。"));
             entry.Value = value;
             return entry;
         }

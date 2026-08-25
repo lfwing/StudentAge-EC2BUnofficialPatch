@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Config;
 using HarmonyLib;
 using Sdk;
 
@@ -10,7 +11,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
     internal enum SocialMinigameCategory
     {
         NativeStage,
-        DirectCallback,
+        EmbeddedCallback,
         EmbeddedRequired,
         SpecialCompleteOnClose
     }
@@ -20,6 +21,18 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         None,
         PositiveIsWin,
         AnyResultIsSuccess
+    }
+
+    internal enum OriginalMinigameSettlementMode
+    {
+        /// <summary>Level 入口由原版 View/MiniGameData.EndGame 独占结算。</summary>
+        OriginalEndGame,
+
+        /// <summary>原版玩法通过 success/fail/result 回调报告结果。</summary>
+        Callback,
+
+        /// <summary>没有统一结果回调，只能在具体 View 关闭时按适配规则结算。</summary>
+        CloseObserved
     }
 
     internal enum MinigameOutcomeRule
@@ -40,6 +53,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             int id,
             string viewTypeName,
             SocialMinigameCategory category,
+            OriginalMinigameLaunchAdapter launchAdapter,
+            OriginalMinigameSettlementMode settlementMode,
             MinigameOutcomeRule outcomeRule = MinigameOutcomeRule.None,
             string outcomeField = null,
             string expectedValue = null,
@@ -51,6 +66,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             Id = id;
             ViewTypeName = viewTypeName;
             Category = category;
+            LaunchAdapter = launchAdapter ?? throw new ArgumentNullException(nameof(launchAdapter));
+            SettlementMode = settlementMode;
             OutcomeRule = outcomeRule;
             OutcomeField = outcomeField;
             ExpectedValue = expectedValue;
@@ -63,6 +80,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         internal int Id { get; }
         internal string ViewTypeName { get; }
         internal SocialMinigameCategory Category { get; }
+        internal OriginalMinigameLaunchAdapter LaunchAdapter { get; }
+        internal OriginalMinigameSettlementMode SettlementMode { get; }
         internal MinigameOutcomeRule OutcomeRule { get; }
         internal string OutcomeField { get; }
         internal string ExpectedValue { get; }
@@ -71,12 +90,25 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         internal MinigameResultPolicy ResultPolicy { get; }
         internal bool ImmediateSuccess { get; }
 
-        internal bool CanOpenAsFallback => Category != SocialMinigameCategory.EmbeddedRequired;
+        internal bool CanOpenAsFallback => LaunchAdapter.SupportsLevelFallback;
         internal bool CanOpenEmbedded => !ImmediateSuccess;
-        internal bool CompleteOnClose => Category == SocialMinigameCategory.SpecialCompleteOnClose;
+        internal bool CompleteOnClose => SettlementMode == OriginalMinigameSettlementMode.CloseObserved;
         internal bool NeedsCloseObservation =>
             !string.IsNullOrWhiteSpace(ViewTypeName) &&
-            (OutcomeRule != MinigameOutcomeRule.None || CompleteOnClose);
+            (SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame || CompleteOnClose);
+
+        internal bool ShouldBindCallbacks(bool embedded) =>
+            embedded && SettlementMode == OriginalMinigameSettlementMode.Callback;
+
+        internal bool ShouldObserveClose(bool embedded) =>
+            CompleteOnClose ||
+            (embedded && SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame);
+
+        internal bool TryValidateLevel(MinigameActionCfg action, out string error) =>
+            LaunchAdapter.TryValidateLevel(action, out error);
+
+        internal void OpenLevel(MiniGameStageSession session) =>
+            LaunchAdapter.OpenLevel(session);
 
         internal Type ResolveViewType() =>
             string.IsNullOrWhiteSpace(ViewTypeName)
@@ -269,20 +301,20 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 { 46, D(46, "MiniGame.Weaving.WeavingMinigameView", SocialMinigameCategory.NativeStage, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
                 { 48, D(48, "MiniGame.Drawing.DrawingMinigameView", SocialMinigameCategory.NativeStage, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
 
-                // B：无必须的外部对象参数，Level 启动时可通过 callback 或结果字段回写阶段。
-                { 7,  D(7,  "MiniGame.QuickCalc.QuickCalcMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 8,  D(8,  "MiniGame.Crossword.CrosswordMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 13, D(13, "MiniGame.Sentence.SentenceMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.EnumFieldEquals, "state", "Win") },
-                { 14, D(14, "MiniGame.CardMatch.CardMatchMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 15, D(15, "MiniGame.CardMatch.CardMatch2MiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.IntAtLeastCollectionCount, "matchCnt", secondary: "cells", result: MinigameResultPolicy.PositiveIsWin) },
-                { 16, D(16, "MiniGame.Qte.Qte2MiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.IntFieldGreaterThan, "successCnt", "0") },
-                { 19, D(19, "MiniGame.Hurdling.HurdlingMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 22, D(22, "MiniGame.Handicraft.HandicraftView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
-                { 23, D(23, "MiniGame.MagicCube.MagicCubeMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
-                { 33, D(33, "MiniGame.StudyCard.StudyCardMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 34, D(34, "MiniGame.Qte.Qte3MiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 35, D(35, "MiniGame.Lizong.LizongMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin") },
-                { 45, D(45, "MiniGame.LineMatch.LineMatchMiniGameView", SocialMinigameCategory.DirectCallback, MinigameOutcomeRule.BoolField, "isWin", result: MinigameResultPolicy.PositiveIsWin) },
+                // B：由原版入口提供回调上下文；只允许在 startTalk 中内嵌启动并由回调结算。
+                { 7,  D(7,  "MiniGame.QuickCalc.QuickCalcMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 8,  D(8,  "MiniGame.Crossword.CrosswordMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 13, D(13, "MiniGame.Sentence.SentenceMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.EnumFieldEquals, "state", "Win") },
+                { 14, D(14, "MiniGame.CardMatch.CardMatchMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 15, D(15, "MiniGame.CardMatch.CardMatch2MiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.IntAtLeastCollectionCount, "matchCnt", secondary: "cells", result: MinigameResultPolicy.PositiveIsWin) },
+                { 16, D(16, "MiniGame.Qte.Qte2MiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.IntFieldGreaterThan, "successCnt", "0") },
+                { 19, D(19, "MiniGame.Hurdling.HurdlingMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 22, D(22, "MiniGame.Handicraft.HandicraftView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
+                { 23, D(23, "MiniGame.MagicCube.MagicCubeMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.EnumFieldEquals, "curState", "Win") },
+                { 33, D(33, "MiniGame.StudyCard.StudyCardMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 34, D(34, "MiniGame.Qte.Qte3MiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 35, D(35, "MiniGame.Lizong.LizongMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin") },
+                { 45, D(45, "MiniGame.LineMatch.LineMatchMiniGameView", SocialMinigameCategory.EmbeddedCallback, MinigameOutcomeRule.BoolField, "isWin", result: MinigameResultPolicy.PositiveIsWin) },
 
                 // C：依赖 Option/Talk/Evt 上下文或额外对象参数，只允许由 startTalk 内嵌打开。
                 { 6,  D(6,  "MiniGame.Negotiation.NegotiationMiniGameView", SocialMinigameCategory.EmbeddedRequired, MinigameOutcomeRule.IntFieldEquals, "isWin", "1") },
@@ -327,6 +359,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 id,
                 view,
                 category,
+                OriginalMinigameAdapterRegistry.Require(id),
+                GetSettlementMode(category),
                 rule,
                 field,
                 expected,
@@ -334,5 +368,19 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 select,
                 result,
                 immediate);
+
+        private static OriginalMinigameSettlementMode GetSettlementMode(
+            SocialMinigameCategory category)
+        {
+            switch (category)
+            {
+                case SocialMinigameCategory.NativeStage:
+                    return OriginalMinigameSettlementMode.OriginalEndGame;
+                case SocialMinigameCategory.SpecialCompleteOnClose:
+                    return OriginalMinigameSettlementMode.CloseObserved;
+                default:
+                    return OriginalMinigameSettlementMode.Callback;
+            }
+        }
     }
 }

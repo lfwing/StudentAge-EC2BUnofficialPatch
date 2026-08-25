@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using EC2BUnofficialPatch.Core;
+using EC2BUnofficialPatch.Services;
 using EC2BUnofficialPatch.Workshop;
 using HarmonyLib;
 
@@ -83,6 +84,9 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         /// </summary>
         public static void LoadModCfgsPrefix(ulong __0, ref string __1)
         {
+            // 无论是否存在 UP 增强 CFG，都记录原版实际启用的 Mod 与加载顺序，
+            // 供 F9 普通 *Cfg.json 热重载重建完整运行时视图。
+            GameModCfgHotReload.RecordSource(__0, __1);
             try
             {
                 if (!TryBuildOverlay(__0, __1, out string overlayPath, out List<CfgOverlayDecision> decisions))

@@ -43,6 +43,12 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
                 $"冲突={_services.ComicResources.ConflictCount}");
         }
 
+        internal static void ReplaceServices(PluginServices services)
+        {
+            _services = services ?? throw new ArgumentNullException(nameof(services));
+            _services.ComicResources.ReportScanIssues();
+        }
+
         private static void PlayPrefix(int __0, int __1)
         {
             if (_services?.ComicResources == null)

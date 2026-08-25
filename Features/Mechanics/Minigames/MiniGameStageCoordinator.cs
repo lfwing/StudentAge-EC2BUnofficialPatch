@@ -256,6 +256,18 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 return false;
             }
 
+            OriginalMinigameDescriptor original = session.ActiveImplementation?.Original;
+            if (!session.EmbeddedLaunch &&
+                original != null &&
+                original.SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame)
+            {
+                PatchLog.Warning(
+                    "机制模块-忽略原版 EndGame 型小游戏的额外适配器结算信号：" +
+                    $"npc={session.NpcId}, logical={session.LogicalGameId}, " +
+                    $"implementation={original.Id}, source={source}");
+                return false;
+            }
+
             if (session.EmbeddedLaunch)
             {
                 return SettleEmbedded(token, isWin, selectId, source);
@@ -470,6 +482,26 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 return;
             }
 
+            ResolvedMinigameImplementation fallback = session.FallbackImplementation;
+            if (fallback.Original != null)
+            {
+                string launchError = null;
+                if (!Cfg.MinigameActionCfgMap.TryGetValue(session.CfgId, out MinigameActionCfg action) ||
+                    !fallback.Original.TryValidateLevel(action, out launchError))
+                {
+                    PatchLog.Error(
+                        "机制模块-原版小游戏启动契约在打开前失效，本阶段将回滚：" +
+                        $"npc={session.NpcId}, minigame={session.LogicalGameId}, cfg={session.CfgId}, " +
+                        $"implementation={fallback.ImplementationId}, reason={launchError ?? "缺少 MinigameActionCfg"}");
+                    AbortCurrentUnsettled("invalid-level-contract-before-open", true);
+                    return;
+                }
+
+                fallback.Original.OpenLevel(session);
+                return;
+            }
+
+            // dialogue/external 是 UP 自有实现，仍通过 OpenMiniGamePrefix 进入其注册适配器。
             Singleton<FuncMgr>.Ins.OpenMiniGame(
                 session.LogicalGameId,
                 MiniGameFromType.Level,

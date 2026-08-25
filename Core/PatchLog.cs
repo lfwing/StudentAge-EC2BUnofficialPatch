@@ -10,6 +10,7 @@ namespace EC2BUnofficialPatch.Core
         private static readonly List<string> RegistrationResults = new List<string>();
         private static int _issueCount;
         private static bool _registrationsFlushed;
+        [ThreadStatic] private static int _informationalSuppressionDepth;
 
         internal static void Initialize(ManualLogSource logger)
         {
@@ -18,8 +19,16 @@ namespace EC2BUnofficialPatch.Core
             _issueCount = 0;
             _registrationsFlushed = false;
         }
-        internal static void Info(string message) => _logger?.LogInfo(message);
-        internal static void Debug(string message) => _logger?.LogDebug(message);
+        internal static void Info(string message)
+        {
+            if (_informationalSuppressionDepth == 0)
+                _logger?.LogInfo(message);
+        }
+        internal static void Debug(string message)
+        {
+            if (_informationalSuppressionDepth == 0)
+                _logger?.LogDebug(message);
+        }
         internal static void Warning(string message)
         {
             _issueCount++;
@@ -42,6 +51,8 @@ namespace EC2BUnofficialPatch.Core
         {
             if (string.IsNullOrWhiteSpace(message))
                 return;
+            if (_informationalSuppressionDepth > 0)
+                return;
             if (_registrationsFlushed)
             {
                 _logger?.LogInfo(message);
@@ -60,11 +71,30 @@ namespace EC2BUnofficialPatch.Core
 
         internal static int RegistrationCheckpoint() => RegistrationResults.Count;
 
+        internal static IDisposable SuppressInformational()
+        {
+            _informationalSuppressionDepth++;
+            return new InformationalSuppression();
+        }
+
         internal static void RollbackRegistrations(int checkpoint)
         {
             if (checkpoint < 0 || checkpoint >= RegistrationResults.Count)
                 return;
             RegistrationResults.RemoveRange(checkpoint, RegistrationResults.Count - checkpoint);
+        }
+
+        private sealed class InformationalSuppression : IDisposable
+        {
+            private bool _disposed;
+
+            public void Dispose()
+            {
+                if (_disposed) return;
+                _disposed = true;
+                if (_informationalSuppressionDepth > 0)
+                    _informationalSuppressionDepth--;
+            }
         }
     }
 }

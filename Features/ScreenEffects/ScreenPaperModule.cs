@@ -41,6 +41,12 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
             PatchLog.Registration($"屏幕特效模块-5001屏幕纸条注册完成：图片覆盖={_registry.Count}");
         }
 
+        internal static void ReplaceRuntime(PluginServices services, ScreenPaperRegistry registry)
+        {
+            _services = services ?? throw new ArgumentNullException(nameof(services));
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        }
+
         private static void OnOpenPostfix(PaperView __instance)
         {
             try

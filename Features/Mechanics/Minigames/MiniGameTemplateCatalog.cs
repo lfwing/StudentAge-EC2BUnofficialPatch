@@ -155,9 +155,12 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
 
         private static MiniGameTemplateInfo CreateFromAdapter(int id)
         {
-            if (OriginalMinigameAdapterRegistry.TryGet(id, out IOriginalMinigameAdapter adapter))
+            if (OriginalMinigameCatalog.TryGet(id, out OriginalMinigameDescriptor descriptor))
             {
-                return new MiniGameTemplateInfo(id, true, adapter.ViewTypeName);
+                return new MiniGameTemplateInfo(
+                    id,
+                    descriptor.CanOpenAsFallback,
+                    descriptor.ViewTypeName);
             }
 
             return new MiniGameTemplateInfo(id, false);

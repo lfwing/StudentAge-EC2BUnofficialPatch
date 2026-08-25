@@ -227,7 +227,28 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             {
                 if (resolvedFallback.CanOpenAsFallback)
                 {
-                    fallback = resolvedFallback;
+                    string launchError = null;
+                    bool launchValid =
+                        resolvedFallback.Original == null ||
+                        resolvedFallback.Original.TryValidateLevel(action, out launchError);
+                    if (launchValid)
+                    {
+                        fallback = resolvedFallback;
+                    }
+                    else if (embedded.Launches.Count == 0)
+                    {
+                        error =
+                            "原版小游戏的 Level 启动契约不完整：" +
+                            $"npc={npcId}, minigame={state.id}, implementation={resolvedFallback.ImplementationId}, " +
+                            $"cfg={state.cfgId}, reason={launchError}";
+                        return false;
+                    }
+                    else
+                    {
+                        PatchLog.Warning(
+                            "当前阶段的 Level 后备实现不可用，将只允许 startTalk 内嵌玩法：" +
+                            $"npc={npcId}, minigame={state.id}, cfg={state.cfgId}, reason={launchError}");
+                    }
                 }
                 else if (embedded.Launches.Count == 0)
                 {

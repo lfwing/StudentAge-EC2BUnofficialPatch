@@ -1,13 +1,13 @@
 {
-    "schema":  1,
-    "version":  "1.0.19",
-    "channel":  "stable",
-    "gameVersion":  "1.93",
-    "assetName":  "EC2BUnofficialPatch.dll",
-    "size":  310784,
-    "sha256":  "5DF3B1ECAF55FA88D5B6348B21F13C24F58316447AF3E36A42779B21495E65F8",
-    "releasePage":  "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/tag/1.0.19",
-    "downloadUrls":  [
-                         "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/download/1.0.19/EC2BUnofficialPatch.dll"
-                     ]
+	"schema": 1,
+	"version": "1.0.20",
+	"channel": "stable",
+	"gameVersion": "1.93",
+	"assetName": "EC2BUnofficialPatch.dll",
+	"size": 347136,
+	"sha256": "4FFB82B78408929F712F747D3282D262CC0260F55E68E971FDBC9A10C6CBAE79",
+	"releasePage": "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/tag/1.0.20",
+	"downloadUrls": [
+		"https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/download/1.0.20/EC2BUnofficialPatch.dll"
+	]
 }

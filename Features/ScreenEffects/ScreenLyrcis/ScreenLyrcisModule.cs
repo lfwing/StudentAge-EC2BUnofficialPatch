@@ -87,6 +87,11 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis
                 null);
         }
 
+        internal static void ReplaceRegistry(LyricRegistry registry)
+        {
+            _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+        }
+
         private static bool NewShowLyricsPrefix(
             NewTalkView __instance,
             ref bool __result)

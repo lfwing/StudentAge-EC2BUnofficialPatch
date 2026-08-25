@@ -26,6 +26,7 @@ namespace EC2BUnofficialPatch.Services
         }
 
         internal IEnumerable<int> RegisteredIds => _entries.Keys.Concat(_conflicts);
+        internal int Count => _entries.Count;
 
         internal static RoleAvailabilityService Load(ContentRootCatalog roots)
         {

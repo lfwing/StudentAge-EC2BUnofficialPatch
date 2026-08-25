@@ -168,7 +168,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 Cfg.MinigameCfgMap[descriptor.Id] = logicalCfg;
             }
 
-            if (boundToStage && session != null)
+            if (boundToStage && session != null &&
+                descriptor.ShouldBindCallbacks(session.EmbeddedLaunch))
             {
                 descriptor.BindCallbacks(
                     session.Token,
@@ -217,8 +218,21 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 return true;
             }
 
-            if (session.Settled)
+            if (session.Settled || session.SettlementInProgress)
             {
+                return false;
+            }
+
+            OriginalMinigameDescriptor activeOriginal =
+                session.ActiveImplementation?.Original;
+            if (!session.EmbeddedLaunch &&
+                activeOriginal != null &&
+                activeOriginal.SettlementMode != OriginalMinigameSettlementMode.OriginalEndGame)
+            {
+                PatchLog.Error(
+                    "机制模块-非 EndGame 型适配器试图走原版 EndGame，已阻止重复结算：" +
+                    $"npc={session.NpcId}, logical={session.LogicalGameId}, " +
+                    $"implementation={activeOriginal.Id}");
                 return false;
             }
 
@@ -304,7 +318,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 session.Settled ||
                 __instance == null ||
                 descriptor == null ||
-                !descriptor.NeedsCloseObservation)
+                !descriptor.ShouldObserveClose(session.EmbeddedLaunch))
             {
                 return;
             }
