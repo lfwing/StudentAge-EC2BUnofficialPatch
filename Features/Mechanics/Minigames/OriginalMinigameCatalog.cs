@@ -93,16 +93,19 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         internal bool CanOpenAsFallback => LaunchAdapter.SupportsLevelFallback;
         internal bool CanOpenEmbedded => !ImmediateSuccess;
         internal bool CompleteOnClose => SettlementMode == OriginalMinigameSettlementMode.CloseObserved;
+        // Option 内嵌玩法必须在回调之前观察 CloseView，回调型玩法也不能省略补丁。
+        // 运行时仍由 ShouldObserveClose 精确筛选，不会改变 Talk/Evt 的正常回调流程。
         internal bool NeedsCloseObservation =>
-            !string.IsNullOrWhiteSpace(ViewTypeName) &&
-            (SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame || CompleteOnClose);
+            !string.IsNullOrWhiteSpace(ViewTypeName);
 
         internal bool ShouldBindCallbacks(bool embedded) =>
             embedded && SettlementMode == OriginalMinigameSettlementMode.Callback;
 
-        internal bool ShouldObserveClose(bool embedded) =>
+        internal bool ShouldObserveClose(bool embedded, MiniGameFromType launchFrom) =>
             CompleteOnClose ||
-            (embedded && SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame);
+            (embedded &&
+             (SettlementMode == OriginalMinigameSettlementMode.OriginalEndGame ||
+              launchFrom == MiniGameFromType.Option));
 
         internal bool TryValidateLevel(MinigameActionCfg action, out string error) =>
             LaunchAdapter.TryValidateLevel(action, out error);
@@ -154,7 +157,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                     MiniGameStageSession active = MiniGameStageCoordinator.Current;
                     if (active != null &&
                         active.Token == token &&
-                        active.LaunchFrom == MiniGameFromType.Talk)
+                        (active.LaunchFrom == MiniGameFromType.Talk ||
+                         active.LaunchFrom == MiniGameFromType.Option))
                     {
                         originalSuccess?.Invoke();
                     }

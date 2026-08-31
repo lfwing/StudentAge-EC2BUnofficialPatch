@@ -318,7 +318,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 session.Settled ||
                 __instance == null ||
                 descriptor == null ||
-                !descriptor.ShouldObserveClose(session.EmbeddedLaunch))
+                !descriptor.ShouldObserveClose(session.EmbeddedLaunch, session.LaunchFrom))
             {
                 return;
             }
@@ -334,6 +334,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 Token = session.Token,
                 View = __instance,
                 Descriptor = descriptor,
+                OptionOwnsSettlement =
+                    session.EmbeddedLaunch && session.LaunchFrom == MiniGameFromType.Option,
                 PreviousContext = _closeContext
             };
 
@@ -345,6 +347,18 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             }
 
             _closeContext = __state;
+
+            // Option 触发的小游戏接管当前阶段。必须在原版 CloseView 尝试打开结果 Talk
+            // 或触发 success/fail 回调之前完成一次结算，否则 NewTalkView 已存在的阶段
+            // callback 会吞掉结果 callback，导致阶段永远停在当前 cfg。
+            if (__state.OptionOwnsSettlement && __state.HasOutcome)
+            {
+                MiniGameStageCoordinator.CompleteFromAdapter(
+                    session.Token,
+                    __state.IsWin,
+                    __state.SelectId,
+                    __state.View.GetType().FullName + ".CloseView-option-priority");
+            }
         }
 
         internal static void ConcreteClosePostfix(ConcreteClosePatchState __state)
@@ -376,7 +390,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
 
                 MiniGameStageCoordinator.OnConcreteViewClosed(
                     __state.Token,
-                    __state.Descriptor.CompleteOnClose);
+                    __state.Descriptor.CompleteOnClose ||
+                    (__state.OptionOwnsSettlement && !__state.ResultTalkObserved));
             }
             finally
             {
@@ -416,6 +431,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             {
                 return;
             }
+
+            _closeContext.ResultTalkObserved = true;
 
             if (_callback == null)
             {
@@ -486,6 +503,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         internal bool HasOutcome;
         internal bool IsWin;
         internal int SelectId;
+        internal bool OptionOwnsSettlement;
+        internal bool ResultTalkObserved;
         internal ConcreteClosePatchState PreviousContext;
     }
 }

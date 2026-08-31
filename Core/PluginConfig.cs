@@ -119,8 +119,8 @@ namespace EC2BUnofficialPatch.Core
 
                 // 1.0.13 曾先使用“音频播放日志”，后改为“音频播放监控”单总开关，
                 // 更早的试验版还存在三个分渠道开关。1.0.14 恢复三个渠道，按最接近
-                // 的旧值逐层继承，避免升级后把玩家已经关闭的渠道重新打开。
-                bool legacyAudioLog = ReadRawValue(config, "机制", "音频播放日志", true);
+                // 的旧值逐层继承；没有任何历史配置时默认关闭，避免产生大量非必要日志。
+                bool legacyAudioLog = ReadRawValue(config, "机制", "音频播放日志", false);
                 bool legacyAudioMaster = ReadRawValue(config, "机制", "音频播放监控", legacyAudioLog);
                 bool legacyAudioOriginal = ReadRawValue(
                     config,
@@ -259,19 +259,22 @@ namespace EC2BUnofficialPatch.Core
                     "机制",
                     "监控原版音频渠道",
                     audioOriginal,
-                    "监控游戏原版 ResMgr/Channel 音频播放渠道并输出音频名称和可解析路径。");
+                    "监控游戏原版 ResMgr/Channel 音频播放渠道并输出音频名称和可解析路径。",
+                    false);
                 AudioBetterAudioChannel = Bind(
                     config,
                     "机制",
                     "监控BetterAudio音频渠道",
                     audioBetterAudio,
-                    "监控 BetterAudio 插件的音频播放入口并输出音频名称和可解析路径。");
+                    "监控 BetterAudio 插件的音频播放入口并输出音频名称和可解析路径。",
+                    false);
                 AudioUnityChannel = Bind(
                     config,
                     "机制",
                     "监控unity底层音频渠道",
                     audioUnity,
-                    "监控 Unity AudioSource 底层播放入口；可能与上层渠道同时记录同一次播放。");
+                    "监控 Unity AudioSource 底层播放入口；可能与上层渠道同时记录同一次播放。",
+                    false);
 
                 StaticPortraitOptimization = Bind(
                     config,

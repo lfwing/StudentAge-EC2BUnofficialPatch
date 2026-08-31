@@ -60,11 +60,6 @@ namespace EC2BUnofficialPatch.Features.Effects
             return "移动到地图" + mapId + "地点";
         }
 
-        internal static bool IsMoveEffect(int subType)
-        {
-            return subType == 1;
-        }
-
         internal static bool MoveTo(int mapId)
         {
             MapCfg map;

@@ -132,27 +132,6 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
         internal static bool TryGet(int id, out MiniGameTemplateInfo template) =>
             Templates.TryGetValue(id, out template);
 
-        internal static bool TryGetByView(Type viewType, out MiniGameTemplateInfo template)
-        {
-            template = null;
-            if (viewType == null)
-            {
-                return false;
-            }
-
-            foreach (MiniGameTemplateInfo candidate in StageViews)
-            {
-                Type expected = candidate.ResolveViewType();
-                if (expected != null && expected.IsAssignableFrom(viewType))
-                {
-                    template = candidate;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private static MiniGameTemplateInfo CreateFromAdapter(int id)
         {
             if (OriginalMinigameCatalog.TryGet(id, out OriginalMinigameDescriptor descriptor))
