@@ -28,7 +28,10 @@ if len(recorded) != 1 or recorded[0] != {'name':dll.name,'size':dll.stat().st_si
     raise SystemExit('Artifact changed since build')
 out = r/'dist/release'
 out.mkdir(parents=True, exist_ok=True)
-asset = 'merged-' + dll.name  # Preserve the existing merged-channel download convention.
+# Remove only retired generated names so the upload folder stays unambiguous.
+for obsolete in ['merged-EC2BUnofficialPatch.dll', 'update-merged.json']:
+    (out/obsolete).unlink(missing_ok=True)
+asset = dll.name  # Preserve the original UP Release asset name.
 shutil.copy2(dll, out/asset)
 manifest = {'schema':1,'layout':'merged','version':version,'channel':'stable','gameVersion':'1.93',
             'assetName':dll.name,'size':dll.stat().st_size,'sha256':digest,
@@ -36,6 +39,7 @@ manifest = {'schema':1,'layout':'merged','version':version,'channel':'stable','g
             'downloadUrls':[f'https://github.com/{a.repository}/releases/download/{version}/{asset}']}
 candidates = r/'release-manifests'
 candidates.mkdir(exist_ok=True)
-for target in [out/'update-merged.json', candidates/'update-merged.json']:
+(candidates/'update-merged.json').unlink(missing_ok=True)
+for target in [out/'update.json', candidates/'update.json']:
     target.write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n')
-print('Prepared UP DLL and update-merged.json locally. Live feeds are unchanged until assets are published.')
+print('Prepared UP DLL and update.json locally. Live feeds are unchanged until assets are published.')

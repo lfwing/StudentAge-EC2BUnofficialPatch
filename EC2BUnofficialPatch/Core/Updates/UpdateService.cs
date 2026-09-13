@@ -20,7 +20,7 @@ namespace EC2BUnofficialPatch.Core.Updates
         private const int ManifestLimit = 256 * 1024;
         private const int PackageLimit = 32 * 1024 * 1024;
         private const string AssetName = "EC2BUnofficialPatch.dll";
-        internal const string ManifestFileName = "update-merged.json";
+        internal const string ManifestFileName = "update.json";
         private const string ManifestLayout = "merged";
 
         private static readonly object SyncRoot = new object();
