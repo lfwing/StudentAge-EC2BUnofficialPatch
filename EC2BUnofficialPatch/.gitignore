@@ -34,8 +34,3 @@ UnityEngine*.dll
 Thumbs.db
 Desktop.ini
 .DS_Store
-
-# Integration local references and generated validation
-qa/
-__pycache__/
-*.pyc

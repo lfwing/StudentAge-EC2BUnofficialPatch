@@ -1,0 +1,20 @@
+{
+  "audios": [
+    {
+      "id": 90001,
+      "name": "自定义音频示例",
+      "audioPath": "Audio/example.mp3",
+      "timelinePath": "Timeline/example.lrc",
+      "volume": 0.85,
+      "type": 1
+    },
+    {
+      "id": 12345,
+      "name": "原版音频外挂 Timeline 示例（请改成真实原版音频 ID）",
+      "audioPath": "",
+      "timelinePath": "Timeline/original_12345.lrc",
+      "volume": 1.0,
+      "type": 1
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>LFBetterAudio</AssemblyName>
+    <RootNamespace>LFBetterAudio</RootNamespace>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Version>1.0.0</Version>
+    <GameDir Condition="'$(GameDir)' == ''">$(STUDENTAGE_GAME_DIR)</GameDir>
+    <GameManagedDir>$(GameDir)\StudentAge_Data\Managed</GameManagedDir>
+    <BepInExDir>$(GameDir)\BepInEx</BepInExDir>
+    <PluginOutputDir>$(BepInExDir)\plugins</PluginOutputDir>
+    <!-- 默认从项目 bin/Debug/net48 读取本机准备好的游戏/BepInEx引用；也可通过 /p:ReferenceDir=... 覆盖。 -->
+    <ReferenceDir Condition="'$(ReferenceDir)' == ''">$(ProjectDir)bin\Debug\net48</ReferenceDir>
+  </PropertyGroup>
+
+  <!--
+    授权构建时，可把校验音频与 Timeline 作为 EmbeddedResource 打进 DLL。
+    运行时释放到 BepInEx cache/LFBetterAudio/RuntimeAssets，不写入 plugins/BetterAudio 模板目录。
+    若文件不存在，项目仍可编译，1163001 会使用代码生成的原创短校验音作为后备。
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="BundledAssets\ValidationAudio.mp3" Condition="Exists('$(ProjectDir)BundledAssets\ValidationAudio.mp3')">
+      <LogicalName>LFBetterAudio.BundledAssets.ValidationAudio.mp3</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BundledAssets\ValidationTimeline.lrc" Condition="Exists('$(ProjectDir)BundledAssets\ValidationTimeline.lrc')">
+      <LogicalName>LFBetterAudio.BundledAssets.ValidationTimeline.lrc</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(ReferenceDir)\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ReferenceDir)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>$(ReferenceDir)\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Harmony">
+      <HintPath>$(ReferenceDir)\BepInEx.Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(ReferenceDir)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ReferenceDir)\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ReferenceDir)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(ReferenceDir)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ReferenceDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreModule">
+      <HintPath>$(ReferenceDir)\UnityEngine.TextCoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ReferenceDir)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ReferenceDir)\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- DLL 直接复制到 BepInEx/plugins，不再要求专用子目录。 -->
+  <Target Name="CopyToBepInEx" AfterTargets="Build" Condition="'$(InstallToGame)' == 'true' and Exists('$(BepInExDir)\plugins')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginOutputDir)" />
+  </Target>
+</Project>
