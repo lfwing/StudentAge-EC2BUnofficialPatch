@@ -110,8 +110,8 @@
 - 设为 `true` 后，`DebugView` 创建完成时启用并显示游戏内调试控制台；反引号切换和 Esc 关闭继续使用原版输入逻辑。
 
 
-## 1.0.23 接手补充
+## 1.0.21 合并补充（含 1.0.24/1.0.25）
 
-外部小游戏 Context 的 Begin/Cancel/失效事件与 deferStart 参数见 ../../docs/MINIGAMES.md。独立 NPC 键与阶段编号不变。社交资料 Mod 静态立绘使用 GetRoleUrlParms 的学段回退规则，参数顺序仍是 X、Y、scale；缺项/非有限值用 0、0、1，非正scale用1，不改变源 JSON。
+外部小游戏 Context 的 Begin/Cancel/失效事件与 deferStart 参数见 ../../Docs/MINIGAMES.md。独立 NPC 键与阶段编号不变。
 
-自动更新改为 product=StudentAge.BA.UP/schema=2，两种布局的文件列表分别提供，游戏程序集兼容性采用 SHA-256。旧单 DLL schema=1 被拒绝，详见 ../../docs/AUTO_UPDATE.md。
+自动更新沿用 product=StudentAge.BA.UP/schema=1，并用 `layout=merged` 匹配当前单 DLL 安装布局；详见 ../../Docs/AUTO_UPDATE.md。

@@ -1,6 +1,6 @@
 # 架构说明
 
-本接手版的合并与构建变更见 `../../docs/MERGE.md`；BA 与 UP 保留逻辑入口，沿用原仓库地址，schema 1 布局兼容已实现。下文为原作者提供的 `1.0.21` 架构记录。本文描述当前仓库结构；具体行为以源码与 `Validation_*` 为准。
+本版的合并与构建变更见 `../../Docs/MERGE.md`；BA 与 UP 的兼容入口保留在单一 UP 程序集中，在线更新沿用 schema 1 的 `layout=merged` 清单。本文描述当前仓库结构；具体行为以源码与 `Validation_*` 为准。
 
 ## 启动与生命周期
 
@@ -130,7 +130,7 @@ MapRoleView.Refresh 后缀
 
 ```text
 启动后延迟检查
-  → 读取用户镜像 / 原仓库 Release / Raw 的 schema1 对应布局清单
+  → 读取用户镜像 / 原仓库 Release / Raw 的 schema1、layout=merged 清单
   → 校验 schema、版本、HTTPS、大小、SHA-256
   → 下载 DLL 到 .pending
   → 从主 DLL 提取嵌入更新助手
@@ -138,8 +138,7 @@ MapRoleView.Refresh 后缀
 ```
 
 - 更新目标由 BepInEx `PluginInfo.Location` 解析，沿用实际插件来源；Workshop 桥接 DLL 也可更新。
-- 两种布局都只更新当前 UP DLL，split 保留现有 BA；清单上限 256 KiB，每份 DLL 上限 32 MiB。没有自动布局迁移。
-- 当前发布流程见 `../../docs/AUTO_UPDATE.md`；`Docs/AutoUpdate.md` 已同步当前协议。
+- 当前只发布并更新合并版 UP DLL；清单上限 256 KiB，DLL 上限 32 MiB，不执行布局迁移。当前发布流程见 `../../Docs/AUTO_UPDATE.md`；`Docs/AutoUpdate.md` 已同步当前协议。
 
 ## 文档维护入口
 
@@ -149,8 +148,8 @@ MapRoleView.Refresh 后缀
 - 单个版本的精确改动与构建证据：`Docs/CHANGELOG_*.md`、`Docs/Validation_*.md`
 
 
-## 1.0.23 整合扩展
+## 1.0.21 合并扩展（含 1.0.24/1.0.25）
 
-新增 ModPortraitModule（资料静态 Mod 图片、异步代次、原布局恢复和差分学段回退）。ContentRootCatalog 增加已安装插件根，便于 CustomMinigameRegistry 从本地包发现外部实现。MiniGameStageCoordinator 保存玩家身份/运行状态与外部 Context，统一 Begin/Cancel/清理，并用一次性的主线程结算令牌允许适配器调用原 EndGame，继续拦截递归与重复回调。1.0.23曾新增的UpdateTransaction已在1.0.25移除；助手恢复上游单文件实现。
+ContentRootCatalog、CustomMinigameRegistry 与 MiniGameStageCoordinator 的接手扩展均保留在当前 1.0.21。曾在接手版加入的 UpdateTransaction 已移除，助手恢复上游单文件实现。
 
-1.0.24 音频监控：以弱键 AudioClip 关联路径，不缓存永久实例 ID；日志去重按当前/前一帧使用有上限的可复用集合。此缓存属于诊断层，不持有播放资源。
+1.0.24 音频监控：以弱键 AudioClip 关联路径，不缓存永久实例 ID；日志去重按当前/前一帧使用有上限的可复用集合。1.0.25 在线更新：恢复 schema 1 单文件助手，并以 `layout=merged` 防止错误布局覆盖；这些内容均已并入当前版本。

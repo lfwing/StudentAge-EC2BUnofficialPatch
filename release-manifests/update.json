@@ -5,8 +5,8 @@
   "channel": "stable",
   "gameVersion": "1.93",
   "assetName": "EC2BUnofficialPatch.dll",
-  "size": 537600,
-  "sha256": "fa9d88321050cb588d8f5675d01695f5a76c6a96d8aa029be903316537e92d0e",
+  "size": 535552,
+  "sha256": "c8a64fa935bd89c8b0b707accca982d1098dcec925dcbc40f2ec32f681ae9c39",
   "releasePage": "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/tag/1.0.21",
   "downloadUrls": [
     "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases/download/1.0.21/EC2BUnofficialPatch.dll"

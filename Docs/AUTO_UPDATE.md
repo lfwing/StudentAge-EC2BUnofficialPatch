@@ -7,7 +7,7 @@
 - 清单文件：`update.json`。
 - 必需标记：`schema: 1`、`layout: merged`，保留现有协议与地址约定。
 - 下载资产：`EC2BUnofficialPatch.dll`；游戏中的安装文件仍为 `EC2BUnofficialPatch.dll`。
-- 顺序：用户配置的 HTTPS 镜像 → GitHub Release → GitHub Raw。
+- 顺序：用户配置的 HTTPS 镜像 → GitHub Release → GitHub Raw（兼容回退，根目录不再发布清单）。
 - 拒绝 split、未标记、旧 schema2、不匹配文件名、无效大小/摘要或非 HTTPS 地址。
 - 原六参数助手等待游戏退出后替换实际加载位置中的 UP DLL，支持 Workshop 路径，并保留备份和损坏拒绝。它不会删除或升级其他插件。
 
@@ -21,4 +21,4 @@
 
 运行 `build.py --game ... --bepinex ...` 后，只生成 `dist/merged/EC2BUnofficialPatch.dll`。`tools/prepare_release.py` 校验构建清单和最终 DLL，准备 `dist/release/` 中的一个 DLL 及一份清单，并写入 `release-manifests/update.json`。
 
-先上传同版本 DLL，再启用 Release/仓库根目录的 `update.json`。构建脚本不覆盖线上清单、不自动创建 Release。根目录 `update.json` 在发布对应 DLL 后同步更新，供旧版与新版共用。支持 schema 1 更新协议的旧 UP 可读取新清单，额外的 layout 字段不影响旧解析器。没有更新模块的早期版本仍需手动安装。旧 BA 必须在升级前移出插件加载目录，更新助手不会自动移除它。
+先上传同版本 DLL 与 `update.json` Release 附件，再启用 Release 清单。构建脚本不覆盖线上清单、不自动创建 Release。仓库根目录不再维护清单；客户端保留 Raw 查询仅为兼容回退，404 时会继续保留当前版本。支持 schema 1 更新协议的旧 UP 可读取新清单，额外的 layout 字段不影响旧解析器。没有更新模块的早期版本仍需手动安装。旧 BA 必须在升级前移出插件加载目录，更新助手不会自动移除它。

@@ -163,7 +163,6 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.MinigameMechanics.Value, new MechanicsModule(), "机制/社交小游戏修复");
             LoadIf(PluginConfig.RoleAvailability.Value, new RoleAvailabilityModule(), "机制/控制角色在列表显示");
             _moduleHost.Load(new MapRoleStaticClothModule());
-            _moduleHost.Load(new ModPortraitModule());
             LoadIf(
                 PluginConfig.MapSocialExternalLive2D.Value,
                 new MapSocialExternalLive2DModule(),

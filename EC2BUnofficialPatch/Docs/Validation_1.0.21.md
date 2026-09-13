@@ -1,5 +1,11 @@
 # 1.0.21 验证记录
 
+## 1.0.24/1.0.25 内容合并
+
+- 继承 1.0.24 的 merged/split 隔离游戏各 346 条断言、公开 API 与程序集/GUID 对照、14 项更新事务故障检查、标准 net472 Release 构建，以及音频日志缓存压力、生命周期和版本比较检查记录。
+- 继承 1.0.25 的原 schema=1 更新清单匹配、原助手临时目录替换/备份、Workshop 路径和旧公开 API 定向检查；没有把 schema=2 或双 DLL 事务带入当前 1.0.21。
+- 以上两版的原始记录仍保留在对应版本文件中；本节表示其内容已并入 1.0.21，不代表本轮重新完成 Windows 实机 UI 或完整周目回归。
+
 ## 外置 Live2D
 
 - 复核游戏 1.93 的 `MapRoleView`、`Cell_NewTalkRoleItemUI` 与 `TalkRoleItem`：地图角色立绘容器为 `l2d_role`，静态图容器为 `icon_role`，关闭界面时原版只回收自己加载的 `L2DModel`。
@@ -28,10 +34,10 @@
 
 ## 构建与发布产物
 
-- Debug/net472：通过，0 警告、0 错误。
-- Release/net472：通过，0 警告、0 错误。
+- Debug/net472：通过，1 个既有 `BetterAudioController._applicationQuitting` 未使用字段警告、0 错误。
+- Release/net472：通过，1 个既有 `BetterAudioController._applicationQuitting` 未使用字段警告、0 错误。
 - 文件版本：`1.0.21`；程序集版本继续保持 `1.0.9.0`。
-- `EC2BUnofficialPatch.dll`：381440 bytes。
-- SHA-256：`53F76E8CEB14816C97AECC045CFD96FCC0FA39F1B82862D12D21EEF7AA81ABD3`。
-- 根目录与 `dist/update.json` 的版本、大小、哈希和 1.0.21 下载地址与发布 DLL 一致。
+- 本次 Release 构建 `EC2BUnofficialPatch.dll`：535552 bytes。
+- 本次 Release 构建 SHA-256：`C8A64FA935BD89C8B0B707ACCCA982D1098DCEC925DCBC40F2EC32F681AE9C39`。
+- `release-manifests/update.json` 已同步本次 Release 构建的版本、大小和哈希；正式发布前仍需把同一 DLL 上传到 1.0.21 下载地址。
 - 发布 ZIP 共 10 个条目，包含主 DLL、README、既有模板和新增 `ExternalLive2D` 模板。
