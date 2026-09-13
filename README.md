@@ -1,14 +1,14 @@
-# StudentAge UP + BetterAudio
+# StudentAge UP
 
-《学生时代》非官方修复与扩展补丁。原作者 lfw / lfwing，雾雁参与开发；本仓库合并维护 UP 与 BetterAudio。
+《学生时代》非官方修复与扩展补丁。原作者 lfw / lfwing，雾雁参与开发；本仓库统一维护 UP，音频演出能力已内置。
 
-本页保留完整的安装方法、功能说明、Mod 作者示例、常见问题及原作者声明。1.0.25 提供单 DLL 合并版与双 DLL 兼容版，两种安装方式二选一。
+本页保留完整的安装方法、功能说明、Mod 作者示例、常见问题及原作者声明。1.0.21 起只提供一个 UP 插件，BetterAudio 已并入 UP，不再独立安装或发布。
 
 ## 使用导航
 
 - [安装方法](#二安装方法) · [已发布下载](https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases)
 - [功能总览](#三功能总览) · [玩家常用功能](#四玩家常用功能)
-- [Mod 作者快速接入](#五mod-作者快速接入) · [BetterAudio 配置与指令](LFBetterAudio/ModAuthorTemplate/README.txt)
+- [Mod 作者快速接入](#五mod-作者快速接入) · [音频演出配置与指令](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/README.txt)
 - [音频播放监控](#六音频播放监控) · [CG 与立绘优化](#七cg-与立绘优化)
 - [构建方法](#八构建方法) · [常见问题](#九常见问题)
 - [文档与更新记录](Docs/README.md) · [合并适配说明](Docs/MERGE.md)
@@ -56,7 +56,7 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 - 可选的游戏启动后自动打开游戏内调试控制台
 
 
-当前源码版本：**1.0.25**（正式下载版本以 Releases 为准）
+当前源码版本：**1.0.21**（正式下载版本以 Releases 为准）
 当前代码包对应游戏版本：**1.93**
 
 _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与扩展需求。_
@@ -69,21 +69,18 @@ _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与�
 - 已安装 BepInEx 5.x，并启动过一次游戏以生成 `BepInEx/plugins` 和 `BepInEx/config`。
 - 建议保留 BepInEx 日志，便于检查加载结果。
 
-从本仓库 [Releases](https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases) 获取已发布插件，按对应版本说明安装。GitHub 的 **Code → Download ZIP** 和 **Source code** 下载的是源码，不能直接作为插件安装；当前源码 1.0.25 与已发布下载可能不同。
+从本仓库 [Releases](https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases) 获取已发布插件，按对应版本说明安装。GitHub 的 **Code → Download ZIP** 和 **Source code** 下载的是源码，不能直接作为插件安装；当前源码 1.0.21 与已发布下载可能不同。
 
 ## 2.2 安装插件
 
 1. 完全退出游戏，备份原插件 DLL 和配置。
-2. 选择下表中的一种安装方式。先移出旧的 `EC2BUnofficialPatch.dll`、`LFBetterAudio.dll` 副本，包括改名或放在其他子目录中的同一插件；如由 Workshop 提供旧插件，也应避免它与手动安装的版本重复加载。
-3. 将所选版本的 DLL 放入 `<游戏目录>/BepInEx/plugins/`。如果下载包自带 `BepInEx/plugins` 目录，将它合并到游戏目录下对应位置。
-4. 保留原来的 `BepInEx/config` 配置和 Mod 资源目录，不需要改写已有 Mod JSON。启动游戏检查加载日志。
+2. 移出旧的 `EC2BUnofficialPatch.dll`、`LFBetterAudio.dll` 副本，包括改名或放在其他子目录中的同一插件；如由 Workshop 提供旧插件，也应避免与手动安装的版本重复加载。
+3. 只放入新版 `EC2BUnofficialPatch.dll`，位置为 `<游戏目录>/BepInEx/plugins/`。安装包中的 `BepInEx/plugins` 对应游戏目录下的同名位置。
+4. 保留原 `BepInEx/config` 配置及 Mod 资源，启动游戏检查加载日志。
 
-| 安装方式 | 放入 plugins 的文件 | 适用情况 |
-|---|---|---|
-| 单 DLL 合并版（merged） | `EC2BUnofficialPatch.dll` | 一个文件同时提供 UP 和 BetterAudio |
-| 双 DLL 兼容版（split） | `EC2BUnofficialPatch.dll` 与 `LFBetterAudio.dll` | 第三方插件依赖独立的 LFBetterAudio 程序集时使用 |
+**现在只需 UP 一个插件。不要再安装独立的 LFBetterAudio.dll。** 音频、音效、歌词和 1163 指令均由 UP 初始化和维护。旧 Mod 的 `BetterAudio/` 目录、`BetterAudio.json` 与 Timeline 文件名继续兼容，无需改名。
 
-**不要同时安装合并版和分离版，也不要在合并版旁再放一份旧 BetterAudio。** 合并版日志中仍会显示 UP、BetterAudio 两个逻辑模块，属于正常兼容行为。
+如果装过 1.0.23～1.0.25 接手测试版，请手动用本版覆盖一次：这次按正式版本规划统一为 1.0.21，自动更新不会执行版本回退。旧第三方 DLL 若硬依赖 BA 的独立插件 GUID 或程序集，需要作者改为依赖 UP 后重新构建；不再提供分离版。
 
 首次运行后，UP 会生成配置文件：
 
@@ -110,9 +107,9 @@ BepInEx/plugins/EC2BUnofficialPatch/
 
 UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的插件，在退出游戏后替换文件；**需要重新启动游戏才能加载更新后的版本**。
 
-1.0.25 沿用原 UP 更新流程，并区分合并版和分离版：合并版使用 `update-merged.json`，分离版使用 `update.json`。安装类型不符或未标记类型的旧清单会被跳过，避免将合并 DLL 覆盖成只有 UP 的旧文件。双 DLL 版自动更新只替换 UP，BetterAudio 随完整安装包升级。
+1.0.21 只保留现有合并版更新通道：读取 `update-merged.json` 并更新完整的 UP DLL。原有 `schema: 1`、`layout: merged` 标记继续保留，拒绝分离版或未标记的旧清单；无需为内置音频单独更新。
 
-仓库首页的源码版本不代表更新包已经发布。根目录 `update.json` 保留已发布版本，`release-manifests/` 存放候选清单；正式 DLL 发布后再启用对应更新入口。发布者操作见 [自动更新说明](Docs/AUTO_UPDATE.md)。
+仓库源码版本不代表更新包已发布。`release-manifests/update-merged.json` 为候选清单，发布者先上传对应 DLL，再启用公开清单。根目录旧 `update.json` 仅保留给历史客户端，不再生成分离版发布。详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
 
 # 三、功能总览
 
@@ -239,7 +236,7 @@ EC2BUnofficialPatch/Examples/
 
 无需修改插件 DLL。可直接打开 [UP 模板](EC2BUnofficialPatch/ModAuthorTemplate/)、[UP 示例](EC2BUnofficialPatch/Examples/) 与 [数据格式说明](EC2BUnofficialPatch/Docs/GAME_DATA_FORMATS.md)。
 
-BetterAudio 的音频、歌词配置和 1163 指令见 [作者使用说明](LFBetterAudio/ModAuthorTemplate/README.txt)，可复制 [BetterAudio 资源模板](LFBetterAudio/ModAuthorTemplate/BetterAudio/)。
+BetterAudio 的音频、歌词配置和 1163 指令见 [作者使用说明](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/README.txt)，可复制 [BetterAudio 资源模板](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/BetterAudio/)。
 
 ## 5.1 4016 外置漫画
 
@@ -626,15 +623,15 @@ Unity底层音频渠道
 依赖Python3、.NET SDK、本机游戏Managed与BepInEx/core；不分发游戏依赖。
 
 ```sh
-python3 build.py --game "游戏目录" --bepinex "BepInEx/core目录" --layout all
+python3 build.py --game "游戏目录" --bepinex "BepInEx/core目录"
 ```
 
-输出dist/merged和dist/split；prepare_release.py生成两份schema1清单与上传资产，不执行上传。
+输出 `dist/merged/EC2BUnofficialPatch.dll`；prepare_release.py 只生成完整 UP 的更新资产和 `update-merged.json` 候选清单，不执行上传。
 
 也可用标准工程：
 
 ```sh
-dotnet build StudentAge.Merged.csproj -c Release /p:GameDir="游戏目录" /p:BepInExCoreDir="BepInEx/core目录"
+dotnet build EC2BUnofficialPatch.csproj -c Release /p:GameDir="游戏目录" /p:BepInExCoreDir="BepInEx/core目录"
 ```
 
 更新器的定向检查（.NET10，无需启动游戏）：
@@ -688,7 +685,7 @@ BepInEx/config/sa.EC2B.UnofficialPatch.cfg
 除此之外，网络波动/github限流等因素也可能导致更新无法完成。
 在完成更新后，需要重启游戏来完成.dll文件的替换。
 
-1.0.25 还会检查安装类型。若日志提示清单未标记或类型不匹配，插件会跳过该更新；这也可能是对应版本尚未正式发布。不要把候选清单或不同安装方式的 DLL 混用，详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
+1.0.21 还会检查安装类型。若日志提示清单未标记或类型不匹配，插件会跳过该更新；这也可能是对应版本尚未正式发布。不要把候选清单或不同安装方式的 DLL 混用，详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
 
 # 十、项目地址与反馈
 

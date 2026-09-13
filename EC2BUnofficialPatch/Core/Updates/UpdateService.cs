@@ -20,12 +20,8 @@ namespace EC2BUnofficialPatch.Core.Updates
         private const int ManifestLimit = 256 * 1024;
         private const int PackageLimit = 32 * 1024 * 1024;
         private const string AssetName = "EC2BUnofficialPatch.dll";
-        internal static string CurrentLayout() =>
-            typeof(UpdateService).Assembly.GetType("LFBetterAudio.Plugin") != null ? "merged" : "split";
-
-        internal static string ManifestFileName(string layout) =>
-            layout == "merged" ? "update-merged.json" :
-            layout == "split" ? "update.json" : throw new InvalidDataException("未知安装布局");
+        internal const string ManifestFileName = "update-merged.json";
+        private const string ManifestLayout = "merged";
 
         private static readonly object SyncRoot = new object();
         private static CancellationTokenSource _cancellation;
@@ -195,7 +191,7 @@ namespace EC2BUnofficialPatch.Core.Updates
             {
                 urls.AddRange(mirrors.Split(new[] { ';', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
             }
-            string file = ManifestFileName(CurrentLayout());
+            string file = ManifestFileName;
             urls.Add(PluginMetadata.Repository + "/releases/latest/download/" + file);
             urls.Add("https://raw.githubusercontent.com/lfwing/StudentAge-EC2BUnofficialPatch/main/" + file);
             return urls.Select(url => url.Trim())
@@ -203,18 +199,14 @@ namespace EC2BUnofficialPatch.Core.Updates
                 .Distinct(StringComparer.OrdinalIgnoreCase);
         }
 
-        internal static void ValidateManifest(UpdateManifest manifest) =>
-            ValidateManifestForLayout(manifest, CurrentLayout());
-
-        internal static void ValidateManifestForLayout(UpdateManifest manifest, string layout)
+        internal static void ValidateManifest(UpdateManifest manifest)
         {
             if (manifest == null || manifest.schema != 1)
                 throw new InvalidDataException("清单 schema 不是受支持的版本 1");
             // An unmarked upstream UP DLL must never silently replace an integrated
             // installation. Publish schema 1 with this one extra matching marker.
-            ManifestFileName(layout);
-            if (!string.Equals(manifest.layout, layout, StringComparison.Ordinal))
-                throw new InvalidDataException("更新不适用于当前安装布局：expected=" + layout +
+            if (!string.Equals(manifest.layout, ManifestLayout, StringComparison.Ordinal))
+                throw new InvalidDataException("更新不适用于 UP 内置音频版本：expected=" + ManifestLayout +
                     ", actual=" + (manifest.layout ?? "未标记"));
             ParseVersion(manifest.version, "清单 version");
             if (!string.Equals(manifest.channel, "stable", StringComparison.OrdinalIgnoreCase))

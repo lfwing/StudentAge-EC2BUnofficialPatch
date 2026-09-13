@@ -4,7 +4,6 @@ using EC2BUnofficialPatch.Core;
 namespace EC2BUnofficialPatch
 {
     [BepInPlugin(PluginMetadata.Guid, PluginMetadata.Name, PluginMetadata.Version)]
-    [BepInDependency("sa.lf.betteraudio", BepInDependency.DependencyFlags.SoftDependency)]
     public sealed class Plugin : BaseUnityPlugin
     {
         private int _bootstrapInstanceId;

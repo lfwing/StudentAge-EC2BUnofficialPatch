@@ -20,12 +20,11 @@ using View.Evt;
 
 namespace LFBetterAudio
 {
-    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
-    public sealed class Plugin : BaseUnityPlugin
+    public sealed class Plugin
     {
-        internal const string PluginGuid = "sa.lf.betteraudio";
-        internal const string PluginName = "LFBetterAudio";
-        internal const string PluginVersion = "1.0.0";
+        internal const string PluginGuid = "sa.EC2B.UnofficialPatch.Audio";
+        internal const string PluginName = "UP 音频演出";
+        internal const string PluginVersion = EC2BUnofficialPatch.Core.PluginMetadata.Version;
 
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
@@ -51,10 +50,19 @@ namespace LFBetterAudio
         private bool _startupSelfCheckFinished;
         private readonly List<string> _startupIssues = new List<string>();
 
-        private void Awake()
+        // Legacy type name retained for resource/API compatibility, no BepInEx entry.
+        private Plugin() { }
+
+        internal static void Initialize(ManualLogSource logger)
         {
-            Instance = this;
-            Log = Logger;
+            if (Instance != null) return;
+            Instance = new Plugin();
+            Log = logger;
+            Instance.Start();
+        }
+
+        private void Start()
+        {
 
             try
             {
@@ -151,11 +159,6 @@ namespace LFBetterAudio
             }
         }
 
-        private void Update()
-        {
-            TickPatchHealthFromPersistentController();
-        }
-
         private void LoadMusicPackages()
         {
             IReadOnlyList<BetterAudioPackage> packages =
@@ -242,7 +245,7 @@ namespace LFBetterAudio
             if (loadedNormally && _startupIssues.Count == 0)
             {
                 Log?.LogInfo(
-                    $"[启动自检成功] BetterAudio {PluginVersion} 全流程自检通过；" +
+                    $"[启动自检成功] {PluginName} {PluginVersion} 全流程自检通过；" +
                     $"音频条目={totalMusicCount}，资源包={packageCount}。");
                 return;
             }
@@ -251,7 +254,7 @@ namespace LFBetterAudio
                 ? "存在未明确归类的初始化异常。"
                 : string.Join("；", _startupIssues);
             Log?.LogError(
-                $"[启动自检失败] BetterAudio {PluginVersion} 全流程自检未通过：{detail}");
+                $"[启动自检失败] {PluginName} {PluginVersion} 全流程自检未通过：{detail}");
         }
 
         private static void ValidateLyricsVisualComponents()
@@ -473,7 +476,7 @@ namespace LFBetterAudio
         }
 
         // 关键：BetterAudioController 是 DontDestroyOnLoad 独立对象。
-        // 即使 BaseUnityPlugin 在游戏启动阶段被销毁，它仍会每秒检查并补回关键 EFFECT Patch。
+        // 即使 UP 引导组件在游戏启动阶段被销毁，它仍会每秒检查并补回关键 EFFECT Patch。
         internal void TickPatchHealthFromPersistentController()
         {
             if (_applicationQuitting || _harmony == null)
@@ -520,35 +523,19 @@ namespace LFBetterAudio
             }
         }
 
-        private void OnApplicationQuit()
+        internal static void Shutdown()
         {
-            _applicationQuitting = true;
-            BetterAudioController.Instance?.Shutdown();
-            _harmony?.UnpatchSelf();
-        }
-
-        private void OnDestroy()
-        {
+            Plugin instance = Instance;
+            if (instance == null) return;
             try
             {
-                if (!_applicationQuitting)
-                {
-                    // 游戏启动阶段可能销毁 BepInEx 所挂载的 BaseUnityPlugin 组件。
-                    // 这里绝不能 Shutdown 或 UnpatchSelf，否则启动自检之后 1163 会立即失效。
-                    return;
-                }
-
+                instance.NotifyApplicationQuitFromPersistentController();
                 BetterAudioController.Instance?.Shutdown();
-                _harmony?.UnpatchSelf();
-
-                if (ReferenceEquals(Instance, this))
-                {
-                    Instance = null;
-                }
             }
-            catch
+            finally
             {
-                // Unity 退出或销毁 native object 时静默完成 best-effort 清理。
+                Instance = null;
+                ConfigStore = null;
             }
         }
     }

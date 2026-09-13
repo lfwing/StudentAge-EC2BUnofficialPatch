@@ -62,6 +62,7 @@ namespace EC2BUnofficialPatch.Core
                         throw new InvalidOperationException("无法创建 EC2BUnofficialPatch_RuntimeHost。");
                     }
 
+                    LFBetterAudio.Plugin.Initialize(_logger);
                     InitializeModules();
                     _initialized = true;
 
@@ -346,6 +347,14 @@ namespace EC2BUnofficialPatch.Core
             PatchLog.Debug($"底层服务模块-开始退出清理：reason={reason}");
 
             UpdateService.Stop();
+            try
+            {
+                LFBetterAudio.Plugin.Shutdown();
+            }
+            catch (Exception exception)
+            {
+                PatchLog.Exception("音频演出模块-退出清理失败", exception);
+            }
 
             try
             {

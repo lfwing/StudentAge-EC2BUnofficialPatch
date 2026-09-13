@@ -1,7 +1,11 @@
-# 合并结构
+# UP 1.0.21 统一维护
 
-源代码按 EC2BUnofficialPatch 与 LFBetterAudio 两目录维护，原命名空间、GUID和程序集身份不变。根 StudentAge.Merged.csproj 构建单DLL双入口；build.py支持merged/split两种布局。
+只构建和发布 `EC2BUnofficialPatch.dll`，仅注册 `sa.EC2B.UnofficialPatch` 一个 BepInEx 入口。根工程为 `EC2BUnofficialPatch.csproj`，`build.py` 不再提供安装布局选项。
 
-BA只扫描自身HarmonyPatch类型；UP音频追踪按类型全名识别BA。双方保留各自配置文件、资源路径及生命周期。小游戏使用UP公开导入接口，由外部实现负责界面，UP统一阶段与奖励。
+音频源码迁入 `EC2BUnofficialPatch/Features/Audio/`，由 UP 持久运行时负责初始化与退出清理。音频控制器继续保活，1163 补丁归属为 `sa.EC2B.UnofficialPatch.Audio`，F9 音频热重载不再依赖独立 BA 插件注册。
 
-在线更新沿用schema1、上游内嵌单文件助手和实际来源路径。layout标记与独立合并清单防止两种布局交叉覆盖，split仅更新UP。当前协议见AUTO_UPDATE.md，验证范围见VALIDATION.md。
+旧 `LFBetterAudio` 命名空间与部分类型名仅为兼容保留，不再代表独立插件。旧 Mod 的 BetterAudio 资源目录、BetterAudio.json、Timeline 与 1163 指令均不改名。程序集身份仍为 EC2BUnofficialPatch 1.0.9.0，插件版本、文件版本和产品版本为 1.0.21；程序集身份版本用于保持既有 UP 小游戏适配器绑定，不是发布版本。
+
+停止提供独立 BA DLL 和分离版构建工程。依赖独立 BA GUID 或程序集的第三方插件需要改为依赖 UP 并重新构建。普通 Mod 的数据与资源无需迁移。
+
+在线更新保留原合并版通道，见 [自动更新](AUTO_UPDATE.md)。实际验证范围见 [验证记录](VALIDATION.md)。历史 1.0.23～1.0.25 记录保留为开发过程证据，不代表现行产品版本。

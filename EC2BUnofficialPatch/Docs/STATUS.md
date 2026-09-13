@@ -1,5 +1,9 @@
-# 当前状态
+# 当前状态：UP 1.0.21
 
-源码1.0.25。UP+BA合并/分离双布局，当前入口与构建方式见根README。更新器沿用schema1与上游助手，仅增加布局匹配，分离版只更新UP，Workshop实际来源路径更新保留。
+本版统一为 UP 单 DLL、单 BepInEx 入口，音频演出内置，不再发布 BA 或分离版。音频功能由 UP 持久运行时初始化、保活和清理，F9 热重载直接使用内置音频注册表。
 
-旧版本文档为对应阶段的历史记录；1.0.23曾加入的schema2/双文件事务已在1.0.25移除。当前协议见 [自动更新说明](../../Docs/AUTO_UPDATE.md)，验证见 [验证范围](../../Docs/VALIDATION.md)。外部小游戏属于独立实现，本仓库维护统一导入与社交结算接口。
+保留 Mod 的旧 JSON、资源路径、1163 指令及 UP 小游戏接口。根工程为 EC2BUnofficialPatch.csproj。在线更新仅用现有 update-merged.json 合并通道。1.0.23～1.0.25 测试版改为本版需手动覆盖一次。
+
+[安装与完整功能说明](../../README.md) · [结构与兼容](../../Docs/MERGE.md) · [在线更新](../../Docs/AUTO_UPDATE.md) · [验证范围](../../Docs/VALIDATION.md)
+
+原 CHANGELOG/Validation 文件是历史开发记录，保留原始版本标注，不视为当前版本或本轮验收。
