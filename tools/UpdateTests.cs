@@ -23,10 +23,10 @@ internal static class UpdateChecks {
   foreach(var change in new Action<UpdateManifest>[] {m=>m.size=0,m=>m.size=32L*1024*1024+1,m=>m.sha256="bad",m=>m.assetName="LFBetterAudio.dll",m=>m.downloadUrls.Clear(),m=>m.downloadUrls.Add("http://example.org/UP.dll"),m=>m.version="bad",m=>m.channel="beta"}){
    var m=Manifest("merged");change(m);Reject(()=>UpdateService.ValidateManifest(m),"invalid manifest remains rejected");
   }
-  Check(UpdateService.ManifestFileName=="update-merged.json","only integrated UP update feed");
+  Check(UpdateService.ManifestFileName=="update.json","only integrated UP update feed");
   PluginConfig.UpdateManifestMirrors.Value="https://mirror.example/update.json;http://bad.example/update.json;https://mirror.example/update.json";
   var urls=((IEnumerable<string>)Call(typeof(UpdateService),"GetManifestUrls")).ToArray();
-  Check(urls.Length==3&&urls[0]=="https://mirror.example/update.json"&&urls[1].Contains("releases/latest/download/update-merged.json")&&urls[2].Contains("/main/update-merged.json"),"original mirror Release Raw priority and HTTPS deduplication");
+  Check(urls.Length==3&&urls[0]=="https://mirror.example/update.json"&&urls[1].Contains("releases/latest/download/update.json")&&urls[2].Contains("/main/update.json"),"original mirror Release Raw priority and HTTPS deduplication");
   var parse=typeof(UpdateService).GetMethod("ParseVersion",BindingFlags.Static|BindingFlags.NonPublic);
   Func<string,Version> version=s=>(Version)parse.Invoke(null,new object[]{s,"QA"});
   Check(version("v1.0.21")==version("1.0.21.0")&&version("1.0.21.1")>version("1.0.21"),"version normalization fix retained");

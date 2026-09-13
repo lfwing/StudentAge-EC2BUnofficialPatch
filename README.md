@@ -107,9 +107,9 @@ BepInEx/plugins/EC2BUnofficialPatch/
 
 UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的插件，在退出游戏后替换文件；**需要重新启动游戏才能加载更新后的版本**。
 
-1.0.21 只保留现有合并版更新通道：读取 `update-merged.json` 并更新完整的 UP DLL。原有 `schema: 1`、`layout: merged` 标记继续保留，拒绝分离版或未标记的旧清单；无需为内置音频单独更新。
+1.0.21 沿用原 UP 更新入口：读取 `update.json` 并更新完整的 UP DLL。原有 `schema: 1`、`layout: merged` 标记继续保留，拒绝分离版或未标记的旧清单；无需为内置音频单独更新。
 
-仓库源码版本不代表更新包已发布。`release-manifests/update-merged.json` 为候选清单，发布者先上传对应 DLL，再启用公开清单。根目录旧 `update.json` 仅保留给历史客户端，不再生成分离版发布。详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
+仓库源码版本不代表更新包已发布。`release-manifests/update.json` 为候选清单，发布者先上传对应 DLL，再启用公开清单。根目录 `update.json` 在发布对应 DLL 后同步更新，供旧版与新版共用；不再生成分离版发布。旧独立 BA 用户升级前须移除旧 BA DLL，更新助手不会替用户删除其他插件。详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
 
 # 三、功能总览
 
@@ -626,7 +626,7 @@ Unity底层音频渠道
 python3 build.py --game "游戏目录" --bepinex "BepInEx/core目录"
 ```
 
-输出 `dist/merged/EC2BUnofficialPatch.dll`；prepare_release.py 只生成完整 UP 的更新资产和 `update-merged.json` 候选清单，不执行上传。
+输出 `dist/merged/EC2BUnofficialPatch.dll`；prepare_release.py 只生成完整 UP 的更新资产和 `update.json` 候选清单，不执行上传。
 
 也可用标准工程：
 
