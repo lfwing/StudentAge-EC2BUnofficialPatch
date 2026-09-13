@@ -1,0 +1,119 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>EC2BUnofficialPatch</AssemblyName>
+    <Version>1.0.25</Version>
+    <AssemblyVersion>1.0.9.0</AssemblyVersion>
+    <FileVersion>1.0.25.0</FileVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <Deterministic>true</Deterministic>
+    <ManagedDir>$(GameDir)/StudentAge_Data/Managed</ManagedDir>
+    <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">$(GameDir)/BepInEx/core</BepInExCoreDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="LFBetterAudio/**/*.cs;EC2BUnofficialPatch/**/*.cs" Exclude="**/bin/**/*.cs;**/obj/**/*.cs;EC2BUnofficialPatch/UpdaterHelper/**/*.cs;EC2BUnofficialPatch/Examples/**/*.cs" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/ExternalLive2D/readme.txt" LogicalName="EC2BUnofficialPatch.Embedded.ExternalLive2D.Readme.txt" />
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedDir)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExCoreDir)/BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Harmony">
+      <HintPath>$(BepInExCoreDir)/BepInEx.Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>$(ManagedDir)/DOTween.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTween.Modules">
+      <HintPath>$(ManagedDir)/DOTween.Modules.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(ManagedDir)/Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UniTask">
+      <HintPath>$(ManagedDir)/UniTask.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Live2D.Cubism">
+      <HintPath>$(ManagedDir)/Live2D.Cubism.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UIEffect">
+      <HintPath>$(ManagedDir)/UIEffect.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ManagedDir)/Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ManagedDir)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(ManagedDir)/UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ManagedDir)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ManagedDir)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>$(ManagedDir)/UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>$(ManagedDir)/UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(ManagedDir)/Unity.InputSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(ManagedDir)/UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreModule">
+      <HintPath>$(ManagedDir)/UnityEngine.TextCoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ManagedDir)/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ManagedDir)/UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>$(ManagedDir)/UnityEngine.VideoModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="EC2BUnofficialPatch/UpdaterHelper/EC2BUnofficialPatch.Updater.csproj" ReferenceOutputAssembly="false" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/UpdaterHelper/bin/$(Configuration)/net472/EC2BUnofficialPatch.Updater.exe" LogicalName="EC2BUnofficialPatch.Embedded.Updater.exe" />
+  </ItemGroup>
+  <Target Name="ValidateGameReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(ManagedDir)/Assembly-CSharp.dll')" Text="Pass /p:GameDir with a local StudentAge installation." />
+    <Error Condition="!Exists('$(BepInExCoreDir)/BepInEx.dll')" Text="Pass /p:BepInExCoreDir pointing to BepInEx 5 core." />
+  </Target>
+</Project>

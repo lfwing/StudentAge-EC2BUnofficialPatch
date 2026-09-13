@@ -1,0 +1,22 @@
+{
+  "inputs": [
+    {
+      "file": "StudentAge-LFBetteraudio.zip",
+      "sha256": "9f61676f5877dccda5cbc3059b99ce1e11e5777d2ce899fad970845b904e6f0a"
+    },
+    {
+      "file": "StudentAge-EC2BUnofficialPatch-1.0.22-workcopy.zip",
+      "sha256": "5ca328a78bd5252a6602748cec73c2e143dde6694879433520cb46288350aab8"
+    }
+  ],
+  "upstreamSourceVersion": "UP 1.0.21 workcopy; BA 1.0.0",
+  "handoffVersion": "1.0.25-handoff.4",
+  "originalAuthors": [
+    "lfw / lfwing",
+    "雾雁"
+  ],
+  "verifiedUpstream": {
+    "UP": "67954b196589921bdaf02a3f626853d444ef0083",
+    "BA": "9b9cdd5ed4b5ce9b45399bbef3e704fdc2d8b34c"
+  }
+}
