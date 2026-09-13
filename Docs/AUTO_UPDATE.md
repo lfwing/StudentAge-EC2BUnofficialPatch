@@ -1,27 +1,24 @@
-# 自动更新：沿用 UP 原流程
+# UP 1.0.21 自动更新
 
-当前：1.0.25-handoff.4。复用上游 schema 1 清单、后台检查、HTTPS下载、大小与SHA256校验、内嵌单文件助手、游戏退出后替换与备份回滚。移除本接手版增加的 schema 2、双文件事务及强制游戏程序集哈希门槛。
+仅维护完整 UP：音频演出已经内置，取消分离版和独立 BA 更新。沿用现有合并版的后台检查、HTTPS 下载、大小/SHA256 校验、内嵌助手、退出替换和备份恢复流程。
 
-## 安装类型匹配
+## 唯一更新通道
 
-原清单只增加一个字段：`layout`。合并版填 `merged`，分离版填 `split`；字段缺失或不匹配均跳过，不能让旧 UP 覆盖含 BA 的合并 DLL。schema 仍为1，原字段和旧客户端解析方式不变。
+- 清单文件：`update-merged.json`。
+- 必需标记：`schema: 1`、`layout: merged`，保留现有协议与地址约定。
+- 下载资产：`merged-EC2BUnofficialPatch.dll`；游戏中的安装文件仍为 `EC2BUnofficialPatch.dll`。
+- 顺序：用户配置的 HTTPS 镜像 → GitHub Release → GitHub Raw。
+- 拒绝 split、未标记、旧 schema2、不匹配文件名、无效大小/摘要或非 HTTPS 地址。
+- 原六参数助手等待游戏退出后替换实际加载位置中的 UP DLL，支持 Workshop 路径，并保留备份和损坏拒绝。它不会删除或升级其他插件。
 
-- 合并版查 `update-merged.json`，下载 `merged-EC2BUnofficialPatch.dll`，安装时仍叫 `EC2BUnofficialPatch.dll`。
-- 双 DLL 版查原 `update.json`，下载 `split-EC2BUnofficialPatch.dll`；只更新 UP，保留现有 LFBetterAudio.dll。需要升级独立 BA 时使用完整安装包，不做双文件自动升级或布局迁移。
-- 仍按“用户配置镜像 → 原仓库 Latest Release → 原仓库 main Raw”顺序检查。镜像须提供当前类型的清单。
-- 目标仍取 BepInEx 登记的实际 DLL 来源；原有 Workshop 桥接加载位置更新恢复，pending/backup/助手紧邻该 DLL。不修改 Mod JSON 或存档。
+## 版本修订与首次迁移
 
-当前原作者公开版本没有 layout 标记，因此会被新版安全跳过。不是要求另建仓库：原作者发布相应清单和 DLL 后即可使用。仓库地址保持原 UP 仓库。
+当前插件版本为 1.0.21。已安装 1.0.23～1.0.25 接手测试版的玩家，需要退出游戏并手动覆盖一次；保留禁止自动降级的行为。此后发布更高版本时按通常版本比较更新。
 
-## 维护者发布
+旧独立 BA 用户需要先移除 LFBetterAudio.dll，再安装完整 UP。原 BetterAudio.json、资源目录及 1163 指令保持兼容。硬依赖独立 BA GUID/程序集的第三方 DLL 需重新适配 UP。
 
-```
-python3 build.py --game "游戏目录" --bepinex "BepInEx/core目录" --layout all
-python3 tools/prepare_release.py
-```
+## 发布顺序
 
-默认目标仓库 `lfwing/StudentAge-EC2BUnofficialPatch`；也可用 `--repository owner/repo` 准备其它来源，但对应客户端须配置镜像。脚本只生成本地产物，不上传。`dist/release` 含两份 UP 产物、分离 BA 和两份 schema1 清单。DLL 大小/摘要必须和清单一致。
+运行 `build.py --game ... --bepinex ...` 后，只生成 `dist/merged/EC2BUnofficialPatch.dll`。`tools/prepare_release.py` 校验构建清单和最终 DLL，准备 `dist/release/` 中的一个 DLL 及一份清单，并写入 `release-manifests/update-merged.json`。
 
-先发布同版本匹配的 DLL，再启用对应清单；根 `update.json` 必须始终为 split，防止旧客户端意外安装合并 DLL、与其已有 BA 重复加载。合并版使用独立的 `update-merged.json`。不要提前把指向未上传 DLL 的候选清单覆盖公开更新源。
-
-如存在依赖此前1.0.23/1.0.24接手版schema2的测试安装，手动安装本版一次；不提供跨协议自动迁移。公共上游仍是schema1。旧助手的六参数契约、提取方式和替换实现本轮原样恢复。
+先上传同版本 DLL，再启用 Release/仓库根目录的 `update-merged.json`。构建脚本不覆盖线上清单、不自动创建 Release。旧根 `update.json` 冻结在原已发布版本，避免老分离客户端自动装入完整 UP 后与独立 BA 重复加载；它不是继续维护分离版的入口。

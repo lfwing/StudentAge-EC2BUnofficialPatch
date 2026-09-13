@@ -7,20 +7,17 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using BepInEx;
-using BepInEx.Bootstrap;
-using PluginInfo = BepInEx.PluginInfo;
 using EC2BUnofficialPatch.Core;
 using Newtonsoft.Json.Linq;
 
 namespace EC2BUnofficialPatch.Services
 {
     /// <summary>
-    /// BetterAudio 1.0.0 内置兼容层。只重跑其 JSON 资源包发现/注册逻辑，
+    /// UP 内置音频 JSON 热重载。只重跑其 JSON 资源包发现/注册逻辑，
     /// 不重建 Harmony 补丁、播放器或当前正在播放的音频。
     /// </summary>
     internal static class BetterAudioJsonHotReload
     {
-        private const string BetterAudioGuid = "sa.lf.betteraudio";
         private static readonly object SyncRoot = new object();
         private static Dictionary<string, string> _baseline;
         private static bool _baselineAttempted;
@@ -30,7 +27,7 @@ namespace EC2BUnofficialPatch.Services
             lock (SyncRoot)
             {
                 if (_baseline != null || _baselineAttempted ||
-                    !Chainloader.PluginInfos.ContainsKey(BetterAudioGuid))
+                    LFBetterAudio.Plugin.ConfigStore == null)
                     return;
                 _baselineAttempted = true;
             }
@@ -51,8 +48,8 @@ namespace EC2BUnofficialPatch.Services
 
         internal static JsonHotReloadResult Reload()
         {
-            if (!Chainloader.PluginInfos.ContainsKey(BetterAudioGuid))
-                return JsonHotReloadResult.Skip("未安装或未启用 BetterAudio");
+            if (LFBetterAudio.Plugin.ConfigStore == null)
+                return JsonHotReloadResult.Skip("UP 音频演出尚未初始化");
 
             try
             {
@@ -97,10 +94,7 @@ namespace EC2BUnofficialPatch.Services
 
         private static BetterAudioContext ResolveContext()
         {
-            if (!Chainloader.PluginInfos.TryGetValue(BetterAudioGuid, out PluginInfo pluginInfo))
-                throw new InvalidOperationException("BetterAudio 未注册");
-
-            Type pluginType = ResolvePluginType(pluginInfo);
+            Type pluginType = typeof(LFBetterAudio.Plugin);
             MethodInfo discover = pluginType.Assembly
                 .GetType("LFBetterAudio.Discovery.BetterAudioPackageDiscovery", true)
                 .GetMethod(
@@ -128,30 +122,6 @@ namespace EC2BUnofficialPatch.Services
             if (discover == null || configStore == null || loadAll == null || setConfigStore == null)
                 throw new MissingMemberException("BetterAudio 版本结构不兼容：找不到 JSON 注册入口");
             return new BetterAudioContext(discover, loadAll, configStore, setConfigStore);
-        }
-
-        private static Type ResolvePluginType(PluginInfo pluginInfo)
-        {
-            Type type = pluginInfo.Instance?.GetType();
-            if (type != null)
-                return type;
-
-            const string typeName = "LFBetterAudio.Plugin";
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                type = assembly.GetType(typeName, false, false) ??
-                       assembly.GetType("LFBetterAudio.Plugin", false, false);
-                if (type != null)
-                    return type;
-            }
-
-            if (!string.IsNullOrWhiteSpace(pluginInfo.Location) && File.Exists(pluginInfo.Location))
-            {
-                Assembly assembly = Assembly.LoadFrom(pluginInfo.Location);
-                type = assembly.GetType(typeName, false, false) ??
-                       assembly.GetType("LFBetterAudio.Plugin", false, false);
-            }
-            return type ?? throw new TypeLoadException("找不到 BetterAudio 插件类型");
         }
 
         private static Dictionary<string, string> BuildPackageSnapshot(

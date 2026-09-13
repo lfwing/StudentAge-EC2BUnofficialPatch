@@ -3,17 +3,19 @@
     <TargetFramework>net472</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
-    <Version>1.0.25</Version>
+    <Version>1.0.21</Version>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
-    <FileVersion>1.0.25.0</FileVersion>
+    <FileVersion>1.0.21.0</FileVersion>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <Deterministic>true</Deterministic>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/bin/**;**/obj/**;qa/**;dist/**</DefaultItemExcludes>
+    <AssemblySearchPaths>{HintPathFromItem};$(AssemblySearchPaths)</AssemblySearchPaths>
     <ManagedDir>$(GameDir)/StudentAge_Data/Managed</ManagedDir>
     <BepInExCoreDir Condition="'$(BepInExCoreDir)' == ''">$(GameDir)/BepInEx/core</BepInExCoreDir>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="LFBetterAudio/**/*.cs;EC2BUnofficialPatch/**/*.cs" Exclude="**/bin/**/*.cs;**/obj/**/*.cs;EC2BUnofficialPatch/UpdaterHelper/**/*.cs;EC2BUnofficialPatch/Examples/**/*.cs" />
+    <Compile Include="EC2BUnofficialPatch/**/*.cs" Exclude="**/bin/**/*.cs;**/obj/**/*.cs;EC2BUnofficialPatch/UpdaterHelper/**/*.cs;EC2BUnofficialPatch/Examples/**/*.cs" />
     <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/ExternalLive2D/readme.txt" LogicalName="EC2BUnofficialPatch.Embedded.ExternalLive2D.Readme.txt" />
     <Reference Include="0Harmony">
       <HintPath>$(BepInExCoreDir)/0Harmony.dll</HintPath>
