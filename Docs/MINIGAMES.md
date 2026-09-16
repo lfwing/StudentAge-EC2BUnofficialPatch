@@ -20,4 +20,12 @@
 - 以上生命周期调用必须在 Unity 主线程执行；电脑计算可以后台进行，返回主线程后再次检查 IsActive。
 - Option/Talk 内嵌的失败若没有 fail，会继续 success 槽中的原流程回调；此回调不等于胜利，阶段结算仍使用实际 win=false。
 
-当前外部玩法仍需要有效 NPC 社交阶段会话，纯剧情任意直接启动不自动建立独立存档与奖励语义。
+## 普通剧情中打开（Talk/Option）
+
+external/dialogue 自定义小游戏也可以在任意剧情事件里由 TalkCfg 或 OptionCfg 的 `miniGame` 字段打开，写法与原版小游戏一致：`miniGame: [自定义ID, 参数1, 参数2, ...]`。成功走 nextTalk / talkId，失败走 nextTalk2 / talkId2，回调语义与内嵌到社交阶段时相同。
+
+- 这种启动没有 NPC 社交阶段：不扣消耗、不回写 MiniGameSubData、不发放阶段奖励。Context 的 `NpcId`、`ActionCfgId` 为 0，`LaunchFrom` 为 Talk/Option，`LaunchSourceId` 为对应的 talkId/optionId，`LaunchParameters` 为 `miniGame[1...]`。
+- 小游戏应把关卡/对手等信息放在 `miniGame[1...]` 里自行解释（例如 `[9102, 3]` 表示五子棋第 3 关），并在没有参数时给出默认关卡。
+- 同一时间只允许一个剧情小游戏；NPC 社交阶段进行中时，只有该阶段 startTalk 对话图内的 Talk/Option 才会被分发，其它位置仍会被拒绝并走失败分支。
+- 读档或回到主菜单会使剧情小游戏上下文失效（Invalidated），不再触发剧情回调。
+- 纯对话（dialogue）类型在剧情里直接按成功继续。

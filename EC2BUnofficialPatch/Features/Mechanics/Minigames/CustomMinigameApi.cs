@@ -80,15 +80,18 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             _complete = complete ?? throw new ArgumentNullException(nameof(complete));
         }
 
+        /// <summary>逻辑小游戏 ID。社交阶段为 PersonGrowCfg.minigame；剧情启动为 miniGame[0]。</summary>
         public int GameId { get; }
+        /// <summary>社交阶段的 NPC；普通剧情启动时为 0。</summary>
         public int NpcId { get; }
+        /// <summary>当前 MinigameActionCfg 阶段 ID；普通剧情启动时为 0。</summary>
         public int ActionCfgId { get; }
         public string SourceFile { get; }
 
         /// <summary>CustomMinigamecfg.json 中 parameters 的静态配置。</summary>
         public IReadOnlyDictionary<string, string> Parameters { get; }
 
-        /// <summary>本次 Talk/Option miniGame[1...] 的动态参数；后备 Level 启动通常为空。</summary>
+        /// <summary>本次 Talk/Option miniGame[1...] 的动态参数；后备 Level 启动通常为空。普通剧情启动时用它选择关卡。</summary>
         public IReadOnlyList<double> LaunchParameters { get; }
 
         /// <summary>本次启动来源，例如 Talk、Option 或 Level。</summary>

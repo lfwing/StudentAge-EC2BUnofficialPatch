@@ -400,6 +400,8 @@ CustomMinigamecfg.json
 
 UNO、五子棋等外部小游戏需要另外安装对应小游戏插件；本仓库负责加载接口及社交阶段结算。开发者接入方式见 [外部小游戏说明](Docs/MINIGAMES.md)。
 
+自定义小游戏除了绑定到角色社交阶段，也可以在普通剧情里由 TalkCfg / OptionCfg 的 `miniGame: [自定义ID, 参数...]` 直接打开，成功走 nextTalk / talkId、失败走 nextTalk2 / talkId2，与原版小游戏写法一致；这种启动不扣消耗、不推进社交阶段。
+
 ## 5.6 控制角色何时出现
 
 创建：

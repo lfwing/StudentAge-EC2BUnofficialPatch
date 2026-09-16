@@ -125,10 +125,33 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             {
                 if (!boundToStage || session == null)
                 {
-                    PatchLog.Error(
-                        "机制模块-纯对话/外部 DLL 小游戏只允许在 NPC 社交阶段会话中启动：" +
-                        $"minigame={requestedId}, from={_type}, typeId={_typeId}");
-                    _fail?.Invoke();
+                    if (session != null && !session.Settled)
+                    {
+                        // 社交阶段进行中，只有阶段 startTalk 对话图内登记过的 Talk/Option 才能内嵌。
+                        PatchLog.Error(
+                            "机制模块-NPC 社交阶段进行中，该 Talk/Option 不在本阶段对话图内，拒绝打开自定义小游戏：" +
+                            $"npc={session.NpcId}, logical={session.LogicalGameId}, cfg={session.CfgId}, " +
+                            $"minigame={requestedId}, from={_type}, typeId={_typeId}");
+                        _fail?.Invoke();
+                        return false;
+                    }
+
+                    // 普通剧情：由 Talk/Option 的 miniGame 字段直接打开，不涉及 NPC 阶段与消耗。
+                    if (!StoryMinigameLauncher.TryOpen(
+                            implementation,
+                            requestedId,
+                            _type,
+                            _typeId,
+                            _parms,
+                            _success,
+                            _fail,
+                            _result))
+                    {
+                        PatchLog.Error(
+                            "机制模块-剧情中打开自定义小游戏失败：" +
+                            $"minigame={requestedId}, from={_type}, typeId={_typeId}");
+                        _fail?.Invoke();
+                    }
                     return false;
                 }
 
