@@ -70,6 +70,14 @@
 - 图片必须位于同一 ScreenPaper 目录内，仅支持 PNG/JPG/JPEG；禁止绝对路径和用 `..` 逃离目录。
 - 多个 Mod 声明同一 ID 时，该 ID 的自定义覆盖全部禁用并回退原版。
 
+### `1164`：ScreenVideo
+
+- 文件搜索位置：内容根目录的 `EC2BUnofficialPatch/ScreenVideo/CustomVideo.json` 或 `ScreenVideo/CustomVideo.json`。
+- 格式：`{ "videos": [{ "id": 正整数, "name": "备注", "video": "相对视频路径", "volume": 0~1, "loop": bool, "block": bool, "skippable": bool, "roleOnTop": bool, "scale": "fit|fill|stretch" }] }`。
+- EFFECT：`1164,1,id` 播放；`1164,0` 停止。由 `CommonEvtMgr.GenEffector` Prefix 截获，返回 `EffectorScreenVideo`，其余 EFFECT 不受影响。
+- 视频必须位于同一 ScreenVideo 目录内，仅支持 mp4/webm/mov/m4v；禁止绝对路径和 `..`。重复 id 以先加载者为准。
+- 播放层是独立的置顶 Canvas + VideoPlayer（URL 源，Direct 音频输出），同一时间只播放一个；回到主菜单自动收起。`roleOnTop=true` 时画面节点临时挂到 NewTalkView 的 `group_role` 之前，结束后挂回；对话界面被销毁时视频随之结束。
+
 ### `5002`：ScreenLyrics
 
 - 歌词项必须有正整数 `id` 与非空 `text`；`text` 中的 `\\n` 会转换为换行。

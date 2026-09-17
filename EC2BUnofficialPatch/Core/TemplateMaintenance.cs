@@ -53,6 +53,32 @@ namespace EC2BUnofficialPatch.Core
             "  ]\r\n" +
             "}\r\n";
 
+        private const string ScreenVideoReadme =
+            "1164屏幕视频扩展模板\r\n\r\n" +
+            "用法和 1163 音频一样：把视频文件放进本目录，在 CustomVideo.json 里登记一个 id，\r\n" +
+            "然后在 TalkCfg/EvtCfg 的 effect 里写 [1164, 1, id] 播放，[1164, 0] 停止。\r\n" +
+            "视频覆盖整个画面；非循环视频播完自动收起，回到主菜单也会收起。\r\n\r\n" +
+            "CustomVideo.json 字段：\r\n" +
+            "- id：正整数，不同 Mod 之间避免重复；重复时以先加载的为准。\r\n" +
+            "- name：备注，可空。\r\n" +
+            "- video：相对于本目录的文件路径，支持 mp4 / webm / mov / m4v；不允许绝对路径或 .. 跳出目录。\r\n" +
+            "  建议 H.264 编码的 mp4，分辨率不超过 1920x1080，Windows 自带解码器就能播。\r\n" +
+            "- volume：0~1，默认 1。\r\n" +
+            "- loop：true 循环播放直到 [1164, 0]，默认 false。\r\n" +
+            "- block：true（默认）时视频挡住画面并拦截点击，播完或跳过后剧情才继续；false 时只是覆盖层，对话照常点。\r\n" +
+            "- skippable：block=true 时是否允许点击/空格/回车/Esc 跳过，默认 true。\r\n" +
+            "- roleOnTop：true 时视频插在对话界面的背景和人物立绘之间，立绘和对话框显示在视频上面；false（默认）视频盖住一切。需要当前正打开着对话界面。\r\n" +
+            "- scale：fit 等比留黑边（默认）、fill 等比裁切铺满、stretch 拉伸铺满。\r\n\r\n" +
+            "实际使用时，请把 ScreenVideo 文件夹放到 Steam Workshop Mod 根目录，\r\n" +
+            "或放到 Mod 根目录/EC2BUnofficialPatch 下。本模板目录不会被插件读取。\r\n";
+
+        private const string ScreenVideoJson =
+            "{\r\n" +
+            "  \"videos\": [\r\n" +
+            "    { \"id\": 1, \"name\": \"示例\", \"video\": \"intro.mp4\", \"volume\": 1.0, \"loop\": false, \"block\": true, \"skippable\": true, \"roleOnTop\": false, \"scale\": \"fit\" }\r\n" +
+            "  ]\r\n" +
+            "}\r\n";
+
         private const string ComicReadme =
             "4016 漫画显示扩展模板\r\n\r\n" +
             "本目录旁会创建一个空的 comic 文件夹。实际 Mod 中，comic 文件夹可以放在 Mod 内任意位置，\r\n" +
@@ -157,6 +183,11 @@ namespace EC2BUnofficialPatch.Core
                 ScreenPaperReadme,
                 "Custompaper.json",
                 ScreenPaperJson);
+            WriteTemplate(
+                Path.Combine(templateRoot, "ScreenVideo"),
+                ScreenVideoReadme,
+                "CustomVideo.json",
+                ScreenVideoJson);
             WriteTemplate(
                 Path.Combine(templateRoot, "ScreenLyrcis"),
                 ScreenLyrcisReadme,

@@ -8,7 +8,7 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 
 当前主要包含：
 
-- 4006 / 4016 / 4021 / 4022 / 5001 / 5002 等屏幕演出扩展
+- 4006 / 4016 / 4021 / 4022 / 5001 / 5002 等屏幕演出扩展，1164 播放 Mod 自带视频
     
 - 3003 行动指令及部分原版 EFFECT 修复
     
@@ -102,6 +102,7 @@ BepInEx/plugins/EC2BUnofficialPatch/
 |屏幕特效|4016 漫画扩展|支持 Workshop Mod 外置漫画图片|
 |屏幕特效|4021 / 4022|扩展黑白、像素化等背景效果|
 |屏幕特效|5001 屏幕纸条|为原版 PaperCfg 条目使用自定义图片|
+|屏幕特效|1164 屏幕视频|用 EFFECT 播放 Mod 自带的视频文件，用法同 1163 音频|
 |屏幕特效|5002 滚动歌词|自定义滚动文字，并可配合原版或 BetterAudio 音乐|
 |行动指令|3003 修复|修正角色缩放指令的异常表现|
 |EFFECT|36 动画修复与扩展|改善动画相关 EFFECT 与 Mod 动画内容兼容|
@@ -200,6 +201,7 @@ Steam昵称对话替换 = true
 4016漫画显示扩展 = true
 5001屏幕纸条扩展 = true
 5002屏幕滚动歌词扩展 = true
+1164屏幕视频扩展 = true
 ```
 
 # 五、Mod 作者快速接入
@@ -287,6 +289,42 @@ paper_1.png
   ]
 }
 ```
+
+## 5.2.1 1164 屏幕视频
+
+和 1163 导入音频一个思路：视频文件放在 Mod 里，JSON 登记 id，EFFECT 里按 id 调用。
+
+目录：
+
+```
+<Mod>/EC2BUnofficialPatch/ScreenVideo/
+  CustomVideo.json
+  intro.mp4
+```
+
+CustomVideo.json：
+
+```
+{
+  "videos": [
+    { "id": 1, "name": "开场", "video": "intro.mp4", "volume": 1.0, "loop": false, "block": true, "skippable": true, "roleOnTop": false, "scale": "fit" }
+  ]
+}
+```
+
+EFFECT：
+
+```
+1164,1,x   播放 id=x 的视频
+1164,0     停止当前视频
+```
+
+- `block=true`（默认）：视频盖住整个画面并拦截点击，播完（或点击/空格/回车/Esc 跳过，需 `skippable=true`）后剧情才继续；`block=false`：只作为覆盖层，对话照常推进，适合配合 `loop` 做动态背景，用 `1164,0` 收掉。
+- `roleOnTop=true`：视频插到对话界面的背景和人物立绘之间，立绘、对话框显示在视频上面（需要当时正开着对话界面，否则按盖住播放）；默认 false 视频盖住一切。
+- `scale`：`fit` 等比留黑边、`fill` 等比裁切铺满、`stretch` 拉伸铺满。
+- 非循环视频播完自动收起；回到主菜单/读档时也会收起。
+- 视频建议 H.264 mp4，1080p 以内；支持 mp4/webm/mov/m4v，文件须在 ScreenVideo 目录内，不允许绝对路径或 `..`。
+- 不同 Mod 的 id 请避免重复，重复时以先加载的为准。F9 热重载会重新读取 CustomVideo.json。
 
 ## 5.3 5002 滚动歌词
 

@@ -16,6 +16,7 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> ScreenBackgroundEffects { get; private set; }
         internal static ConfigEntry<bool> ScreenPaper { get; private set; }
         internal static ConfigEntry<bool> ScreenLyrics { get; private set; }
+        internal static ConfigEntry<bool> ScreenVideo { get; private set; }
         internal static ConfigEntry<bool> Action3003 { get; private set; }
         internal static ConfigEntry<bool> AnimeExtension { get; private set; }
         internal static ConfigEntry<bool> MapMoveEffects { get; private set; }
@@ -74,6 +75,7 @@ namespace EC2BUnofficialPatch.Core
                     "5001屏幕纸条扩展",
                     "屏幕特效",
                     "屏幕纸条扩展");
+                bool screenVideo = ReadRawValue(config, "屏幕特效", "1164屏幕视频扩展", true);
                 bool screenLyrics = ReadMigratedValue(
                     config,
                     "屏幕特效",
@@ -225,6 +227,12 @@ namespace EC2BUnofficialPatch.Core
                     "5001屏幕纸条扩展",
                     screenPaper,
                     "扩展 5001 屏幕纸条指令（本插件使用ScreenPaper文件夹）。");
+                ScreenVideo = Bind(
+                    config,
+                    "屏幕特效",
+                    "1164屏幕视频扩展",
+                    screenVideo,
+                    "扩展 1164 屏幕视频指令，播放 Mod 自带的视频文件（本插件使用ScreenVideo文件夹）。");
                 ScreenLyrics = Bind(
                     config,
                     "屏幕特效",

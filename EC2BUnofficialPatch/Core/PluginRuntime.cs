@@ -155,6 +155,7 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.ScreenBackgroundEffects.Value, new BackgroundEffectsModule(), "屏幕特效/屏幕特效扩展");
             LoadIf(PluginConfig.ScreenPaper.Value, new ScreenPaperModule(), "屏幕特效/5001屏幕纸条扩展");
             LoadIf(PluginConfig.ScreenLyrics.Value, new ScreenLyrcisModule(), "屏幕特效/5002屏幕滚动歌词扩展");
+            LoadIf(PluginConfig.ScreenVideo.Value, new ScreenVideoModule(), "屏幕特效/1164屏幕视频扩展");
             LoadIf(PluginConfig.Action3003.Value, new Action3003Module(), "行动指令/3003修复");
             LoadIf(PluginConfig.AnimeExtension.Value, new AnimeExtensionModule(), "效果/36动画相关修复与扩展");
             LoadIf(PluginConfig.MapMoveEffects.Value, new MapMoveEffectModule(), "效果/100,1地点移动修复");
@@ -228,6 +229,7 @@ namespace EC2BUnofficialPatch.Core
                 UpJsonChangeSet changes;
                 int entryCount = 0;
                 ScreenPaperRegistry paperRegistry = null;
+                ScreenVideoRegistry videoRegistry = null;
                 LyricRegistry lyricRegistry = null;
                 RoleAvailabilityService roleService = null;
                 CustomMinigameRegistry minigameRegistry = null;
@@ -245,6 +247,12 @@ namespace EC2BUnofficialPatch.Core
                     {
                         paperRegistry = ScreenPaperRegistry.Load(replacement.ContentRoots.Roots);
                         entryCount += paperRegistry.Count;
+                    }
+
+                    if (PluginConfig.ScreenVideo.Value)
+                    {
+                        videoRegistry = ScreenVideoRegistry.Load(replacement.ContentRoots.Roots);
+                        entryCount += videoRegistry.Count;
                     }
 
                     if (PluginConfig.ScreenLyrics.Value)
@@ -280,6 +288,8 @@ namespace EC2BUnofficialPatch.Core
                 // 以上所有文件与注册表均成功构建后才切换运行时引用。
                 if (paperRegistry != null)
                     ScreenPaperModule.ReplaceRuntime(replacement, paperRegistry);
+                if (videoRegistry != null)
+                    ScreenVideoModule.ReplaceRegistry(videoRegistry);
                 if (lyricRegistry != null)
                     ScreenLyrcisModule.ReplaceRegistry(lyricRegistry);
                 if (roleService != null)
