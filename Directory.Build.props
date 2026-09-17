@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);STUDENTAGE_HANDOFF</DefineConstants>
-    <InformationalVersion>1.0.21</InformationalVersion>
+    <InformationalVersion>1.0.22</InformationalVersion>
   </PropertyGroup>
 </Project>

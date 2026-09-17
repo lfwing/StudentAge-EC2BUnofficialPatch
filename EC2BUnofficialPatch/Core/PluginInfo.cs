@@ -4,7 +4,7 @@ namespace EC2BUnofficialPatch.Core
     {
         internal const string Guid = "sa.EC2B.UnofficialPatch";
         internal const string Name = "EC2BUnofficialPatch";
-        internal const string Version = "1.0.21";
+        internal const string Version = "1.0.22";
         internal const string Repository = "https://github.com/lfwing/StudentAge-EC2BUnofficialPatch";
     }
 }
