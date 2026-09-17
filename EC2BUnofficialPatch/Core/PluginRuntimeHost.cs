@@ -25,7 +25,6 @@ namespace EC2BUnofficialPatch.Core
             JsonHotReloadRuntime.Tick();
             Features.Mechanics.Minigames.MiniGameStageCoordinator.Tick();
             Features.Mechanics.Minigames.StoryMinigameLauncher.Tick();
-            Features.Optimization.SavePathRepairModule.Tick();
         }
 
         private void OnApplicationQuit()
