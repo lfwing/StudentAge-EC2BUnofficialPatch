@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
 using Config;
 using EC2BUnofficialPatch.Core;
 using EC2BUnofficialPatch.Workshop;
@@ -32,10 +31,7 @@ namespace EC2BUnofficialPatch.Services
         {
             Dictionary<int, RoleAvailabilityEntry> entries = new Dictionary<int, RoleAvailabilityEntry>();
             HashSet<int> conflicts = new HashSet<int>();
-            List<string> files = new List<string>
-            {
-                Path.Combine(Paths.PluginPath, "EC2BUnofficialPatch", "RoleAvailabilityCfg.json")
-            };
+            List<string> files = new List<string>();
 
             foreach (ContentRoot root in roots.Roots)
                 files.Add(Path.Combine(root.Path, "EC2BUnofficialPatch", "RoleAvailabilityCfg.json"));

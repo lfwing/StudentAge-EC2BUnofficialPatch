@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Config;
+using EC2BUnofficialPatch.Core;
 using GenUI.Talk;
 using LFBetterAudio.Assets;
 using LFBetterAudio.Audio;
@@ -56,9 +57,6 @@ namespace LFBetterAudio.Runtime
         // 仅当插件音乐实际播放时持有原版 BGM 的“优先级租约”；
         // 插件音乐暂停、停止、失败、自然结束或 Talk 中断时必须立即归还。
         private bool _gameMusicSuppressionHeld;
-        private bool _resumeGameMusicWhenReleased;
-        private bool _gameMusicWarningLogged;
-        private AudioSource _suppressedGameMusicSource;
 
         private BaseView _advanceContextOwner;
         private TalkAdvanceOrigin _advanceContextOrigin;
@@ -145,8 +143,6 @@ namespace LFBetterAudio.Runtime
                 ReleaseGameMusicSuppression();
                 return;
             }
-
-            MaintainGameMusicSuppression();
 
             AudioSource source = GetUsableAudioSource();
             if (source == null || source.clip == null)
@@ -625,7 +621,6 @@ namespace LFBetterAudio.Runtime
 
             session.IsPlaying = true;
             session.IsPaused = false;
-            MaintainGameMusicSuppression();
             LogPlaybackSuccess(session);
         }
 
@@ -1337,7 +1332,7 @@ namespace LFBetterAudio.Runtime
             }
         }
 
-        private void PauseActiveMusic(bool useFade)
+        internal void PauseActiveMusic(bool useFade)
         {
             BetterAudioSession session = _session;
             string command = useFade ? "1163,99,10" : "1163,99,1";
@@ -1396,7 +1391,7 @@ namespace LFBetterAudio.Runtime
             }
         }
 
-        private void ResumeActiveMusic(bool useFade)
+        internal void ResumeActiveMusic(bool useFade)
         {
             BetterAudioSession session = _session;
             string command = useFade ? "1163,99,20" : "1163,99,2";
@@ -1458,8 +1453,6 @@ namespace LFBetterAudio.Runtime
                 session.IsPaused = false;
                 session.IsPlaying = true;
                 ResetLyrics(session);
-                MaintainGameMusicSuppression();
-
                 if (useFade)
                 {
                     StartVolumeFade(
@@ -1888,107 +1881,19 @@ namespace LFBetterAudio.Runtime
 
         private void AcquireGameMusicSuppression()
         {
-            if (!_gameMusicSuppressionHeld)
-            {
-                _gameMusicSuppressionHeld = true;
-                _resumeGameMusicWhenReleased = false;
-                _suppressedGameMusicSource = null;
-                _gameMusicWarningLogged = false;
-            }
-
-            MaintainGameMusicSuppression();
-        }
-
-        private void MaintainGameMusicSuppression()
-        {
-            if (!_gameMusicSuppressionHeld)
-            {
-                return;
-            }
-
-            try
-            {
-                AudioSource gameMusicSource = TryGetGameMusicSource();
-                if (gameMusicSource == null || !gameMusicSource.isPlaying)
-                {
-                    return;
-                }
-
-                AudioMgrEx.PauseMusic();
-                _resumeGameMusicWhenReleased = true;
-                _suppressedGameMusicSource = gameMusicSource;
-
-            }
-            catch (Exception ex)
-            {
-                if (!_gameMusicWarningLogged)
-                {
-                    _gameMusicWarningLogged = true;
-                    Plugin.LogEffectError(
-                        $"插件音乐无法取得原版音乐通道优先级：{ex.Message}");
-                }
-            }
+            _gameMusicSuppressionHeld = true;
+            GameMusicPriority.SetBetterAudio(true);
         }
 
         private void ReleaseGameMusicSuppression()
         {
-            if (!_gameMusicSuppressionHeld && !_resumeGameMusicWhenReleased)
+            if (!_gameMusicSuppressionHeld)
             {
                 return;
             }
 
-            bool shouldResume = _resumeGameMusicWhenReleased;
-            AudioSource suppressedSource = _suppressedGameMusicSource;
-
-            // 先清状态，防止 UnPause 过程中触发的游戏逻辑再次被误判为仍受插件压制。
             _gameMusicSuppressionHeld = false;
-            _resumeGameMusicWhenReleased = false;
-            _suppressedGameMusicSource = null;
-            _gameMusicWarningLogged = false;
-
-            if (!shouldResume)
-            {
-                return;
-            }
-
-            try
-            {
-                AudioMgrEx.UnPauseMusic();
-            }
-            catch (Exception ex)
-            {
-                // AudioMgr 包装层异常时，尝试直接归还当初被插件暂停的独立原版源。
-                try
-                {
-                    if (suppressedSource != null)
-                    {
-                        suppressedSource.UnPause();
-                        return;
-                    }
-                }
-                catch (Exception fallbackEx)
-                {
-                    Plugin.LogEffectError(
-                        $"原版音乐通道恢复失败：{ex.Message}；后备恢复同样失败：{fallbackEx.Message}");
-                    return;
-                }
-
-                Plugin.LogEffectError($"原版音乐通道恢复失败：{ex.Message}");
-            }
-        }
-
-        private static AudioSource TryGetGameMusicSource()
-        {
-            try
-            {
-                AudioMgr audioMgr = AudioMgr.Ins;
-                Channel channel = audioMgr?.GetChannel(1);
-                return channel?.source;
-            }
-            catch
-            {
-                return null;
-            }
+            GameMusicPriority.SetBetterAudio(false);
         }
 
         private AudioSource EnsureAudioSource(string reason, bool forceRecreate = false)

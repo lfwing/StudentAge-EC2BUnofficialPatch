@@ -58,12 +58,13 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis
                 prepare();
                 state.Active = true;
 
-                // BetterAudio 先暂停并归还它对原版 BGM 的抑制，再按需暂停原版音乐。
-                state.BetterAudioLease = BetterAudioBridge.PauseActiveMusic();
                 if (audioPlan != null)
                 {
-                    PauseOriginalMusic(state);
+                    GameMusicPriority.SetLyrics(state, true);
+                    state.HoldsOriginalMusic = true;
                 }
+                // The lyrics lease keeps the original channel paused while BA yields.
+                state.BetterAudioLease = BetterAudioBridge.PauseActiveMusic();
 
                 PrepareUi(ui, entry, out float travel);
                 EventMgr.Send(10003);
@@ -329,27 +330,6 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis
             text.ForceMeshUpdate(true, true);
         }
 
-        private static void PauseOriginalMusic(LyricsState state)
-        {
-            try
-            {
-                AudioSource source = AudioMgr.Ins?.GetChannel(1)?.source;
-                if (source == null || !source.isPlaying)
-                {
-                    return;
-                }
-
-                source.Pause();
-                state.OriginalMusicSource = source;
-                state.ResumeOriginalMusic = true;
-            }
-            catch (Exception exception)
-            {
-                PatchLog.Warning(
-                    $"5002屏幕滚动歌词扩展-暂停原版音乐失败：{ModuleHost.GetReason(exception)}");
-            }
-        }
-
         private static AudioSource TryGetNpcAudioSource()
         {
             try
@@ -453,26 +433,14 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis
                 state.Snapshot = null;
             }
 
-            if (state.ResumeOriginalMusic && state.OriginalMusicSource != null)
-            {
-                try
-                {
-                    if (!state.OriginalMusicSource.isPlaying)
-                    {
-                        state.OriginalMusicSource.UnPause();
-                    }
-                }
-                catch
-                {
-                    // 原版 AudioSource 已失效时不再强行恢复。
-                }
-            }
-            state.ResumeOriginalMusic = false;
-            state.OriginalMusicSource = null;
-
             BetterAudioPauseLease lease = state.BetterAudioLease;
             state.BetterAudioLease = null;
             BetterAudioBridge.Resume(lease);
+            if (state.HoldsOriginalMusic)
+            {
+                state.HoldsOriginalMusic = false;
+                GameMusicPriority.SetLyrics(state, false);
+            }
             state.Active = false;
         }
 
@@ -486,8 +454,7 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects.ScreenLyrcis
             internal Tween LoadTimeoutTween;
             internal GameObject AudioObject;
             internal AudioSource AudioSource;
-            internal AudioSource OriginalMusicSource;
-            internal bool ResumeOriginalMusic;
+            internal bool HoldsOriginalMusic;
             internal BetterAudioPauseLease BetterAudioLease;
             internal InkParticleAudioReact AudioReact;
             internal AudioSource OriginalReactSource;

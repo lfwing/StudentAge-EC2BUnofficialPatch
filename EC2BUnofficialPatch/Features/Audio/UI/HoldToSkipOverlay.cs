@@ -17,7 +17,7 @@ namespace LFBetterAudio.UI
         private Image _progressImage;
         private NewTalkUI _owner;
 
-        internal void Show(NewTalkUI owner)
+        internal void Show(NewTalkUI owner, Transform parent = null)
         {
             if (owner == null || owner.group_top == null || owner.group_skip_lyrics == null)
             {
@@ -30,7 +30,7 @@ namespace LFBetterAudio.UI
                 _owner = owner;
                 _root = Object.Instantiate(
                     owner.group_skip_lyrics.gameObject,
-                    owner.group_top,
+                    parent != null ? parent : owner.group_top,
                     false);
                 _root.name = "BetterAudioHoldToSkip";
 

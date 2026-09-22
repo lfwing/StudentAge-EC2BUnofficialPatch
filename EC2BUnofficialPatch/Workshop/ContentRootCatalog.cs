@@ -20,9 +20,7 @@ namespace EC2BUnofficialPatch.Workshop
         internal static ContentRootCatalog Discover()
         {
             List<ContentRoot> roots = new List<ContentRoot>();
-            // Explicitly installed plugin resource packages also work without a Workshop subscription.
-            if (Directory.Exists(Paths.PluginPath))
-                roots.Add(new ContentRoot("plugin-local", Path.GetFullPath(Paths.PluginPath)));
+            // The plugin installation contains author templates, never runtime Mod data.
             string workshopDirectory = FindWorkshopDirectory();
             if (!Directory.Exists(workshopDirectory))
             {

@@ -99,12 +99,6 @@ namespace EC2BUnofficialPatch.Services
 
         private static IEnumerable<string> EnumerateJsonFiles(ContentRootCatalog catalog)
         {
-            string local = Path.Combine(Paths.PluginPath, "EC2BUnofficialPatch");
-            foreach (string file in EnumerateDirectory(local, "*.json"))
-            {
-                if (!IsGameCfg(file)) yield return file;
-            }
-
             foreach (ContentRoot root in catalog?.Roots ?? Array.Empty<ContentRoot>())
             {
                 if (root == null || !Directory.Exists(root.Path))

@@ -65,9 +65,9 @@ namespace EC2BUnofficialPatch.Core
             "  建议 H.264 编码的 mp4，分辨率不超过 1920x1080，Windows 自带解码器就能播。\r\n" +
             "- volume：0~1，默认 1。\r\n" +
             "- loop：true 循环播放直到 [1164, 0]，默认 false。\r\n" +
-            "- block：true（默认）时视频挡住画面并拦截点击，播完或跳过后剧情才继续；false 时只是覆盖层，对话照常点。\r\n" +
-            "- skippable：block=true 时是否允许点击/空格/回车/Esc 跳过，默认 true。\r\n" +
-            "- roleOnTop：true 时视频插在对话界面的背景和人物立绘之间，立绘和对话框显示在视频上面；false（默认）视频盖住一切。需要当前正打开着对话界面。\r\n" +
+            "- skippable：盖住界面的视频可长按鼠标左键约 1 秒跳过，默认 true。\r\n" +
+            "- roleOnTop：true 时视频作为动态背景；普通对话位于人物后方，CG 中位于 CG 图像和文本之间，对话照常操作，优先于 skippable；false（默认）视频盖住界面并拦截键鼠。\r\n" +
+            "- 开始和正常结束时约 0.22 秒淡入淡出；debug 控制台始终位于视频上方。\r\n" +
             "- scale：fit 等比留黑边（默认）、fill 等比裁切铺满、stretch 拉伸铺满。\r\n\r\n" +
             "实际使用时，请把 ScreenVideo 文件夹放到 Steam Workshop Mod 根目录，\r\n" +
             "或放到 Mod 根目录/EC2BUnofficialPatch 下。本模板目录不会被插件读取。\r\n";
@@ -75,7 +75,7 @@ namespace EC2BUnofficialPatch.Core
         private const string ScreenVideoJson =
             "{\r\n" +
             "  \"videos\": [\r\n" +
-            "    { \"id\": 1, \"name\": \"示例\", \"video\": \"intro.mp4\", \"volume\": 1.0, \"loop\": false, \"block\": true, \"skippable\": true, \"roleOnTop\": false, \"scale\": \"fit\" }\r\n" +
+            "    { \"id\": 1, \"name\": \"示例\", \"video\": \"intro.mp4\", \"volume\": 1.0, \"loop\": false, \"skippable\": true, \"roleOnTop\": false, \"scale\": \"fit\" }\r\n" +
             "  ]\r\n" +
             "}\r\n";
 

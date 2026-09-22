@@ -20,14 +20,13 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
         public float volume { get; set; } = 1f;
         public bool loop { get; set; }
         public bool skippable { get; set; } = true;
-        public bool block { get; set; } = true;
         public bool roleOnTop { get; set; }
         public string scale { get; set; } = "fit";
     }
 
     internal sealed class RegisteredScreenVideo
     {
-        internal RegisteredScreenVideo(int id, string name, string videoPath, float volume, bool loop, bool skippable, bool block, bool roleOnTop, string scale, string sourcePath)
+        internal RegisteredScreenVideo(int id, string name, string videoPath, float volume, bool loop, bool skippable, bool roleOnTop, string scale, string sourcePath)
         {
             Id = id;
             Name = name ?? string.Empty;
@@ -35,7 +34,6 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
             Volume = volume;
             Loop = loop;
             Skippable = skippable;
-            Block = block;
             RoleOnTop = roleOnTop;
             Scale = scale;
             SourcePath = sourcePath;
@@ -47,7 +45,6 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
         internal float Volume { get; }
         internal bool Loop { get; }
         internal bool Skippable { get; }
-        internal bool Block { get; }
         internal bool RoleOnTop { get; }
         internal string Scale { get; }
         internal string SourcePath { get; }
@@ -136,7 +133,7 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
                 string scale = (entry.scale ?? "fit").Trim().ToLowerInvariant();
                 if (scale != "fit" && scale != "fill" && scale != "stretch") scale = "fit";
                 float volume = float.IsNaN(entry.volume) ? 1f : Math.Max(0f, Math.Min(1f, entry.volume));
-                _videos[entry.id] = new RegisteredScreenVideo(entry.id, entry.name, fullPath, volume, entry.loop, entry.skippable, entry.block, entry.roleOnTop, scale, configPath);
+                _videos[entry.id] = new RegisteredScreenVideo(entry.id, entry.name, fullPath, volume, entry.loop, entry.skippable, entry.roleOnTop, scale, configPath);
             }
         }
 

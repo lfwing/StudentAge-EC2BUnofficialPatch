@@ -182,12 +182,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
             Dictionary<string, ExternalLive2DEntry> entries =
                 new Dictionary<string, ExternalLive2DEntry>(StringComparer.Ordinal);
             HashSet<string> conflicts = new HashSet<string>(StringComparer.Ordinal);
-            List<ExternalLive2DConfigSource> sources = new List<ExternalLive2DConfigSource>
-            {
-                new ExternalLive2DConfigSource(
-                    "plugin-local",
-                    Path.Combine(Paths.PluginPath, "EC2BUnofficialPatch", FeatureDirectory, ConfigFileName))
-            };
+            List<ExternalLive2DConfigSource> sources = new List<ExternalLive2DConfigSource>();
 
             foreach (ContentRoot root in roots?.Roots ?? Array.Empty<ContentRoot>())
             {

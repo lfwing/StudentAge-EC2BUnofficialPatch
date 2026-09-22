@@ -1,12 +1,12 @@
 # StudentAge UP
 
-《学生时代》非官方修复与扩展补丁。原作者 lfw / lfwing，雾雁参与开发；本仓库统一维护 UP，音频演出能力已内置。
+《学生时代》非官方修复与扩展补丁。原作者 lfw / lfwing，雾雁参与开发；本仓库统一维护 UP，已内置《更好的音频效果》，无需再安装独立音频插件。
 
 本页保留完整的安装方法、功能说明、Mod 作者示例、常见问题及原作者声明。1.0.21 起只提供一个 UP 插件，BetterAudio 已并入 UP，不再独立安装或发布。
 
 ## 使用导航
 
-- [安装方法](#二安装方法) · [已发布下载](https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases)
+- [安装方法](#二安装方法) · [《学生时代》创意工坊](https://steamcommunity.com/app/1991040/workshop/)
 - [功能总览](#三功能总览) · [玩家常用功能](#四玩家常用功能)
 - [Mod 作者快速接入](#五mod-作者快速接入) · [音频演出配置与指令](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/README.txt)
 - [音频播放监控](#六音频播放监控) · [CG 与立绘优化](#七cg-与立绘优化)
@@ -21,7 +21,7 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 
 当前主要包含：
 
-- 4006 / 4016 / 4021 / 4022 / 5001 / 5002 等屏幕演出扩展
+- 4006 / 4016 / 4021 / 4022 / 5001 / 5002 / 1164 等屏幕演出扩展
 
 - 3003 行动指令及部分原版 EFFECT 修复
 
@@ -56,10 +56,10 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 - 可选的游戏启动后自动打开游戏内调试控制台
 
 
-当前源码版本：**1.0.22**（正式下载版本以 Releases 为准）
-当前代码包对应游戏版本：**1.93**
+当前源码版本：**1.0.22**（玩家实际可用版本以创意工坊已发布内容为准）
+当前代码包对应游戏版本：**1.94**
 
-本次 1.0.21 统一合并了 1.0.24 的音频/版本比较/测试隔离修复和 1.0.25 的原 schema=1 在线更新流程（当前单 DLL 清单使用 `layout=merged`）。
+1.0.22 源码面向游戏 1.94，并沿用单 DLL 架构；先前测试版中的音频、版本比较与在线更新改动已整合进当前代码。仓库中的版本号和更新清单不等于创意工坊已发布版本。
 
 _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与扩展需求。_
 
@@ -67,22 +67,22 @@ _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与�
 
 ## 2.1 前置需求
 
-- 《学生时代》Windows x64 Mono 版。
-- 已安装 BepInEx 5.x，并启动过一次游戏以生成 `BepInEx/plugins` 和 `BepInEx/config`。
-- 建议保留 BepInEx 日志，便于检查加载结果。
+- 《学生时代》1.94 Windows 版；游戏已集成 BepInEx 与创意工坊代码插件读取。
+- 普通玩家无需另装 BepInEx，也无需手动复制插件 DLL；订阅后还须在游戏内启用 Mod 并重启游戏。
+- 排查加载问题时，可查看游戏目录中的 `BepInEx/LogOutput.log`。
 
-从本仓库 [Releases](https://github.com/lfwing/StudentAge-EC2BUnofficialPatch/releases) 获取已发布插件，按对应版本说明安装。GitHub 的 **Code → Download ZIP** 和 **Source code** 下载的是源码，不能直接作为插件安装；当前源码 1.0.21 与已发布下载可能不同。
+常规安装请使用游戏创意工坊中的 UP 条目；具体订阅和启用步骤以[游戏 1.94 的官方公告](https://steamcommunity.com/app/1991040/allnews/)为准。GitHub 的 **Code → Download ZIP** 和 **Source code** 仅包含源码，不能作为游戏插件安装；本仓库 1.0.22 源码也不代表工坊已更新到该版本。
 
 ## 2.2 安装插件
 
-1. 完全退出游戏，备份原插件 DLL 和配置。
-2. 移出旧的 `EC2BUnofficialPatch.dll`、`LFBetterAudio.dll` 副本，包括改名或放在其他子目录中的同一插件；如由 Workshop 提供旧插件，也应避免与手动安装的版本重复加载。
-3. 只放入新版 `EC2BUnofficialPatch.dll`，位置为 `<游戏目录>/BepInEx/plugins/`。安装包中的 `BepInEx/plugins` 对应游戏目录下的同名位置。
-4. 保留原 `BepInEx/config` 配置及 Mod 资源，启动游戏检查加载日志。
+1. 确认游戏为 1.94，在创意工坊订阅适配该版本的 UP 条目。
+2. 在游戏内启用该 Mod，退出并重新启动游戏；游戏会自动读取工坊条目中的插件。
+3. 如果过去手动安装过 UP 或独立 `LFBetterAudio.dll`，先备份并移走手动副本，避免与工坊版本重复加载；保留原配置和 Mod 资源。
+4. 启动后检查 Mod 已启用及插件日志。若工坊条目尚未发布本仓库的改动，订阅获得的仍是工坊当前版本。
 
-**现在只需 UP 一个插件。不要再安装独立的 LFBetterAudio.dll。** 音频、音效、歌词和 1163 指令均由 UP 初始化和维护。旧 Mod 的 `BetterAudio/` 目录、`BetterAudio.json` 与 Timeline 文件名继续兼容，无需改名。
+**现在只需订阅并启用 UP；不要再安装独立的 `LFBetterAudio.dll`。** 音频、音效、歌词和 1163 指令均由 UP 初始化和维护。旧 Mod 的 `BetterAudio/` 目录、`BetterAudio.json` 与 Timeline 文件名继续兼容，无需改名。
 
-如果装过 1.0.23～1.0.25 接手测试版，请手动用本版覆盖一次：这次按正式版本规划统一为 1.0.21，自动更新不会执行版本回退。旧第三方 DLL 若硬依赖 BA 的独立插件 GUID 或程序集，需要作者改为依赖 UP 后重新构建；不再提供分离版。
+如果以前手动放入过 1.0.23～1.0.25 测试版，应先移走旧 DLL，再以工坊条目当前发布的版本为准；自动更新不会执行版本回退。旧第三方 DLL 若硬依赖 BA 的独立插件 GUID 或程序集，需要作者改为依赖 UP 后重新构建；不再提供分离版。
 
 首次运行后，UP 会生成配置文件：
 
@@ -90,28 +90,23 @@ _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与�
 BepInEx/config/sa.EC2B.UnofficialPatch.cfg
 ```
 
-建议在 `BepInEx/config/BepInEx.cfg` 的 `[Chainloader]` 段设置：
-
-```ini
-[Chainloader]
-HideManagerGameObject = true
-```
-
-插件会维护 Mod 作者参考模板：
+插件启动时会在游戏目录生成 Mod 作者参考模板，但不会将该模板目录当作 Mod 资源自动读取：
 
 ```text
 BepInEx/plugins/EC2BUnofficialPatch/
 ```
 
-绝大多数功能默认开启；音频诊断日志等可选功能按需开启。具体开关见下文“玩家常用功能”。
+启用内置《更好的音频效果》时，也会生成 `BepInEx/plugins/BetterAudio/` 作者模板；两个目录都只供复制参考。
+
+绝大多数功能默认开启；运行日志、音频监控等可选功能按需开启。具体开关见下文“玩家常用功能”。
 
 ## 2.3 自动更新
 
-UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的插件，在退出游戏后替换文件；**需要重新启动游戏才能加载更新后的版本**。
+工坊订阅版的发布与下载由 Steam 管理；UP 自 1.0.17 起另有内置自动更新机制。启用该机制且存在已公开的匹配更新包时，插件会检查、下载，并在退出游戏后替换实际加载的 DLL；**仍需再次启动游戏才能加载更新后的版本**。
 
 1.0.21 沿用原 UP 更新入口：读取 `update.json` 并更新完整的 UP DLL。原有 `schema: 1`、`layout: merged` 标记继续保留，拒绝分离版或未标记的旧清单；无需为内置音频单独更新。
 
-仓库源码版本不代表更新包已发布。`release-manifests/update.json` 为候选清单；发布者先上传对应 DLL 与 `update.json` Release 附件，再启用公开更新。仓库根目录不再维护 `update.json`，客户端保留的 Raw 回退仅用于兼容，不能作为发布入口；不再生成分离版发布。旧独立 BA 用户升级前须移除旧 BA DLL，更新助手不会替用户删除其他插件。详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
+仓库源码版本不代表工坊或自动更新包已发布。本地构建会在根目录、`release-manifests/` 和 `dist/release/` 生成候选 `update.json`；须先发布与之匹配的 DLL 和 Release 附件，才能公开更新清单，并另行更新工坊条目。仅推送 GitHub 代码不会更新玩家已订阅的工坊插件。客户端保留的 Raw 回退仅用于兼容，不作为发布入口；更新助手也不会替用户删除旧 BA 等其他插件。详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
 
 # 三、功能总览
 
@@ -122,7 +117,8 @@ UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的
 |屏幕特效|4021 / 4022|扩展黑白、像素化等背景效果|
 |屏幕特效|5001 屏幕纸条|为原版 PaperCfg 条目使用自定义图片|
 |屏幕特效|5002 滚动歌词|自定义滚动文字，并可配合原版或 BetterAudio 音乐|
-|行动指令|3003 修复|修正角色缩放指令的异常表现|
+|屏幕特效|1164 屏幕视频|播放 Mod 视频；可选全屏演出或位于人物、CG 文字后方的动态背景|
+|优化|3003 修复|修正角色缩放指令的异常表现|
 |EFFECT|36 动画修复与扩展|改善动画相关 EFFECT 与 Mod 动画内容兼容|
 |EFFECT|100,1 地点移动|修复地点移动 EFFECT|
 |EFFECT|20 关系效果|补全并修正角色离开、恢复等关系效果|
@@ -132,6 +128,7 @@ UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的
 |机制|地图静态 Mod 角色服装|普通地图显示角色本回合随机服装，学校地图保持校服；缺少差分时回退常服|
 |机制|地图社交外置 Live2D|为静态 Mod 角色按当前服装读取外置 model3/moc3；失败时回退静态立绘，默认开启|
 |机制|音频监控|记录原版、BetterAudio、Unity 三类音频播放|
+|机制|更好的音频效果|内置音频演出与 1163 指令，可单独关闭；运行日志默认关闭|
 |优化|静态立绘|减少换表情等情况下的立绘跳变|
 |优化|CG|改善连续 CG 切换，并整理 Mod CG 图鉴顺序|
 |优化|.json 文件热重载|游戏内按 F9 重载普通 Mod CFG、UP JSON、BetterAudio.json 与已注册插件 JSON|
@@ -175,6 +172,7 @@ UP 自 1.0.17 起提供自动更新。启用后会检查更新、下载匹配的
 
 ```
 [优化]
+3003修复 = true
 情侣话题每回合次数 = 1
 ```
 
@@ -211,19 +209,25 @@ CG播放与图鉴排序优化 = true
 Steam昵称对话替换 = true
 
 [机制]
+更好的音频效果 = true
+更好的音频效果日志输出 = false
+视频模块 = true
+视频模块日志输出 = false
 情侣画修复 = true
 社交小游戏修复 = true
 地图社交界面外置Live2D = true
 
-[屏幕特效]
+[屏幕特效与效果]
 4016漫画显示扩展 = true
 5001屏幕纸条扩展 = true
 5002屏幕滚动歌词扩展 = true
 ```
 
+`更好的音频效果日志输出` 与 `视频模块日志输出` 只控制播放期间的信息日志，默认关闭；启动自检、成功注册数量和错误信息仍会写入日志。关闭相应功能开关则不会加载该模块。
+
 # 五、Mod 作者快速接入
 
-插件启动后可直接参考：
+插件会在游戏目录下创建作者模板供参考，但不会把该模板目录作为运行时 Mod 资源读取。请将所需文件复制到自己的创意工坊 Mod，而不是直接在模板中制作正式内容：
 
 ```
 BepInEx/plugins/EC2BUnofficialPatch/
@@ -239,6 +243,8 @@ EC2BUnofficialPatch/Examples/
 无需修改插件 DLL。可直接打开 [UP 模板](EC2BUnofficialPatch/ModAuthorTemplate/)、[UP 示例](EC2BUnofficialPatch/Examples/) 与 [数据格式说明](EC2BUnofficialPatch/Docs/GAME_DATA_FORMATS.md)。
 
 BetterAudio 的音频、歌词配置和 1163 指令见 [作者使用说明](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/README.txt)，可复制 [BetterAudio 资源模板](EC2BUnofficialPatch/Features/Audio/ModAuthorTemplate/BetterAudio/)。
+
+1164 视频扩展在 `<Mod>/EC2BUnofficialPatch/ScreenVideo/CustomVideo.json` 或 `<Mod>/ScreenVideo/CustomVideo.json` 中登记视频 ID，视频文件须位于同一 `ScreenVideo` 目录内，支持 mp4、webm、mov、m4v；在 TalkCfg/EvtCfg 的 effect 中用 `[1164, 1, ID]` 播放、`[1164, 0]` 停止。`roleOnTop=true` 表示动态背景：普通对话位于人物后方，CG 中位于图片和文字之间，并优先于 `skippable`；否则视频盖住界面，可在 `skippable=true` 时长按左键约一秒跳过。若需在当前剧情内结束 `loop=true` 的循环视频，请使用停止指令；旧 `block` 字段不再使用。`volume` 范围为 0～1，`scale` 可选 `fit`、`fill`、`stretch`。编辑器预览只读取当前 Mod 的视频注册表。字段示例见游戏目录生成的 `ScreenVideo` 模板。
 
 ## 5.1 4016 外置漫画
 
@@ -338,7 +344,7 @@ CustomScreenLyrcis.json
 - 可选音乐
 
 
-音乐可使用原版音乐 ID，也可以使用 BetterAudio 已注册的音乐 ID。
+音乐可使用原版音乐 ID，也可以使用已注册的 BetterAudio 音乐 ID；关闭内置《更好的音频效果》后，原版音乐 ID 仍可使用。歌词或视频占用原版音道时会在退出后恢复此前的原版音乐，不会接管 BetterAudio 的独立音源。
 
 ## 5.4 LoveDraw 外置资源
 
@@ -555,7 +561,7 @@ UP会为显式 `floors` 建立反向索引，使进入 `9001` 后仍能返回父
 
 ### 玩家启用与排错流程
 
-1. 安装 DLL 后启动一次游戏，在 BepInEx 配置中确认 `[机制] 地图社交界面外置Live2D = true`（默认就是 true）。
+1. 订阅并启用 UP 后启动游戏，在配置中确认 `[机制] 地图社交界面外置Live2D = true`（默认就是 true）。
 2. 将上述目录放进 Workshop Mod 根目录，确认 `ExternalLive2D.json` 是合法 JSON，路径大小写和文件名一致。
 3. 进入地图并打开对应角色、对应服装。模型准备完成前短暂显示静态立绘，成功后自动切换。
 4. 完全不显示：核对 `personId/clothId`、模型相对路径、moc3 版本和全部纹理；查找“外置Live2D加载失败”日志。
@@ -593,6 +599,8 @@ Unity底层音频渠道
 ## 7.1 CG
 
 连续剧情 CG 会使用额外过渡处理，减少切换时短暂露出背景的问题。
+
+1164 动态背景在 CG 中按“CG 图片—视频—文字”分层，并兼容 DialogueSave 0.1.5 的 ADV 文字画布；调试控制台仍位于视频之上。该兼容已构建，实际游戏画面仍需按所用 Mod 组合验证。
 
 对于 Mod CG 图鉴：
 
@@ -652,7 +660,7 @@ dotnet run --project tools/UpdateTests.csproj
 
 不需要。
 
-JSON、模板和 Examples 主要供 Mod 作者使用。普通玩家安装 DLL 后即可使用修复和优化功能。
+JSON、模板和 Examples 主要供 Mod 作者使用。普通玩家在创意工坊订阅并启用 UP 后即可使用已发布版本的修复和优化功能，无需自行配置这些文件。
 
 ## Q：某个功能不想使用怎么办？
 
@@ -685,9 +693,7 @@ BepInEx/config/sa.EC2B.UnofficialPatch.cfg
 
 ## Q：为什么没有自动更新？
 
-自动更新功能于1.0.17版本加入，若下载的版本在此之前，是无法自动更新的。
-除此之外，网络波动/github限流等因素也可能导致更新无法完成。
-在完成更新后，需要重启游戏来完成.dll文件的替换。
+内置自动更新从 1.0.17 开始提供；更早版本没有该功能。网络波动、GitHub 限流、候选包尚未正式发布，或安装类型与清单不符，都可能导致检查或下载失败。完成更新后仍需重启游戏；仅推送源码不会更新创意工坊订阅内容。
 
 1.0.21 还会检查安装类型。若日志提示清单未标记或类型不匹配，插件会跳过该更新；这也可能是对应版本尚未正式发布。不要把候选清单或不同安装方式的 DLL 混用，详见 [自动更新说明](Docs/AUTO_UPDATE.md)。
 
@@ -736,7 +742,6 @@ https://github.com/white12666/StudentAgeEditorPlus
 范围限定：
 工作人员以个人名义、非为该工作室工作目的使用本项目代码时，不适用本附加许可，仍受 AGPL-3.0 约束；
 依据 AGPL-3.0 第 7 条，任何再分发者可以选择移除本附加许可文本，但这不影响白雨工作室已获得的权利。
-当前源码包中未声明明确的开源许可证。正式公开发布前，应由项目作者补充实际采用的许可证文本。
 
 ---
 免责声明：

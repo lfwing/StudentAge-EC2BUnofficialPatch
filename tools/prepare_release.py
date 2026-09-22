@@ -33,13 +33,13 @@ for obsolete in ['merged-EC2BUnofficialPatch.dll', 'update-merged.json']:
     (out/obsolete).unlink(missing_ok=True)
 asset = dll.name  # Preserve the original UP Release asset name.
 shutil.copy2(dll, out/asset)
-manifest = {'schema':1,'layout':'merged','version':version,'channel':'stable','gameVersion':'1.93',
+manifest = {'schema':1,'layout':'merged','version':version,'channel':'stable','gameVersion':'1.94',
             'assetName':dll.name,'size':dll.stat().st_size,'sha256':digest,
             'releasePage':f'https://github.com/{a.repository}/releases/tag/{version}',
             'downloadUrls':[f'https://github.com/{a.repository}/releases/download/{version}/{asset}']}
 candidates = r/'release-manifests'
 candidates.mkdir(exist_ok=True)
 (candidates/'update-merged.json').unlink(missing_ok=True)
-for target in [out/'update.json', candidates/'update.json']:
+for target in [out/'update.json', candidates/'update.json', r/'update.json']:
     target.write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n')
 print('Prepared UP DLL and update.json locally. Live feeds are unchanged until assets are published.')

@@ -157,6 +157,7 @@ BepInEx/plugins/EC2BUnofficialPatch/
 
 ```
 [优化]
+3003修复 = true
 情侣话题每回合次数 = 1
 ```
 
@@ -193,20 +194,23 @@ CG播放与图鉴排序优化 = true
 Steam昵称对话替换 = true
 
 [机制]
+更好的音频效果 = true
+更好的音频效果日志输出 = false
+视频模块 = true
+视频模块日志输出 = false
 情侣画修复 = true
 社交小游戏修复 = true
 地图社交界面外置Live2D = true
 
-[屏幕特效]
+[屏幕特效与效果]
 4016漫画显示扩展 = true
 5001屏幕纸条扩展 = true
 5002屏幕滚动歌词扩展 = true
-1164屏幕视频扩展 = true
 ```
 
 # 五、Mod 作者快速接入
 
-插件启动后可直接参考：
+插件不会自动读取或安装游戏目录内的作者模板；请从源码仓库复制所需模板到 Workshop Mod：
 
 ```
 BepInEx/plugins/EC2BUnofficialPatch/
@@ -307,7 +311,7 @@ CustomVideo.json：
 ```
 {
   "videos": [
-    { "id": 1, "name": "开场", "video": "intro.mp4", "volume": 1.0, "loop": false, "block": true, "skippable": true, "roleOnTop": false, "scale": "fit" }
+    { "id": 1, "name": "开场", "video": "intro.mp4", "volume": 1.0, "loop": false, "skippable": true, "roleOnTop": false, "scale": "fit" }
   ]
 }
 ```
@@ -319,8 +323,9 @@ EFFECT：
 1164,0     停止当前视频
 ```
 
-- `block=true`（默认）：视频盖住整个画面并拦截点击，播完（或点击/空格/回车/Esc 跳过，需 `skippable=true`）后剧情才继续；`block=false`：只作为覆盖层，对话照常推进，适合配合 `loop` 做动态背景，用 `1164,0` 收掉。
-- `roleOnTop=true`：视频插到对话界面的背景和人物立绘之间，立绘、对话框显示在视频上面（需要当时正开着对话界面，否则按盖住播放）；默认 false 视频盖住一切。
+- `skippable=true`（默认）：盖住界面的视频可长按鼠标左键约 1 秒跳过；`false` 时只能等非循环视频播完或执行 `1164,0`。
+- `roleOnTop=true`：作为动态背景，普通对话时视频位于人物后方，CG 流程中位于 CG 图像与文本之间，对话照常操作；即使同时填写 `skippable=true` 也按动态背景处理，不监听跳过。默认 false 时视频盖住界面并拦截键鼠操作。视频开始及正常结束约有 0.22 秒淡入淡出，debug 控制台始终在最上层。
+- 视频开始时暂停原版音乐通道，视频退出时从暂停处继续；BetterAudio 的播放优先级保持不变。
 - `scale`：`fit` 等比留黑边、`fill` 等比裁切铺满、`stretch` 拉伸铺满。
 - 非循环视频播完自动收起；回到主菜单/读档时也会收起。
 - 视频建议 H.264 mp4，1080p 以内；支持 mp4/webm/mov/m4v，文件须在 ScreenVideo 目录内，不允许绝对路径或 `..`。

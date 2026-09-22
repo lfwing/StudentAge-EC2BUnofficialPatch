@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
 
 namespace EC2BUnofficialPatch.Workshop
 {
@@ -71,19 +70,6 @@ namespace EC2BUnofficialPatch.Workshop
                         loveDrawVideos,
                         conflicts);
                 }
-            }
-
-            // 插件自身也可以提供 LoveDraw 外置资源。它没有 Workshop packageId，
-            // 因此只参与“未指定 Mod 且唯一命中”的解析。
-            foreach (string directory in EnumerateLocalPluginLoveDrawDirectories())
-            {
-                loveDrawDirectories.Add(directory);
-                RegisterLoveDrawDirectory(
-                    "plugin-local",
-                    directory,
-                    loveDrawImages,
-                    loveDrawVideos,
-                    conflicts);
             }
 
             return new ResourceIndex(
@@ -332,17 +318,6 @@ namespace EC2BUnofficialPatch.Workshop
             string direct = ExternalResourceResolver.FindChildDirectory(modRoot, featureName);
             if (direct != null)
                 yield return direct;
-        }
-
-        private static IEnumerable<string> EnumerateLocalPluginLoveDrawDirectories()
-        {
-            string pluginDirectory = ExternalResourceResolver.FindChildDirectory(Paths.PluginPath, "EC2BUnofficialPatch");
-            if (pluginDirectory == null)
-                yield break;
-
-            string loveDraw = ExternalResourceResolver.FindChildDirectory(pluginDirectory, "LoveDraw");
-            if (loveDraw != null)
-                yield return loveDraw;
         }
 
         private static void AddFileIfExists(string path, ICollection<string> result)

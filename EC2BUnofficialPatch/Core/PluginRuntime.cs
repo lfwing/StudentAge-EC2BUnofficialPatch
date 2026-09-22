@@ -62,7 +62,8 @@ namespace EC2BUnofficialPatch.Core
                         throw new InvalidOperationException("无法创建 EC2BUnofficialPatch_RuntimeHost。");
                     }
 
-                    LFBetterAudio.Plugin.Initialize(_logger);
+                    if (PluginConfig.BetterAudio.Value)
+                        LFBetterAudio.Plugin.Initialize(_logger);
                     InitializeModules();
                     _initialized = true;
 
@@ -155,8 +156,8 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.ScreenBackgroundEffects.Value, new BackgroundEffectsModule(), "屏幕特效/屏幕特效扩展");
             LoadIf(PluginConfig.ScreenPaper.Value, new ScreenPaperModule(), "屏幕特效/5001屏幕纸条扩展");
             LoadIf(PluginConfig.ScreenLyrics.Value, new ScreenLyrcisModule(), "屏幕特效/5002屏幕滚动歌词扩展");
-            LoadIf(PluginConfig.ScreenVideo.Value, new ScreenVideoModule(), "屏幕特效/1164屏幕视频扩展");
-            LoadIf(PluginConfig.Action3003.Value, new Action3003Module(), "行动指令/3003修复");
+            LoadIf(PluginConfig.ScreenVideo.Value, new ScreenVideoModule(), "机制/视频模块");
+            LoadIf(PluginConfig.Action3003.Value, new Action3003Module(), "优化/3003修复");
             LoadIf(PluginConfig.AnimeExtension.Value, new AnimeExtensionModule(), "效果/36动画相关修复与扩展");
             LoadIf(PluginConfig.MapMoveEffects.Value, new MapMoveEffectModule(), "效果/100,1地点移动修复");
             LoadIf(PluginConfig.RelationEffects.Value, new RelationEffectModule(), "效果/20关系效果修复与扩展");

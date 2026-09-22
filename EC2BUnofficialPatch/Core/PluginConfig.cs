@@ -17,6 +17,9 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> ScreenPaper { get; private set; }
         internal static ConfigEntry<bool> ScreenLyrics { get; private set; }
         internal static ConfigEntry<bool> ScreenVideo { get; private set; }
+        internal static ConfigEntry<bool> ScreenVideoLogging { get; private set; }
+        internal static ConfigEntry<bool> BetterAudio { get; private set; }
+        internal static ConfigEntry<bool> BetterAudioLogging { get; private set; }
         internal static ConfigEntry<bool> Action3003 { get; private set; }
         internal static ConfigEntry<bool> AnimeExtension { get; private set; }
         internal static ConfigEntry<bool> MapMoveEffects { get; private set; }
@@ -75,7 +78,11 @@ namespace EC2BUnofficialPatch.Core
                     "5001屏幕纸条扩展",
                     "屏幕特效",
                     "屏幕纸条扩展");
-                bool screenVideo = ReadRawValue(config, "屏幕特效", "1164屏幕视频扩展", true);
+                bool screenVideo = ReadRawValue(config, "机制", "视频模块",
+                    ReadRawValue(config, "屏幕特效", "1164屏幕视频扩展", true));
+                bool screenVideoLogging = ReadRawValue(config, "机制", "视频模块日志输出", false);
+                bool betterAudio = ReadRawValue(config, "机制", "更好的音频效果", true);
+                bool betterAudioLogging = ReadRawValue(config, "机制", "更好的音频效果日志输出", false);
                 bool screenLyrics = ReadMigratedValue(
                     config,
                     "屏幕特效",
@@ -84,12 +91,9 @@ namespace EC2BUnofficialPatch.Core
                     "屏幕滚动歌词扩展",
                     ReadRawValue(config, "屏幕特效", "歌词显示扩展", true));
 
-                bool action3003 = ReadMigratedValue(
-                    config,
-                    "行动指令",
-                    "3003修复",
-                    "行动指令",
-                    "行动3003扩展");
+                bool action3003 = ReadRawValue(config, "优化", "3003修复",
+                    ReadRawValue(config, "行动指令", "3003修复",
+                        ReadRawValue(config, "行动指令", "行动3003扩展", true)));
 
                 bool legacyAnimeExtension = ReadMigratedValue(
                     config,
@@ -191,6 +195,14 @@ namespace EC2BUnofficialPatch.Core
                 bool oldRoleAvailability = ReadRawValue(config, "机制", "外置角色可用性", true);
                 bool roleAvailability = ReadRawValue(config, "机制", "控制角色在列表显示", oldRoleAvailability);
                 bool mapSocialExternalLive2D = ReadRawValue(config, "机制", "地图社交界面外置Live2D", true);
+                screenDynamicWaitText = ReadRawValue(config, "屏幕特效与效果", "4006黑屏特效显示文字扩展", screenDynamicWaitText);
+                screenComicExtension = ReadRawValue(config, "屏幕特效与效果", "4016漫画显示扩展", screenComicExtension);
+                screenBackgroundEffects = ReadRawValue(config, "屏幕特效与效果", "屏幕特效扩展", screenBackgroundEffects);
+                screenPaper = ReadRawValue(config, "屏幕特效与效果", "5001屏幕纸条扩展", screenPaper);
+                screenLyrics = ReadRawValue(config, "屏幕特效与效果", "5002屏幕滚动歌词扩展", screenLyrics);
+                animeExtension = ReadRawValue(config, "屏幕特效与效果", "36动画相关修复与扩展", animeExtension);
+                mapMoveEffects = ReadRawValue(config, "屏幕特效与效果", "100,1地点移动修复", mapMoveEffects);
+                relationEffects = ReadRawValue(config, "屏幕特效与效果", "20关系效果修复与扩展", relationEffects);
                 bool autoOpenGameConsole = ReadRawValue(config, "Debug", "AutoOpenGameConsole", false);
                 bool updateAutoCheck = ReadRawValue(config, "更新", "启动时自动检查更新", true);
                 bool updateAutoInstall = ReadRawValue(config, "更新", "发现新版本后自动下载并安装", true);
@@ -205,57 +217,51 @@ namespace EC2BUnofficialPatch.Core
 
                 ScreenDynamicWaitText = Bind(
                     config,
-                    "屏幕特效",
+                    "屏幕特效与效果",
                     "4006黑屏特效显示文字扩展",
                     screenDynamicWaitText,
                     "扩展 4006 黑屏过场显示文字指令。");
                 ScreenComicExtension = Bind(
                     config,
-                    "屏幕特效",
+                    "屏幕特效与效果",
                     "4016漫画显示扩展",
                     screenComicExtension,
                     "扩展 4016 漫画指令，支持外置图片读取、规范校验与 Workshop 嗅探（本插件使用comic文件夹）。");
                 ScreenBackgroundEffects = Bind(
                     config,
-                    "屏幕特效",
+                    "屏幕特效与效果",
                     "屏幕特效扩展",
                     screenBackgroundEffects,
                     "扩展屏幕黑白、屏幕打码等屏幕特效指令。");
                 ScreenPaper = Bind(
                     config,
-                    "屏幕特效",
+                    "屏幕特效与效果",
                     "5001屏幕纸条扩展",
                     screenPaper,
                     "扩展 5001 屏幕纸条指令（本插件使用ScreenPaper文件夹）。");
-                ScreenVideo = Bind(
-                    config,
-                    "屏幕特效",
-                    "1164屏幕视频扩展",
-                    screenVideo,
-                    "扩展 1164 屏幕视频指令，播放 Mod 自带的视频文件（本插件使用ScreenVideo文件夹）。");
                 ScreenLyrics = Bind(
                     config,
-                    "屏幕特效",
+                    "屏幕特效与效果",
                     "5002屏幕滚动歌词扩展",
                     screenLyrics,
                     "扩展 5002 屏幕滚动歌词指令（本插件使用ScreenLyrcis文件夹）。");
 
                 Action3003 = Bind(
                     config,
-                    "行动指令",
+                    "优化",
                     "3003修复",
                     action3003,
                     "修复 3003 行动指令。");
 
                 AnimeExtension = Bind(
                     config,
-                    "效果",
+                    "屏幕特效与效果",
                     "36动画相关修复与扩展",
                     animeExtension,
                     "针对 36 动画相关效果进行修复与扩展。");
                 MapMoveEffects = Bind(
                     config,
-                    "效果",
+                    "屏幕特效与效果",
                     "100,1地点移动修复",
                     mapMoveEffects,
                     "针对 100,1 地点移动效果进行修复。");
@@ -272,6 +278,14 @@ namespace EC2BUnofficialPatch.Core
                     "社交小游戏修复",
                     minigameMechanics,
                     "支持角色独立小游戏阶段、自定义小游戏注册与统一结算，且支持双cfg读取（本插件使用Minigame文件夹）。");
+                BetterAudio = Bind(config, "机制", "更好的音频效果", betterAudio,
+                    "启用内置《更好的音频效果》音频、歌词与 1163 指令。");
+                BetterAudioLogging = Bind(config, "机制", "更好的音频效果日志输出", betterAudioLogging,
+                    "输出《更好的音频效果》的播放成功与运行信息；启动自检、注册数量及错误日志始终输出。", false);
+                ScreenVideo = Bind(config, "机制", "视频模块", screenVideo,
+                    "启用 1164 屏幕视频指令并播放 Mod 自带的视频文件。");
+                ScreenVideoLogging = Bind(config, "机制", "视频模块日志输出", screenVideoLogging,
+                    "输出视频开始、结束等运行信息；启动注册数量及错误日志始终输出。", false);
                 AudioOriginalChannel = Bind(
                     config,
                     "机制",
@@ -352,7 +366,7 @@ namespace EC2BUnofficialPatch.Core
                     "支持每回合开展多次情侣话题。默认：1。");
                 RelationEffects = Bind(
                     config,
-                    "效果",
+                    "屏幕特效与效果",
                     "20关系效果修复与扩展",
                     relationEffects,
                     "针对 20 类关系效果进行修复与扩展。");
@@ -475,7 +489,7 @@ namespace EC2BUnofficialPatch.Core
                     index = next;
                 }
 
-                string[] desiredOrder = { "优化", "屏幕特效", "效果", "机制", "行动指令", "Debug", "更新" };
+                string[] desiredOrder = { "优化", "屏幕特效与效果", "机制", "Debug", "更新" };
                 var output = new List<string>(lines.Length);
                 output.AddRange(header);
                 foreach (string sectionName in desiredOrder.Concat(discoveredOrder).Distinct())

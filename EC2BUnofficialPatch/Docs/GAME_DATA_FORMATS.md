@@ -73,15 +73,18 @@
 ### `1164`：ScreenVideo
 
 - 文件搜索位置：内容根目录的 `EC2BUnofficialPatch/ScreenVideo/CustomVideo.json` 或 `ScreenVideo/CustomVideo.json`。
-- 格式：`{ "videos": [{ "id": 正整数, "name": "备注", "video": "相对视频路径", "volume": 0~1, "loop": bool, "block": bool, "skippable": bool, "roleOnTop": bool, "scale": "fit|fill|stretch" }] }`。
-- EFFECT：`1164,1,id` 播放；`1164,0` 停止。由 `CommonEvtMgr.GenEffector` Prefix 截获，返回 `EffectorScreenVideo`，其余 EFFECT 不受影响。
+- 格式：`{ "videos": [{ "id": 正整数, "name": "备注", "video": "相对视频路径", "volume": 0~1, "loop": bool, "skippable": bool, "roleOnTop": bool, "scale": "fit|fill|stretch" }] }`。
+- EFFECT：`1164,1,id` 播放；`1164,0` 停止。正常剧情由 `CommonEvtMgr.GenEffector` Prefix 截获，返回 `EffectorScreenVideo`；编辑器预览参照 BA 的预览入口，在 `PreviewTalkView` 的有字/空文本对话中直接执行。其余 EFFECT 不受影响。
 - 视频必须位于同一 ScreenVideo 目录内，仅支持 mp4/webm/mov/m4v；禁止绝对路径和 `..`。重复 id 以先加载者为准。
-- 播放层是独立的置顶 Canvas + VideoPlayer（URL 源，Direct 音频输出），同一时间只播放一个；回到主菜单自动收起。`roleOnTop=true` 时画面节点临时挂到 NewTalkView 的 `group_role` 之前，结束后挂回；对话界面被销毁时视频随之结束。
+- 播放层是独立的置顶 Canvas + VideoPlayer（URL 源，Direct 音频输出），同一时间只播放一个；CG 流程中完整覆盖视频位于 CG 之上，debug 控制台仍在最上层；回到主菜单自动收起。`roleOnTop=true` 时画面节点在普通对话中挂在 `group_role` 前，在 CG 流程中移到 CG 图像与 `mask_talk_cg` 文本层之间，CG 收起后移回；编辑器预览关闭时停止其视频。首帧淡入和正常退出淡出各约 0.22 秒，淡出结束才释放视频占用的原版音乐通道。
+- `roleOnTop=true` 优先按动态背景处理，允许正常操作对话，即使同时声明 `skippable=true` 也不跳过。否则视频阻挡界面操作，`skippable=true` 时长按左键约一秒可跳过。旧 `block` 字段不再参与判断。
+- 播放前暂停原版音乐通道；结束、跳过、替换和显式停止都会释放视频的占用。BA 音源独立播放，与视频共用原版音乐的优先级管理。
 
 ### `5002`：ScreenLyrics
 
 - 歌词项必须有正整数 `id` 与非空 `text`；`text` 中的 `\\n` 会转换为换行。
 - `audio` 可省略；若填写，必须是正整数且对应可用音乐 ID（包括 BetterAudio 注册的可用路径）。
+- `audio` 先按原版 `AudioCfg` ID 解析，再按已启用 BA 的 ID 解析。播放自身音频时暂停原版音乐并暂借 BA 当前播放会话；歌词结束后先恢复 BA，再按视频、BA、5002 的共同占用状态决定是否恢复原版音乐。
 - 多个来源声明同一歌词 ID 时，该 ID 标记冲突，不选择“后加载者覆盖前加载者”。
 
 ## Live2D 与静态立绘
@@ -93,7 +96,7 @@
 ### 地图社交界面外置 Live2D
 
 - 玩家开关：`[机制] 地图社交界面外置Live2D = true`，默认开启。
-- 配置位置：`EC2BUnofficialPatch/ExternalLive2D/ExternalLive2D.json`。插件本地目录与 Workshop Mod 根目录下都可使用。
+- 配置位置：Workshop Mod 的 `EC2BUnofficialPatch/ExternalLive2D/ExternalLive2D.json`。游戏插件安装目录中的作者模板不作为运行时配置读取。
 - 推荐格式：`{ "models": [{ "personId": 1001, "clothId": 0, "schoolStage": "primary", "model": "1001/cloth0/primary/model.model3.json", "fitScale": 1.0, "xOffset": 0, "yOffset": 0, "staticAnchorX": 0.5, "staticAnchorY": 0.5, "modelAnchorX": 0.5, "modelAnchorY": 0.5, "flip": false }] }`。
 - `personId` 必须为正整数；`clothId` 为非负整数。`schoolStage` 为 `primary`、`middle` 或 `all`，省略等同 `all`。当前学段精确项优先于 `all`；相同角色和服装可分别登记小学与中学模型。
 - `model` 必须是相对于 `ExternalLive2D.json` 的 `.model3.json` 路径；不允许绝对路径或 `..`。模型包内引用同样不得离开 `model3.json` 所在目录。

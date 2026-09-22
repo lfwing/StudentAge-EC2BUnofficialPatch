@@ -28,7 +28,6 @@ namespace LFBetterAudio
 
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
-        internal static string TemplateDirectory { get; private set; }
         internal static string RuntimeAssetDirectory { get; private set; }
         internal static BetterAudioConfigStore ConfigStore { get; private set; }
 
@@ -66,13 +65,16 @@ namespace LFBetterAudio
 
             try
             {
-                TemplateDirectory = Path.GetFullPath(
-                    Path.Combine(Paths.PluginPath, ModAuthorTemplateInstaller.TemplateFolderName));
                 RuntimeAssetDirectory = Path.GetFullPath(
                     Path.Combine(Paths.CachePath, "LFBetterAudio", "RuntimeAssets"));
 
                 bool loadedNormally = true;
                 _harmony = new Harmony(PluginGuid);
+
+                loadedNormally &= TryInitialize(
+                    "Mod作者模板",
+                    () => ModAuthorTemplateInstaller.EnsureInstalled(
+                        Path.Combine(Paths.PluginPath, ModAuthorTemplateInstaller.TemplateFolderName)));
 
                 // 1163 工厂、正常游戏文字开始、Preview 文字开始及 Preview 空文本入口
                 // 采用手动精确安装，便于启动自检及持久控制器补装。
@@ -84,10 +86,6 @@ namespace LFBetterAudio
                         EnsureCriticalPatchesInstalled();
                         VerifyCriticalEffectPaths();
                     });
-
-                loadedNormally &= TryInitialize(
-                    "Mod作者模板",
-                    () => ModAuthorTemplateInstaller.EnsureInstalled(TemplateDirectory));
 
                 loadedNormally &= TryInitialize(
                     "内置校验资源",
@@ -201,7 +199,8 @@ namespace LFBetterAudio
 
         internal static void LogEffectSuccess(string message)
         {
-            if (!string.IsNullOrWhiteSpace(message))
+            if (EC2BUnofficialPatch.Core.PluginConfig.BetterAudioLogging?.Value == true &&
+                !string.IsNullOrWhiteSpace(message))
             {
                 Log?.LogInfo($"[1163执行成功] {message}");
             }

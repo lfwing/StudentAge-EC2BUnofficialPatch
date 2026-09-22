@@ -31,7 +31,7 @@ def compile(name,output,src,resources=(),assemblyversion='1.0.9.0'):
  cmd+=['-r:'+str(f) for f in refs]
  cmd+=['-resource:'+str(f)+','+logical for f,logical in resources]
  cmd += [str(f) for f in src]+[str(attrs)]
- run=subprocess.run(cmd,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+ run=subprocess.run(cmd,text=True,encoding='utf-8',errors='replace',stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
  (qa/(output.name+'-'+name+'-build.log')).write_text(run.stdout)
  print(run.stdout,end='')
  run.check_returncode()

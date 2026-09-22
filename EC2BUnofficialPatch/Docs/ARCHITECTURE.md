@@ -9,7 +9,6 @@ Plugin.Awake
   → PluginConfig.Initialize
   → PluginRuntime.Start
     → PluginRuntimeHost.Create（持久宿主）
-    → TemplateMaintenance.Ensure
     → PluginServices.Create
     → ModuleHost.Load（按配置加载 Harmony 模块）
     → UpdateService.Start
@@ -18,6 +17,8 @@ Plugin.Awake
 - `Plugin` 只是引导组件。StudentAge 会销毁挂在 `BepInEx_Manager` 上的组件，因此非退出阶段的 `OnDestroy` 不得卸载补丁。
 - `PluginRuntimeHost` 是持久生命周期宿主；应用退出才调用 `ModuleHost.Dispose`、释放服务并停止更新检查。
 - 每个模块拥有独立 Harmony ID。模块加载失败时会撤销该模块自己的补丁，并记录启动自检失败，不应拖垮无关模块。
+- 启动时会在 `BepInEx/plugins/EC2BUnofficialPatch` 创建 UP 作者模板，启用 BA 时也会在 `BepInEx/plugins/BetterAudio` 创建 BA 模板；这些模板不参与运行时内容根扫描，运行时内容来自 Workshop Mod。BA、屏幕视频与 5002 歌词音频共用 `GameMusicPriority` 管理原版音乐通道的暂停和恢复，由持久宿主逐帧维护。
+- 视频使用独立的屏幕叠加画布。剧情 CG 子视图出现时，完整覆盖视频位于其画布上方；动态背景视频则在 CG 内建立临时 Canvas，按 CG 图片实际排序层和值放在图片之上。原版文字模式下，将 `mask_talk_cg` 临时排在视频之上；若 DialogueSave ADV 已把实际文字移至独立 `DialogueSave.ADV` Canvas 且用透明 `ADV.NativeShield` 隐藏原容器，则视频层绕开该遮罩，排在 CG 图片与 ADV 文字之间，不修改隐藏容器的排序。退出 CG 时恢复原设置并回到普通对话的角色后方。播放期间原版 `DebugMgr` 所建 `DebugCanvas` 高于所有视频、CG 文字及 DialogueSave 模态层，使控制台保持可见、可点击，视频退出时恢复原层级。视频首帧淡入、正常退出淡出采用与 CG 优化相同的 0.22 秒节奏，淡出后才释放原版音道；异常退出立即清理。编辑器预览从当前 Mod 根目录读取视频注册表，并通过 `PreviewTalkView` 的有字/空文本入口执行 1164。BA 与视频的启动自检/注册数量及错误日志不受运行信息日志开关控制。
 
 ## 模块分区
 
