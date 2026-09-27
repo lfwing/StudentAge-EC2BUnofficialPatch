@@ -142,7 +142,8 @@ namespace EC2BUnofficialPatch.Core
 
             // 必须在游戏开始读取 Workshop CFG 之前挂接。该补丁为每个 Mod 构建运行时 CFG 视图：
             // 有增强版时替代同名兼容 CFG；原版同名 CFG 不存在时也能主动注入。Workshop 原文件始终不修改。
-            if (PluginConfig.LoveDrawExternalResources.Value ||
+            if (PluginConfig.EventIdCompatibility.Value ||
+                PluginConfig.LoveDrawExternalResources.Value ||
                 PluginConfig.MinigameMechanics.Value ||
                 PluginConfig.JsonHotReload.Value ||
                 PluginConfig.MapFloorCompatibility.Value ||

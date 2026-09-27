@@ -154,3 +154,11 @@ MapRoleView.Refresh 后缀
 ContentRootCatalog、CustomMinigameRegistry 与 MiniGameStageCoordinator 的接手扩展均保留在当前 1.0.21。曾在接手版加入的 UpdateTransaction 已移除，助手恢复上游单文件实现。
 
 1.0.24 音频监控：以弱键 AudioClip 关联路径，不缓存永久实例 ID；日志去重按当前/前一帧使用有上限的可复用集合。1.0.25 在线更新：恢复 schema 1 单文件助手，并以 `layout=merged` 防止错误布局覆盖；这些内容均已并入当前版本。
+
+## 多 Mod 事件 ID 兼容
+
+`ModCfgOverridePatches.LoadModCfgsPrefix` 先记录原始来源并选择 UP 增强配置，再调用 `EventIdCompatibilityService.BeforeLoad`。首次进入时抓取原版/DLC 三张表的 ID 基线，按 activeMods 顺序构建完整计划；所有来源预检和缓存写入完成、固定映射落盘后才改变本次 loader 路径。后续 Mod 只选取已生成视图。失败时不应用部分映射。
+
+`CollisionPlan` 与 `ReferenceRules` 不依赖 Unity，可单独执行纯逻辑检查。前者维护所属关系、稳定别名和占位；后者只重写已核对的 CFG 字段/原版条件效果参数。独立插件遗留映射保留原路径，公开入口统一为 `Services.EventIdCompatibilityApi`。
+
+F9 的 `GameModCfgHotReload.BuildPlan` 接受未重写的最后有效文档，先按来源改号，再按原版先到优先规则合并。`ApplyPlan` 连同事件索引一起回滚，成功后提交注册表；不调用会覆盖玩家历史的 `CommonEvtMgr.Init/Load`。禁用时原热重载行为保持不变。

@@ -1,5 +1,7 @@
 # 当前状态：UP 1.0.22 修复副本
 
+2026-09-28：待合并的事件 ID 兼容功能已接入当前 1.0.22 单 DLL。`[机制] 多mod事件ID兼容` 默认关闭，重启生效；新增事件/对白/选项使用固定所属关系与别名，原版/DLC ID 沿用原有覆盖优先级。兼容处理位于 UP 增强 CFG 选择之后，F9 从最后有效原始文档重建同一规则，事务更新事件索引。旧独立补丁共存时不重复映射并暂停普通 CFG 热重载。映射路径保持 `StudentAge.EventCompat/id-map.json`，详见 [使用与范围](EventIdCompatibility.md)、[验证记录](../../Docs/VALIDATION.md)。本次仅提交源码 PR，不改变版本和发布清单。
+
 2026-09-22 DialogueSave 0.1.5 兼容：本机订阅包 `3804899191` 与已安装 cfg（`DialogueStyle = ADV`）确认问题场景。其 [`AdvDialogueController`](https://github.com/360478712scy-gif/StudentAge-DialogueSave/blob/c40402ce621e47d3c27c8291e3265d996a0ae8d9/src/UI/AdvDialogueController.cs) 把 CG 实际文字移到排序 29000 的独立 `DialogueSave.ADV` Canvas，并把原 `mask_talk_cg` 移进透明 `ADV.NativeShield`；上一版将视频放在该 mask 的父节点，因而被透明遮罩隐藏。现在按文字是否位于 ADV Canvas 自动切换：ADV 时将视频层挂在遮罩外的原 CG 根下，排序在 CG 图片与 ADV 文字之间，不再改隐藏的原生文字 Canvas；切回原版/退出 CG 时恢复上一布局。播放期间 DebugCanvas 也会高于 DialogueSave 的模态画布。未修改 DialogueSave 或游戏文件，游戏内联动视觉效果仍待实测。
 
 2026-09-22 CG 视频层级重做：移除上一版仅将 `roleOnTop=true` 视频插到 `mask_talk_cg` 前的方案；CG 子视图出现时建立临时视频 Canvas，按实际 CG 图片 Canvas 的排序层和值，将视频设在图片之上；原版文字模式下，再将 `mask_talk_cg` 排在视频之上。CG 退出或视频结束时销毁临时视频层并恢复文字 Canvas 原设置；Debug 控制台保持最上层。普通对话仍把动态背景置于角色后方。视频画面及底色保留与 CG 优化相同的 0.22 秒渐变节奏：首帧出现后淡入，正常播完、跳过、显式停止和替换时淡出，淡出完成才释放视频占用的原版音道；错误、准备失败和场景销毁立即清理。游戏内视觉效果仍待实测。

@@ -32,6 +32,7 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> StaticPortraitLogging { get; private set; }
         internal static ConfigEntry<bool> CGOptimization { get; private set; }
         internal static ConfigEntry<bool> JsonHotReload { get; private set; }
+        internal static ConfigEntry<bool> EventIdCompatibility { get; private set; }
         internal static ConfigEntry<bool> MapFloorCompatibility { get; private set; }
         internal static ConfigEntry<bool> MapFloorHierarchyExtension { get; private set; }
         internal static ConfigEntry<bool> SteamNicknameDialogueReplacement { get; private set; }
@@ -172,6 +173,7 @@ namespace EC2BUnofficialPatch.Core
                     "优化",
                     "CG播放优化");
                 bool jsonHotReload = ReadRawValue(config, "优化", ".json文件热重载", true);
+                bool eventIdCompatibility = ReadRawValue(config, "机制", "多mod事件ID兼容", false);
                 bool legacyMapFloorCompatibility = ReadRawValue(
                     config, "优化", "地图楼层兼容扩展", true);
                 bool mapFloorCompatibility = ReadRawValue(
@@ -333,6 +335,11 @@ namespace EC2BUnofficialPatch.Core
                     ".json文件热重载",
                     jsonHotReload,
                     "游戏内按F9可实现.json文件热重载，其余插件新增.json可按规则兼容。");
+                EventIdCompatibility = Bind(
+                    config, "机制", "多mod事件ID兼容",
+                    eventIdCompatibility,
+                    "为多个模组的新增事件、对白和选项分配固定ID，原版覆盖保持原规则。需要重启；请随存档保留 StudentAge.EventCompat/id-map.json。",
+                    false);
                 MapFloorCompatibility = Bind(
                     config,
                     "优化",

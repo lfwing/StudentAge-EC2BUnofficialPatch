@@ -11,3 +11,11 @@
 1.0.24/1.0.25 接手内容已回并到当前 1.0.21：音频监控使用 AudioClip 弱引用和有界日志集合，版本比较缺省值按 0 处理；更新器恢复 schema 1 单文件助手，并以 `layout=merged` 拒绝错误布局。
 
 在线更新保留原合并版通道，见 [自动更新](AUTO_UPDATE.md)。实际验证范围见 [验证记录](VALIDATION.md)。历史 1.0.23～1.0.25 文件保留为开发过程证据，其有效内容已在 1.0.21 记录中回并。
+
+## 事件 ID 兼容整合（基于 1.0.22 的待合并变更）
+
+独立事件兼容逻辑迁入 `Services/EventCompatibility/`，复用 `ModCfgOverrideModule` 的同 Mod 增强 CFG 选择和 UP 持久生命周期，不增加 BepInEx 入口或发布 DLL。新增 `[机制] 多mod事件ID兼容` 开关（默认关闭，重启生效）与公开 `EventIdCompatibilityApi`。
+
+固定映射沿用 `BepInEx/config/StudentAge.EventCompat/id-map.json`。软依赖仅用于识别旧独立补丁并防止双重映射；独立 DLL 仍在时暂停普通 CFG 热重载，移除旧 DLL 后可沿用同一映射迁移到 UP。普通 Mod CFG 热重载从已接受的原始文档重建兼容计划，再事务替换配置、事件索引及持久映射。
+
+插件版本保持上游 1.0.22，程序集身份保持 1.0.9.0；本变更不更新发布清单、不创建 Release。范围、存档要求和不支持的协议见 [事件 ID 兼容](../EC2BUnofficialPatch/Docs/EventIdCompatibility.md)。
