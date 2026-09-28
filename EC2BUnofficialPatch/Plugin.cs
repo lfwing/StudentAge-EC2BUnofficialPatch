@@ -3,6 +3,7 @@ using EC2BUnofficialPatch.Core;
 
 namespace EC2BUnofficialPatch
 {
+    [BepInDependency("local.studentage.eventcompat", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(PluginMetadata.Guid, PluginMetadata.Name, PluginMetadata.Version)]
     public sealed class Plugin : BaseUnityPlugin
     {

@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using EC2BUnofficialPatch.Core;
 using EC2BUnofficialPatch.Services;
+using EventCompatibility = EC2BUnofficialPatch.Services.EventCompatibility;
 using EC2BUnofficialPatch.Workshop;
 using HarmonyLib;
 
@@ -30,6 +31,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         public void Load(Harmony harmony, PluginServices services)
         {
             ModCfgOverridePatches.Initialize(services?.ContentRoots);
+            EventCompatibility.EventIdCompatibilityService.Initialize();
             MethodInfo target = AccessTools.Method(
                 typeof(ModCtrl),
                 "LoadModCfgs",
@@ -82,7 +84,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         /// Harmony 参数按序号绑定，避免私有方法参数名在不同反编译/构建环境中变化。
         /// __0 = modId, __1 = 原版 Cfgs/zh-cn 路径。
         /// </summary>
-        public static void LoadModCfgsPrefix(ulong __0, ref string __1)
+        public static void LoadModCfgsPrefix(ModCtrl __instance, ulong __0, ref string __1)
         {
             // 无论是否存在 UP 增强 CFG，都记录原版实际启用的 Mod 与加载顺序，
             // 供 F9 普通 *Cfg.json 热重载重建完整运行时视图。
@@ -117,6 +119,10 @@ namespace EC2BUnofficialPatch.Features.Mechanics
             {
                 PatchLog.Warning(
                     $"机制模块-CFG 运行时视图构建失败，继续使用原版路径：mod={__0}, path={__1}, reason={ModuleHost.GetReason(exception)}");
+            }
+            finally
+            {
+                EventCompatibility.EventIdCompatibilityService.BeforeLoad(__instance, __0, ref __1);
             }
         }
 

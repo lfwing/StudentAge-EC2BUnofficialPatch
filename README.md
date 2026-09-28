@@ -43,6 +43,8 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 
 - 游戏内 F9 热重载 Mod、UP 与兼容插件的 JSON 注册表
 
+- 可选的[多 Mod 事件 ID 兼容](EC2BUnofficialPatch/Docs/EventIdCompatibility.md)：新增事件、对白和选项撞号隔离，保留原版事件覆盖规则（默认关闭，重启生效）
+
 - 多个 Mod 可同时向同一父地图注册楼层
 
 - 对话中的严格连续 `{1}{2}{3}` 可显示当前 Steam 昵称

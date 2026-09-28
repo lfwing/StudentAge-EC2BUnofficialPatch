@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Config;
 using EC2BUnofficialPatch.Core;
+using EC2BUnofficialPatch.Services.EventCompatibility;
 using EC2BUnofficialPatch.Features.Mechanics;
 using HarmonyLib;
 using Newtonsoft.Json;
@@ -98,6 +99,7 @@ namespace EC2BUnofficialPatch.Services
                     return JsonHotReloadResult.Skip("当前没有已启用 Mod 的 CFG 来源");
                 try
                 {
+                    EventIdCompatibilityService.EnsureReloadSupported();
                     List<CfgFileDescriptor> orderedFiles = DiscoverFiles();
                     Dictionary<string, CfgFileDescriptor> current = orderedFiles.ToDictionary(
                         file => file.Key, StringComparer.OrdinalIgnoreCase);
@@ -349,6 +351,21 @@ namespace EC2BUnofficialPatch.Services
             IReadOnlyList<CfgFileDescriptor> orderedFiles,
             IReadOnlyDictionary<string, AcceptedCfgFile> accepted)
         {
+            var mods = new List<ModInput>();
+            foreach (var group in orderedFiles.GroupBy(file => file.ModId))
+            {
+                var mod = new ModInput { Id = group.Key.ToString() };
+                foreach (CfgFileDescriptor descriptor in group)
+                {
+                    if (!accepted.TryGetValue(descriptor.Key, out AcceptedCfgFile file)) continue;
+                    var document = new JObject();
+                    foreach (var row in file.Entries)
+                        document.Add(row.Key.ToString(), row.Value.Raw.DeepClone());
+                    mod.Tables.Add(file.ConfigName, document);
+                }
+                mods.Add(mod);
+            }
+            CollisionPlan compatibility = EventIdCompatibilityService.PrepareReload(mods);
             var rawMaps = new Dictionary<string, Dictionary<int, object>>(StringComparer.Ordinal);
             var typedMaps = new Dictionary<string, Dictionary<int, object>>(StringComparer.Ordinal);
             foreach (CfgFileDescriptor descriptor in orderedFiles)
@@ -361,14 +378,28 @@ namespace EC2BUnofficialPatch.Services
                     typedMaps[file.ConfigName] = new Dictionary<int, object>();
                 }
                 Dictionary<int, object> typed = typedMaps[file.ConfigName];
-                foreach (KeyValuePair<int, AcceptedCfgEntry> pair in file.Entries)
+                if (compatibility != null)
                 {
-                    if (raw.ContainsKey(pair.Key)) continue;
-                    raw[pair.Key] = pair.Value.Raw.DeepClone();
-                    typed[pair.Key] = pair.Value.Typed;
+                    foreach (JProperty row in compatibility.Output[file.ModId.ToString()][file.ConfigName].Properties())
+                    {
+                        int id = int.Parse(row.Name);
+                        if (raw.ContainsKey(id)) continue;
+                        raw[id] = row.Value.DeepClone();
+                        typed[id] = row.Value.ToObject(descriptor.ConfigType)
+                            ?? throw new InvalidDataException("事件兼容 CFG 反序列化为空：" + descriptor.DisplayPath);
+                    }
+                }
+                else
+                {
+                    foreach (KeyValuePair<int, AcceptedCfgEntry> pair in file.Entries)
+                    {
+                        if (raw.ContainsKey(pair.Key)) continue;
+                        raw[pair.Key] = pair.Value.Raw.DeepClone();
+                        typed[pair.Key] = pair.Value.Typed;
+                    }
                 }
             }
-            return new ReloadPlan(rawMaps, typedMaps);
+            return new ReloadPlan(rawMaps, typedMaps, compatibility);
         }
 
         private static void ApplyPlan(ReloadPlan plan)
@@ -380,6 +411,14 @@ namespace EC2BUnofficialPatch.Services
             Dictionary<string, Dictionary<int, object>> liveRaw = ReadRawCfgMaps(_owner);
             Dictionary<string, Dictionary<int, object>> rawRollback = liveRaw.ToDictionary(
                 pair => pair.Key, pair => new Dictionary<int, object>(pair.Value), StringComparer.Ordinal);
+            // Rebuild only the event lookup index, never Init/Load (which replace player history).
+            var eventManager = plan.Compatibility == null ? null :
+                AccessTools.Field(typeof(Sdk.Singleton<CommonEvtMgr>), "ins")?.GetValue(null) as CommonEvtMgr;
+            FieldInfo indexField = AccessTools.Field(typeof(CommonEvtMgr), "evtDict");
+            FieldInfo typesField = AccessTools.Field(typeof(CommonEvtMgr), "enableEvtTypes");
+            var oldIndex = eventManager == null ? null : new Dictionary<int, List<int>>(
+                (Dictionary<int, List<int>>)indexField.GetValue(eventManager));
+            var oldTypes = eventManager == null ? null : new List<int>((List<int>)typesField.GetValue(eventManager));
             try
             {
                 foreach (string configName in affected)
@@ -405,8 +444,12 @@ namespace EC2BUnofficialPatch.Services
                 liveRaw.Clear();
                 foreach (KeyValuePair<string, Dictionary<int, object>> pair in plan.RawMaps)
                     liveRaw["Config." + pair.Key] = pair.Value;
-                _appliedModIds = plan.TypedMaps.ToDictionary(
+                var nextModIds = plan.TypedMaps.ToDictionary(
                     pair => pair.Key, pair => new HashSet<int>(pair.Value.Keys), StringComparer.Ordinal);
+                if (eventManager != null)
+                    AccessTools.Method(typeof(CommonEvtMgr), "InitEvtCfg").Invoke(eventManager, null);
+                EventIdCompatibilityService.Commit(plan.Compatibility);
+                _appliedModIds = nextModIds;
             }
             catch
             {
@@ -420,6 +463,11 @@ namespace EC2BUnofficialPatch.Services
                 liveRaw.Clear();
                 foreach (KeyValuePair<string, Dictionary<int, object>> pair in rawRollback)
                     liveRaw[pair.Key] = pair.Value;
+                if (eventManager != null)
+                {
+                    indexField.SetValue(eventManager, oldIndex);
+                    typesField.SetValue(eventManager, oldTypes);
+                }
                 throw;
             }
         }
@@ -544,8 +592,9 @@ namespace EC2BUnofficialPatch.Services
         }
         private sealed class ReloadPlan
         {
-            internal ReloadPlan(Dictionary<string, Dictionary<int, object>> rawMaps, Dictionary<string, Dictionary<int, object>> typedMaps)
-            { RawMaps = rawMaps; TypedMaps = typedMaps; }
+            internal ReloadPlan(Dictionary<string, Dictionary<int, object>> rawMaps, Dictionary<string, Dictionary<int, object>> typedMaps, CollisionPlan compatibility)
+            { RawMaps = rawMaps; TypedMaps = typedMaps; Compatibility = compatibility; }
+            internal CollisionPlan Compatibility { get; }
             internal Dictionary<string, Dictionary<int, object>> RawMaps { get; }
             internal Dictionary<string, Dictionary<int, object>> TypedMaps { get; }
         }
