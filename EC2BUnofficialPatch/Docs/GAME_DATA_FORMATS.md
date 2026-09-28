@@ -60,6 +60,20 @@
 - `SpecialCompleteOnClose`：无统一结果回调，关闭时按规则完成，如 1、2、4、29、30、31、36、37、39、42、44、47。
 - 原版 dispatcher 未处理 12、25、38、40；不要把它们当作可由通用社交小游戏接口稳定启动的玩法。
 
+## 羽毛球模型贴图新增
+
+- 配置位置为 Workshop Mod 的 `custombadminton/custombadmintoncfg.json`，也接受 `EC2BUnofficialPatch/custombadminton/custombadmintoncfg.json`；插件安装目录中的作者模板不参与运行时扫描。
+- 玩家开关为 `[机制] 羽毛球模型贴图新增 = true`，默认开启。
+- 配置根对象按人物 ID 映射。对手使用 `"9001": { "id": 9001, "outfits": [{ "url": "custom_role_9001", "prefab": "badminton_enermy1" }] }`；每套球服独立指定 url 与要复用的原版 prefab 名称，不填写 prefab 路径和扩展名。
+- 同一对手 ID 的有效外置球服跨 Mod 追加。每次打开羽毛球小游戏时，在该 ID 的原版球服（若有）与全部有效外置球服中等概率选一套；无追加的原版角色仍始终使用原版，新 Mod 角色只有一套有效球服时始终使用该套。不同来源的重复 url 按扫描顺序保留先加载项。
+- 旧对手配置的 `url` 数组仍只取首个非空 url，并与新增球服一起参与选择；旧格式的同一 ID 也可跨 Mod 追加。`id=0` 玩家保持旧配置和行为：男性使用 `url[0]`，女性使用 `url[1]`，只有一项时男女共用，重复玩家登记仍只保留先加载项；玩家不随机换装。
+- 每个 url 必须有同名子目录，包含 `<url>_ske.json`、`<url>_tex.json`，以及 tex 的 `imagePath` 指定的 PNG。所有路径必须留在该 url 子目录内。
+- 不读取外置 `.mat`。UP 克隆模板 prefab 的普通材质与 UI 材质，并将其主纹理替换为外置 PNG，因此各角色实例不会改写模板共享材质。
+- 外置 ske 必须包含模板 `UnityArmatureComponent.armatureName` 指定的 Armature；羽毛球现有模板使用 `Armature`。ske 的显示部件名、tex 的 `SubTexture` 名和动画名必须相互匹配；玩法仍要求 `idle/hit/hit2/hit3/jump/move/start` 等原动画协议。
+- 敌方 prefab 必须保留 `anim_enermy/Armature`，玩家 prefab 必须保留 `anim_player/Armature`，Animator、`AnimationEvt`、trigger 与碰撞节点继续由模板提供。
+- 无效资源在登记时逐套跳过；实例化时骨骼或动画不兼容会记录错误并恢复模板角色。
+- F9 会重建注册表；新资源在下一次实例化该角色时应用。只修改 PNG 后也可按 F9，因为该提供者每次都会重新读取文件时间与长度。
+
 ## 外部屏幕资源
 
 ### `5001`：ScreenPaper

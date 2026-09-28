@@ -13,14 +13,14 @@ using View.Main;
 namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
 {
     /// <summary>
-    /// 优化剧情内 4015 全屏 CG 的连续播放，并为 Mod CG 图鉴提供确定性排序。
+    /// 优化剧情内 4015 全屏 CG 的连续播放，并处理 CG 图鉴排序与缩略图加载。
     /// 多 URL CG 继续遵循原版数据模型：一个 CGCfg 对应一个图鉴条目。
     /// </summary>
     internal sealed class CGOptimizationModule : IPluginModule
     {
         private static readonly IReadOnlyList<ModuleLogItem> Items = new[]
         {
-            new ModuleLogItem("优化", "CG播放与图鉴排序优化")
+            new ModuleLogItem("优化", "CG播放与图鉴优化")
         };
 
         public string Key => "cg-optimization";
@@ -97,13 +97,21 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
                 typeof(CGLibraryView),
                 "OnRenderCG",
                 new[] { typeof(UICell) },
+                prefix: nameof(CGOptimizationPatches.LibraryOnRenderCgPrefix),
                 postfix: nameof(CGOptimizationPatches.LibraryOnRenderCgPostfix));
+
+            PatchRequired(
+                harmony,
+                typeof(UISprite),
+                nameof(UISprite.SetTextureUrl),
+                new[] { typeof(string), typeof(bool) },
+                prefix: nameof(CGOptimizationPatches.LibrarySetTextureUrlPrefix));
 
             PatchLog.Debug(
                 "优化模块-CG优化补丁安装完成：" +
                 "4015双层交叉淡化+独立保底层；" +
                 "4017/漫画/迷你CG生命周期清理；" +
-                "group3按ID排序并连续编号");
+                "group3按idx/ID排序并连续编号；图鉴缩略图请求按格子绑定校验并结束加载状态");
         }
 
         private static void PatchRequired(
@@ -163,6 +171,9 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
 
         private static readonly ConditionalWeakTable<CGLibraryView, ModCgIndexMap>
             DisplayIndexMaps = new ConditionalWeakTable<CGLibraryView, ModCgIndexMap>();
+
+        private static readonly ConditionalWeakTable<UISprite, CGLibraryThumbnailState>
+            ThumbnailStates = new ConditionalWeakTable<UISprite, CGLibraryThumbnailState>();
 
         internal static bool ShowCgPrefix(CGView __instance, int _id)
         {
@@ -288,7 +299,7 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
                     modEntries.Add(data);
                 }
 
-                modEntries.Sort(CompareModEntriesById);
+                modEntries.Sort(CompareModEntriesByPriority);
 
                 Dictionary<int, int> displayIndexes = new Dictionary<int, int>();
                 for (int index = 0; index < modEntries.Count; index++)
@@ -303,7 +314,7 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
                 PatchLog.Debug(
                     "优化模块-CG优化图鉴排序完成：" +
                     $"total={allCgs.Count}, modGroup3={modEntries.Count}, " +
-                    "rule=仅group3按CG ID升序；displayIdx=001起连续编号；" +
+                    "rule=group3先按正idx升序、再按CG ID升序；displayIdx=001起连续编号；" +
                     "officialGroups=保持原版相对顺序；multiUrl=一个CGCfg一个条目");
 
                 for (int index = 0; index < modEntries.Count; index++)
@@ -325,12 +336,38 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
             }
         }
 
+        internal static void LibraryOnRenderCgPrefix(UICell _cell)
+        {
+            if (!(_cell is Cell_CGLibraryItemUI cell) || cell.icon_bg == null)
+                return;
+
+            CGLibraryThumbnailState state =
+                cell.gameObject.GetComponent<CGLibraryThumbnailState>() ??
+                cell.gameObject.AddComponent<CGLibraryThumbnailState>();
+            state.BeginRender(cell);
+            ThumbnailStates.Remove(cell.icon_bg);
+            ThumbnailStates.Add(cell.icon_bg, state);
+        }
+
+        internal static bool LibrarySetTextureUrlPrefix(
+            UISprite __instance,
+            string _url,
+            bool _showWhenComp)
+        {
+            return __instance == null ||
+                   !ThumbnailStates.TryGetValue(__instance, out CGLibraryThumbnailState state) ||
+                   !state.TryLoad(__instance, _url, _showWhenComp);
+        }
+
         internal static void LibraryOnRenderCgPostfix(CGLibraryView __instance, UICell _cell)
         {
             try
             {
-                if (__instance == null || !(_cell is Cell_CGLibraryItemUI cell) ||
-                    !(cell.data is CGLibData data))
+                if (!(_cell is Cell_CGLibraryItemUI cell))
+                    return;
+
+                cell.gameObject.GetComponent<CGLibraryThumbnailState>()?.AfterRender();
+                if (__instance == null || !(cell.data is CGLibData data))
                 {
                     return;
                 }
@@ -365,8 +402,27 @@ namespace EC2BUnofficialPatch.Features.Optimization.CGOptimization
             DisplayIndexMaps.Add(view, new ModCgIndexMap(indexes));
         }
 
-        private static int CompareModEntriesById(CGLibData left, CGLibData right)
+        private static int CompareModEntriesByPriority(CGLibData left, CGLibData right)
         {
+            int leftIdx = GetCfg(left.id)?.idx ?? 0;
+            int rightIdx = GetCfg(right.id)?.idx ?? 0;
+            bool leftHasIdx = leftIdx > 0;
+            bool rightHasIdx = rightIdx > 0;
+
+            if (leftHasIdx != rightHasIdx)
+            {
+                return leftHasIdx ? -1 : 1;
+            }
+
+            if (leftHasIdx)
+            {
+                int idxResult = CompareInt(leftIdx, rightIdx);
+                if (idxResult != 0)
+                {
+                    return idxResult;
+                }
+            }
+
             int result = CompareInt(left.id, right.id);
             if (result != 0)
             {

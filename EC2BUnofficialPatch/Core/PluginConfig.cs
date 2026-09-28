@@ -25,6 +25,7 @@ namespace EC2BUnofficialPatch.Core
         internal static ConfigEntry<bool> MapMoveEffects { get; private set; }
         internal static ConfigEntry<bool> LoveDrawExternalResources { get; private set; }
         internal static ConfigEntry<bool> MinigameMechanics { get; private set; }
+        internal static ConfigEntry<bool> CustomBadminton { get; private set; }
         internal static ConfigEntry<bool> AudioOriginalChannel { get; private set; }
         internal static ConfigEntry<bool> AudioBetterAudioChannel { get; private set; }
         internal static ConfigEntry<bool> AudioUnityChannel { get; private set; }
@@ -165,12 +166,16 @@ namespace EC2BUnofficialPatch.Core
                     "优化",
                     "静态立绘优化输出日志",
                     false);
-                bool cgOptimization = ReadMigratedValue(
+                bool legacyCgOptimization = ReadMigratedValue(
                     config,
                     "优化",
                     "CG播放与图鉴排序优化",
                     "优化",
                     "CG播放优化");
+                bool cgOptimization = ReadRawValue(
+                    config, "优化", "CG播放与图鉴优化", legacyCgOptimization);
+                bool customBadminton = ReadRawValue(
+                    config, "机制", "羽毛球模型贴图新增", true);
                 bool jsonHotReload = ReadRawValue(config, "优化", ".json文件热重载", true);
                 bool legacyMapFloorCompatibility = ReadRawValue(
                     config, "优化", "地图楼层兼容扩展", true);
@@ -278,6 +283,12 @@ namespace EC2BUnofficialPatch.Core
                     "社交小游戏修复",
                     minigameMechanics,
                     "支持角色独立小游戏阶段、自定义小游戏注册与统一结算，且支持双cfg读取（本插件使用Minigame文件夹）。");
+                CustomBadminton = Bind(
+                    config,
+                    "机制",
+                    "羽毛球模型贴图新增",
+                    customBadminton,
+                    "支持从Mod加载羽毛球模型贴图；对手每局在原版球服与有效Mod球服中等概率选择。");
                 BetterAudio = Bind(config, "机制", "更好的音频效果", betterAudio,
                     "启用内置《更好的音频效果》音频、歌词与 1163 指令。");
                 BetterAudioLogging = Bind(config, "机制", "更好的音频效果日志输出", betterAudioLogging,
@@ -324,9 +335,9 @@ namespace EC2BUnofficialPatch.Core
                 CGOptimization = Bind(
                     config,
                     "优化",
-                    "CG播放与图鉴排序优化",
+                    "CG播放与图鉴优化",
                     cgOptimization,
-                    "为连续播放的CG自动添加过渡效果；自动排序MOD CG图鉴。");
+                    "为连续播放的CG添加过渡效果，整理Mod CG图鉴顺序，并修复分页缩略图偶发转圈。");
                 JsonHotReload = Bind(
                     config,
                     "优化",

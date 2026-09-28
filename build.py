@@ -3,7 +3,7 @@
 import argparse, hashlib, json, shutil, subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).absolute().parent
 p=argparse.ArgumentParser()
 p.add_argument('--game',type=Path,required=True)
 p.add_argument('--bepinex',type=Path,required=True,help='BepInEx/core directory')

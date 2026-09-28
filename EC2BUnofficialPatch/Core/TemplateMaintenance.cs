@@ -79,9 +79,38 @@ namespace EC2BUnofficialPatch.Core
             "  ]\r\n" +
             "}\r\n";
 
+        private const string CustomBadmintonReadme =
+            "羽毛球模型贴图新增模板\r\n\r\n" +
+            "把整个 custombadminton 文件夹复制到 Steam Workshop Mod 根目录，\r\n" +
+            "也可以放到 Mod 根目录/EC2BUnofficialPatch 下。本插件安装目录中的模板不会作为运行时资源读取。\r\n\r\n" +
+            "custombadmintoncfg.json 以人物 ID 为键；对手的 outfits 数组逐套填写 url 和 prefab。\r\n" +
+            "url 是外置角色名称，prefab 是该套球服复用的原版羽毛球 prefab 名称。\r\n" +
+            "同一 ID 可由多个 Mod 追加球服；每次打开羽毛球小游戏，在原版球服（若有）和所有有效外置球服之间等概率选择。\r\n" +
+            "原版角色无追加球服时始终显示原版；新角色只有一套有效球服时始终显示该套。\r\n" +
+            "旧对手配置的 url 数组仍只取第一项，并与新增球服一起参与随机选择。\r\n" +
+            "id=0 的玩家配置保持旧格式：url[0] 用于男性、url[1] 用于女性；只有一项时男女共用，玩家不随机换装。\r\n\r\n" +
+            "每个 url 都要建立同名子目录，并提供：\r\n" +
+            "  <url>/<url>_ske.json\r\n" +
+            "  <url>/<url>_tex.json\r\n" +
+            "  <url>/<tex.json 的 imagePath>\r\n\r\n" +
+            "贴图当前只支持 PNG。无需复制 .mat；UP 会克隆 prefab 自带材质并换上外置贴图。\r\n" +
+            "ske 中必须保留 prefab 所需的 Armature 名称及其动画；tex 的 SubTexture 名称必须与 ske 的显示部件一致。\r\n" +
+            "敌方 prefab 必须包含 anim_enermy/Armature，玩家 prefab 必须包含 anim_player/Armature。\r\n" +
+            "对手同一 id 的有效球服会合并；重复 url 按 Workshop 扫描顺序保留先加载项。\r\n";
+
+        private const string CustomBadmintonJson =
+            "{\r\n" +
+            "  \"9001\": {\r\n" +
+            "    \"id\": 9001,\r\n" +
+            "    \"outfits\": [\r\n" +
+            "      { \"url\": \"custom_role_9001\", \"prefab\": \"badminton_enermy1\" }\r\n" +
+            "    ]\r\n" +
+            "  }\r\n" +
+            "}\r\n";
+
         private const string ComicReadme =
             "4016 漫画显示扩展模板\r\n\r\n" +
-            "本目录旁会创建一个空的 comic 文件夹。实际 Mod 中，comic 文件夹可以放在 Mod 内任意位置，\r\n" +
+            "本说明位于 comic 文件夹中。实际 Mod 中，comic 文件夹可以放在 Mod 内任意位置，\r\n" +
             "例如 EC2BUnofficialPatch/comic、Textures/comic；插件会递归嗅探文件夹名恰好为 comic 的目录。\r\n" +
             "插件只读取 comic 文件夹内部内容。comic 下必须再建立漫画子文件夹。\r\n" +
             "图片文件名必须严格为 {图号}-{分镜号}.png/.jpg/.jpeg，例如 1-1.png。\r\n" +
@@ -203,6 +232,11 @@ namespace EC2BUnofficialPatch.Core
                 MinigameReadme,
                 "CustomMinigamecfg.json",
                 MinigameJson);
+            WriteTemplate(
+                Path.Combine(templateRoot, "custombadminton"),
+                CustomBadmintonReadme,
+                "custombadmintoncfg.json",
+                CustomBadmintonJson);
         }
 
         private static void WriteRoleAvailabilityTemplate(string templateRoot)
@@ -227,8 +261,18 @@ namespace EC2BUnofficialPatch.Core
         {
             try
             {
-                Directory.CreateDirectory(Path.Combine(templateRoot, "comic"));
-                WriteTextFile(Path.Combine(templateRoot, "comic说明.txt"), ComicReadme);
+                string comicDirectory = Path.Combine(templateRoot, "comic");
+                Directory.CreateDirectory(comicDirectory);
+                string legacyReadme = Path.Combine(templateRoot, "comic说明.txt");
+                string readme = Path.Combine(comicDirectory, "comic说明.txt");
+                if (File.Exists(legacyReadme))
+                {
+                    if (!File.Exists(readme))
+                        File.Move(legacyReadme, readme);
+                    else
+                        File.Delete(legacyReadme);
+                }
+                WriteTextFile(readme, ComicReadme);
             }
             catch (System.Exception exception)
             {

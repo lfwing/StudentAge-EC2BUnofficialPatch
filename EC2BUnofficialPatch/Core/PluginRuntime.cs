@@ -163,6 +163,7 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.RelationEffects.Value, new RelationEffectModule(), "效果/20关系效果修复与扩展");
             LoadIf(PluginConfig.LoveDrawExternalResources.Value, new LoveDrawExternalResourceModule(), "机制/情侣画修复");
             LoadIf(PluginConfig.MinigameMechanics.Value, new MechanicsModule(), "机制/社交小游戏修复");
+            LoadIf(PluginConfig.CustomBadminton.Value, new CustomBadmintonModule(), "机制/羽毛球模型贴图新增");
             LoadIf(PluginConfig.RoleAvailability.Value, new RoleAvailabilityModule(), "机制/控制角色在列表显示");
             _moduleHost.Load(new MapRoleStaticClothModule());
             LoadIf(
@@ -180,7 +181,7 @@ namespace EC2BUnofficialPatch.Core
                     PluginConfig.AudioUnityChannel.Value));
             }
             LoadIf(PluginConfig.StaticPortraitOptimization.Value, new StaticPortraitOptimizationModule(), "优化/静态立绘优化");
-            LoadIf(PluginConfig.CGOptimization.Value, new CGOptimizationModule(), "优化/CG播放与图鉴排序优化");
+            LoadIf(PluginConfig.CGOptimization.Value, new CGOptimizationModule(), "优化/CG播放与图鉴优化");
             LoadIf(PluginConfig.JsonHotReload.Value, new JsonHotReloadModule(), "优化/.json文件热重载");
             LoadIf(
                 PluginConfig.MapFloorCompatibility.Value ||

@@ -1,4 +1,26 @@
-# 当前状态：UP 1.0.22 修复副本
+# 当前状态：UP 1.0.23 开发副本
+
+2026-09-28 本轮改动的本地发布候选文件已生成：`dist/release/EC2BUnofficialPatch.dll` 为 586240 字节，SHA-256 `601086a74d41cb6f6700ba7da0a30adb9a93bd409bb1da9056f92f0bd37c1d91`；`dist/release/update.json`、`release-manifests/update.json` 与根目录 `update.json` 内容一致，版本 1.0.23、游戏版本 1.94，大小及哈希均匹配 DLL。构建为 0 错误、1 个既有未使用字段警告。仅制作本地候选，尚未发布或安装到游戏。
+
+2026-09-28 本轮按限定范围实现三项改动，尚待游戏内复测。CG：`CGOptimization` 接管图鉴格子的缩略图请求，格子每次重绑递增代次并清除旧图；回调仅在格子仍显示同一 CG 时写入贴图，成功、空结果、路径错误和 20 秒超时都会结束当前转圈，翻页重试会发起新请求。此处理仅限图鉴缩略图，未修改全局 `UISprite` 或 `ResInfo` 行为；若原版 `ResInfo.GetSpriteAsync` 内部异常令共享请求永久停在 `isLoading`，需要后续实机日志再单独定位。配置键迁至 `[优化] CG播放与图鉴优化`，沿用旧键的值，说明同步加入分页缩略图修复。
+
+2026-09-28 羽毛球：新增默认开启的 `[机制] 羽毛球模型贴图新增` 开关；对手 `custombadmintoncfg.json` 可用 `outfits` 数组逐套登记 `url/prefab`，同一 ID 跨 Mod 追加，重复 url 仅保留先加载的有效项，资源无效则逐套跳过。每次打开小游戏时，原版 `BadmintonModelCfg` 中存在该 ID 则将原版球服作为一项，连同全部有效外置球服等概率随机选择；新 Mod ID 只在有效外置项间选择。旧对手 `url` 数组仍只取首项作为一套；`id=0` 玩家保持既有配置和男女选择逻辑，不随机换装。实例加载失败沿用模板回退路径。作者模板 readme/JSON、数据格式和 README 已同步。
+
+2026-09-28 作者模板：运行时生成的 `comic说明.txt` 改放 `comic/comic说明.txt`；启动时迁移旧根目录说明文件，模板说明文字也改为与新位置一致。构建使用游戏目录 `G:\SteamLibrary\steamapps\common\StudentAge` 的 `net472` 引用，0 错误、1 个既有未使用字段警告；未进行游戏内 CG 快速翻页及羽毛球概率/对象池复测。
+
+2026-09-28 大地图新增地点（需求已记录，待设计/实现）：目标是让普通 Mod 声明全新的大地图地点，并自定义地点标签文字、颜色、位置与尺寸、地点图标、鼠标悬停描边区域及点击/跳转行为。现有“多 Mod 地图子地点兼容”和“地图子地点扩展”只处理已有地图层级的合并/嵌套，不等同于注册新的大地图地点。用户提供的 `D:\VS2026 project\studentages\StudentAgeMapModGenerator\StudentAgeMapModGenerator.zip`（标点与自动描边工具，并生成独立 BepInEx DLL）作为算法参考；后续评估改为 UP 共用运行时读取 Mod 数据/资源的注册流程，避免作者按地点单独生成 DLL。数据 schema、轮廓/命中区域、点击事件路由、跨 Mod 冲突与兼容策略尚未确定；本条仅记录需求，尚无实现或游戏内验证。
+
+2026-09-28 羽毛球对手多套球服（原始需求记录；实现见上方，待实机验证）：仅影响对手，不修改玩家模型。原版 `BadmintonModelCfg` 角色始终保留为候选；`custombadminton` 中同一角色 ID 的有效 Mod 服装作为追加项。每次打开羽毛球小游戏时，在原版服装及所有追加服装中等概率随机选择一套。按等概率规则，无追加的原版角色始终为 100%；原版加 20 套 Mod 服装共 21 套，各为 1/21（约 4.76%）；只有一套的新 Mod 角色为 100%，有 10 套时各为 10%。此前外置角色模块是每个 ID 一条登记，重复 ID 会保留先加载项；普通 NPC 只取该条目的 `url[0]`，因此现有 `url` 数组不代表同角色随机换装。上述跨 Mod 追加、逐套 `url/prefab`、重复资源处理、随机选择及失败回退已按本轮记录实现；尚未实机验证。制作流程见 [羽毛球模型贴图制作指南](BADMINTON_MODEL_TEXTURE_GUIDE.md)。
+
+2026-09-28 CG 图鉴分页缩略图偶发转圈（源码诊断；实现见上方，待实机验证）：实测翻页后同一缩略图有时正常、有时转圈，更符合“格子复用 + 异步回调竞争”，不能只归因于图片文件随机缺失。原版 `CGLibraryView.SetPage` 每页最多 9 项并复用 `UIItemGroup` 中已显示的 `UICell`；`UICell.SetData` 会重跑渲染，令同一个 `UISprite` 在前一页请求尚未完成时改绑到新 CG。`UISprite.SetTextureUrl` 的回调只绑定实例方法，不捕获/校验本次 URL 或绑定代次；旧请求完成可把旧 Sprite 写入当前格，空结果还会清掉新 URL。换 URL 时图片对象会先重新显示，而旧 Sprite 未清空。`ResInfo` 按路径缓存并合并进行中的请求，缓存命中可立即回调、冷加载异步完成，时序变化能解释间歇性。另有独立加载状态问题：原版 `OnRenderCG` 每次都启用 `root_loading`，C# 渲染路径没有对应完成关闭；因归档不含 prefab/Animator，若实测转圈有时自行消失，还需确认 prefab 是否另行控制。修复前 `CGOptimizationModule.LibraryOnRenderCgPostfix` 只改图号，不处理贴图加载。修复方向：为每次贴图请求及格子绑定加 URL/代次校验，过期回调不得写图或改加载状态；增加同时覆盖成功、失败/取消的完成回调，以结束转圈并显示占位/重试状态；换 URL 时清除旧图；`ResInfo.GetSpriteAsync` 加异常收尾，确保 `isLoading` 复位并通知等待者；核对 `cg_min/`、`cg2_min/` 对应资源 key。共享资源请求不宜因单格翻页而整体取消。证据为 `D:\codex\StudentAge-CodeOnly\assemblies\Assembly-CSharp\Assembly-CSharp.cs`（2026-09-25 快照）：`CGLibraryView.SetPage/OnRenderCG` 61638、61676，`UIItemGroup.SetData/UICell.SetData` 107456、108906，`UISprite.SetTextureUrl/OnLoadSpriteEnd` 108441、108523，`ResInfo.GetSpriteAsync` 105289；缩略图请求保护已按本轮记录实现；快速连续翻页复测尚未进行。
+
+2026-09-28 CG 图鉴排序修复：在原有 `CGOptimizationModule` 内调整 Mod Group 3 的排序。`idx > 0` 的 CG 先按 idx 升序排列（相同 idx 按 ID 升序），其余 CG 再按 ID 升序排列；显示图号仍从 001 连续编号。以 2026-09-27 SHA-256 为 `3401d10d07ef789ad3965b607e23ff29882d3a0437318d4f0dc6b7db43d0ebc6` 的 release DLL 为基线；新候选 DLL 版本仍为 1.0.23，大小 580608 字节，SHA-256 为 `285a9fafec781f1b0846fc8f4272f9238cc0859f0419a6975be674b0ab73257e`。net472 编译通过，游戏内图鉴显示待复测。
+
+2026-09-27 羽毛球外置角色实机修复：1.0.23 初版在同一 `Armature` GameObject 上释放并重建 DragonBones，旧 `UnitySlot` 的显示对象由 Unity 延迟销毁，新骨骼在当帧复用了这些对象，随后产生 `UnitySlot._UpdateTransform` 空引用。敌方骨骼的异常还会中断共享 `WorldClock`，使未替换的玩家小人也停止运动。现改为在全新 RectTransform 宿主中完整构建、校验全部插槽及七个玩法动画，成功后再切换 `anim_enermy/Armature` 或 `anim_player/Armature`，最后释放旧宿主；对象池恢复模板也使用相同替换流程。已通过 net472 编译，等待游戏内复测。
+
+2026-09-27 羽毛球角色外置贴图：新增 `custombadminton/custombadmintoncfg.json` 注册表。每条登记沿用 `BadmintonModelCfg` 的 `id/url`，并以 `prefab` 指定复用的原版模板；运行时改载模板 prefab，再从 url 同名子目录读取 `_ske.json`、`_tex.json` 与 tex 中 `imagePath` 指定的 PNG，克隆模板材质并只重建当前实例的 DragonBones Armature。无需 Mod 作者提供 `.mat`。支持 NPC 和 `id=0` 玩家男女 url，F9 可重载登记和资源版本；失败时恢复模板角色。已通过 net472 编译，游戏内动画、对象池复用与多 Mod 冲突仍待实测。
+
+2026-09-27 1.0.23 羽毛球实机修复候选构建完成：`dist/release/EC2BUnofficialPatch.dll` 大小 580608 字节，SHA-256 为 `3401d10d07ef789ad3965b607e23ff29882d3a0437318d4f0dc6b7db43d0ebc6`；根目录、`release-manifests/` 与 `dist/release/` 的 `update.json` 已同步为游戏 1.94、版本 1.0.23。编译为 0 错误、1 个既有未使用字段警告；尚未发布，修复后游戏内复测待完成。
 
 2026-09-22 DialogueSave 0.1.5 兼容：本机订阅包 `3804899191` 与已安装 cfg（`DialogueStyle = ADV`）确认问题场景。其 [`AdvDialogueController`](https://github.com/360478712scy-gif/StudentAge-DialogueSave/blob/c40402ce621e47d3c27c8291e3265d996a0ae8d9/src/UI/AdvDialogueController.cs) 把 CG 实际文字移到排序 29000 的独立 `DialogueSave.ADV` Canvas，并把原 `mask_talk_cg` 移进透明 `ADV.NativeShield`；上一版将视频放在该 mask 的父节点，因而被透明遮罩隐藏。现在按文字是否位于 ADV Canvas 自动切换：ADV 时将视频层挂在遮罩外的原 CG 根下，排序在 CG 图片与 ADV 文字之间，不再改隐藏的原生文字 Canvas；切回原版/退出 CG 时恢复上一布局。播放期间 DebugCanvas 也会高于 DialogueSave 的模态画布。未修改 DialogueSave 或游戏文件，游戏内联动视觉效果仍待实测。
 

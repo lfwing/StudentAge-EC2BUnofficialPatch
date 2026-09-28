@@ -118,11 +118,12 @@ MapRoleView.Refresh 后缀
 - LoveDraw：外部图片/视频资源由 `LoveDrawExternalResourceModule` 与索引机制处理。
 - 5001 ScreenPaper：图片路径在注册表内检查并回退原版。
 - 5002 ScreenLyrics：文本与可选音频由注册表处理，并与 BetterAudio 播放状态协调。
+- 羽毛球角色：`CustomBadmintonModule` 将同一对手 ID 的有效外置球服跨 Mod 追加，在每次打开小游戏时从原版与外置候选中等概率选择；玩家仍按旧配置确定男女模型。所选 url 对应各自的原版模板 prefab，在 prefab 实例化后、玩法读取 Armature 前，以外置 ske/tex/PNG 在全新宿主中构建 DragonBones；插槽和玩法动画校验通过后，才把新宿主切换为 Animator 下的 `Armature` 并释放旧宿主，避免 Unity 延迟销毁旧插槽时破坏新骨骼。材质从模板克隆，对象池复用到原版角色时以同样的宿主替换流程恢复模板数据。
 
 ### 尚无通用桥接
 
 - Live2D 动作、表情、Animator Controller 与任意 Addressables prefab；地图社交默认姿态的 model3/moc3 已有专用桥接，但不是通用加载器；
-- 需要多精灵图集、AudioClip 或原版资源前缀的通用小游戏资源；
+- 需要多精灵图集、AudioClip 或原版资源前缀的通用小游戏资源；羽毛球单图集角色已有专用桥接，但不构成通用小游戏资源加载器；
 - 任意第三方 UI/动画运行时。
 
 新功能若需要这些资源，必须建立专用加载、生命周期与失败回退路径；不能假设 `Mods/<packageId>/...` 的普通图片加载能力会自动覆盖它们。

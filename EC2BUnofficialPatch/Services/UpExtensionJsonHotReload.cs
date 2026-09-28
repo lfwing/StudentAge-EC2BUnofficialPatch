@@ -28,6 +28,7 @@ namespace EC2BUnofficialPatch.Services
             "CustomScreenLyrcis.json",
             "Custompaper.json",
             "CustomVideo.json",
+            "custombadmintoncfg.json",
             "RoleAvailabilityCfg.json"
         };
 

@@ -56,10 +56,10 @@ EC2BUnofficialPatch，一款适用于游戏《学生时代》，基于 BepInEx �
 - 可选的游戏启动后自动打开游戏内调试控制台
 
 
-当前源码版本：**1.0.22**（玩家实际可用版本以创意工坊已发布内容为准）
+当前源码版本：**1.0.23**（玩家实际可用版本以创意工坊已发布内容为准）
 当前代码包对应游戏版本：**1.94**
 
-1.0.22 源码面向游戏 1.94，并沿用单 DLL 架构；先前测试版中的音频、版本比较与在线更新改动已整合进当前代码。仓库中的版本号和更新清单不等于创意工坊已发布版本。
+1.0.23 源码面向游戏 1.94，并沿用单 DLL 架构；本版加入羽毛球 DragonBones 角色外置贴图注册。仓库中的版本号和更新清单不等于创意工坊已发布版本。
 
 _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与扩展需求。_
 
@@ -71,7 +71,7 @@ _本项目主要用于补充原版及 Mod 开发中实际遇到的兼容性与�
 - 普通玩家无需另装 BepInEx，也无需手动复制插件 DLL；订阅后还须在游戏内启用 Mod 并重启游戏。
 - 排查加载问题时，可查看游戏目录中的 `BepInEx/LogOutput.log`。
 
-常规安装请使用游戏创意工坊中的 UP 条目；具体订阅和启用步骤以[游戏 1.94 的官方公告](https://steamcommunity.com/app/1991040/allnews/)为准。GitHub 的 **Code → Download ZIP** 和 **Source code** 仅包含源码，不能作为游戏插件安装；本仓库 1.0.22 源码也不代表工坊已更新到该版本。
+常规安装请使用游戏创意工坊中的 UP 条目；具体订阅和启用步骤以[游戏 1.94 的官方公告](https://steamcommunity.com/app/1991040/allnews/)为准。GitHub 的 **Code → Download ZIP** 和 **Source code** 仅包含源码，不能作为游戏插件安装；本仓库 1.0.23 源码也不代表工坊已更新到该版本。
 
 ## 2.2 安装插件
 
@@ -127,10 +127,11 @@ BepInEx/plugins/EC2BUnofficialPatch/
 |机制|角色可用性|按原版 Condition 控制角色何时可社交、是否考试|
 |机制|地图静态 Mod 角色服装|普通地图显示角色本回合随机服装，学校地图保持校服；缺少差分时回退常服|
 |机制|地图社交外置 Live2D|为静态 Mod 角色按当前服装读取外置 model3/moc3；失败时回退静态立绘，默认开启|
+|机制|羽毛球模型贴图新增|对手每局从原版和跨 Mod 追加的有效球服中等概率选择，复用原版 prefab 并加载外置 DragonBones 资源，默认开启|
 |机制|音频监控|记录原版、BetterAudio、Unity 三类音频播放|
 |机制|更好的音频效果|内置音频演出与 1163 指令，可单独关闭；运行日志默认关闭|
 |优化|静态立绘|减少换表情等情况下的立绘跳变|
-|优化|CG|改善连续 CG 切换，并整理 Mod CG 图鉴顺序|
+|优化|CG|改善连续 CG 切换、整理 Mod CG 图鉴顺序，并修复分页缩略图偶发转圈|
 |优化|.json 文件热重载|游戏内按 F9 重载普通 Mod CFG、UP JSON、BetterAudio.json 与已注册插件 JSON|
 |优化|多mod地图子地点兼容|合并多个 Mod 在父地图中声明的子地点，未声明项按原版规则注册|
 |优化|地图子地点扩展|允许子地点继续包含下一层子地点；需要 Mod 作者与玩家同时启用，默认关闭|
@@ -202,7 +203,7 @@ BepInEx/config/sa.EC2B.UnofficialPatch.cfg
 [优化]
 静态立绘优化 = true
 静态立绘优化输出日志 = false
-CG播放与图鉴排序优化 = true
+CG播放与图鉴优化 = true
 .json文件热重载 = true
 多mod地图子地点兼容 = true
 地图子地点扩展 = false
@@ -216,6 +217,7 @@ Steam昵称对话替换 = true
 情侣画修复 = true
 社交小游戏修复 = true
 地图社交界面外置Live2D = true
+羽毛球模型贴图新增 = true
 
 [屏幕特效与效果]
 4016漫画显示扩展 = true
@@ -569,6 +571,38 @@ UP会为显式 `floors` 建立反向索引，使进入 `9001` 后仍能返回父
 6. 眨眼时瞳孔漏出：在 Cubism Editor 检查瞳孔 Drawable 是否被眼白/眼睑的正确 ArtMesh 剪贴，重新导出全部运行时文件，并避免只替换 moc3 而保留不匹配的 model3/纹理。
 7. 位置不一致：按“先比例、再锚点、后偏移”的顺序校准，不要直接套用另一分辨率素材的数值。
 
+## 5.10 羽毛球模型贴图新增
+
+Mod 目录结构：
+
+```text
+custombadminton/
+  custombadmintoncfg.json
+  custom_role_9001/
+    custom_role_9001_ske.json
+    custom_role_9001_tex.json
+    custom_role_9001_tex.png
+```
+
+配置以人物 ID 为键；每套对手球服分别填写 `url` 和 `prefab`：
+
+```json
+{
+  "9001": {
+    "id": 9001,
+    "outfits": [
+      { "url": "custom_role_9001", "prefab": "badminton_enermy1" }
+    ]
+  }
+}
+```
+
+`prefab` 填写要复用的原版羽毛球 prefab 名称。UP 保留其中的 Animator、动画事件、碰撞节点和 UI 结构，再用同名 url 子目录中的 ske、tex 和 PNG 重建该角色实例的 DragonBones Armature。无需复制或制作 `.mat`，UP 会克隆模板材质。
+
+同一对手 ID 的有效球服可由多个 Mod 追加；每次打开小游戏，在原版球服（若有）和所有有效外置球服之间等概率选择。旧对手配置只使用 `url[0]`，仍可作为一套追加球服。`id=0` 玩家沿用旧 `url` 数组：男性使用 `url[0]`、女性使用 `url[1]`；只有一个 url 时男女共用，玩家不随机换装。敌方模板须有 `anim_enermy/Armature`，玩家模板须有 `anim_player/Armature`。骨骼数据应保留模板要求的 `Armature` 名称以及羽毛球使用的 `idle/hit/hit2/hit3/jump/move/start` 动画；tex 的 `SubTexture` 名称要与 ske 的显示部件一致。
+
+`_tex.json` 的 `imagePath` 决定实际 PNG 文件名，路径不能离开角色子目录。F9 会重读注册表和资源版本，新贴图在下一次创建该角色时生效。加载失败时保留或恢复指定 prefab 的原版角色。
+
 # 六、音频播放监控
 
 插件可以独立监控：
@@ -606,7 +640,7 @@ Unity底层音频渠道
 
 - 官方分组保持原版顺序；
 
-- Mod 使用的 Group 3 按 CG ID 排序；
+- Mod 使用的 Group 3 先将 `idx > 0` 的 CG 按 `idx` 升序排列（相同 `idx` 按 CG ID 升序），再将未设置 `idx` 的 CG 按 ID 升序接在后面；
 
 - 显示编号从 `001` 连续生成；
 
