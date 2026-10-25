@@ -1,0 +1,69 @@
+{
+  "990201": {
+    "id": 990201,
+    "url": "bg/img_chezhan",
+    "name": "示范场景_车站",
+    "audio": 0,
+    "cloth": [],
+    "gaozhongUrl": 0,
+    "gaozhongCond": []
+  },
+  "990202": {
+    "id": 990202,
+    "url": "bg/img_chezhan",
+    "name": "示范场景_车站",
+    "audio": 0,
+    "cloth": [],
+    "gaozhongUrl": 0,
+    "gaozhongCond": []
+  },
+  "990203": {
+    "id": 990203,
+    "url": "bg/img_shangchang",
+    "name": "示范场景_商场",
+    "audio": 0,
+    "cloth": [],
+    "gaozhongUrl": 205084,
+    "gaozhongCond": [
+      [
+        3.0,
+        -1.0,
+        350107.0
+      ],
+      [
+        1.0,
+        12.0,
+        101.0,
+        7.0,
+        10.0
+      ]
+    ]
+  },
+  "990204": {
+    "id": 990204,
+    "url": "bg/img_xiaomaibu",
+    "name": "示范场景_小卖部",
+    "audio": 0,
+    "cloth": [],
+    "gaozhongUrl": 0,
+    "gaozhongCond": []
+  },
+  "990205": {
+    "id": 990205,
+    "url": "bg/img_shanding",
+    "name": "示范场景_山顶",
+    "audio": 30007,
+    "cloth": [],
+    "gaozhongUrl": 0,
+    "gaozhongCond": []
+  },
+  "990206": {
+    "id": 990206,
+    "url": "bg/img_haibian",
+    "name": "示范场景_黄金海滩",
+    "audio": 30014,
+    "cloth": [],
+    "gaozhongUrl": 0,
+    "gaozhongCond": []
+  }
+}

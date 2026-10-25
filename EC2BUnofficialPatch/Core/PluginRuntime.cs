@@ -4,6 +4,7 @@ using EC2BUnofficialPatch.Core.Updates;
 using EC2BUnofficialPatch.Features.ActionCommands;
 using EC2BUnofficialPatch.Features.Effects;
 using EC2BUnofficialPatch.Features.Mechanics;
+using EC2BUnofficialPatch.Features.Mechanics.MapExtend;
 using EC2BUnofficialPatch.Features.Mechanics.LoveDraw;
 using EC2BUnofficialPatch.Features.Mechanics.AudioTrace;
 using EC2BUnofficialPatch.Features.Mechanics.Minigames;
@@ -145,12 +146,16 @@ namespace EC2BUnofficialPatch.Core
             if (PluginConfig.LoveDrawExternalResources.Value ||
                 PluginConfig.MinigameMechanics.Value ||
                 PluginConfig.JsonHotReload.Value ||
-                PluginConfig.MapFloorCompatibility.Value ||
+                PluginConfig.MapExtend.Value ||
                 PluginConfig.MapFloorHierarchyExtension.Value)
             {
                 _moduleHost.Load(new ModCfgOverrideModule());
             }
 
+            LoadIf(PluginConfig.AttributeEffects.Value, new AttributeEffectModule(), "效果/1属性改变修复与扩展");
+            LoadIf(PluginConfig.NewEffects.Value, new NewEffectModule(), "效果/新效果扩展");
+            if (!PluginConfig.NewEffects.Value) _moduleHost.Load(new DisabledInsightCleanupModule());
+            LoadIf(PluginConfig.NewConditions.Value, new ConditionExtensionModule(), "前提/新前提扩展");
             LoadIf(PluginConfig.ScreenDynamicWaitText.Value, new DynamicWaitTextModule(), "屏幕特效/4006黑屏特效显示文字扩展");
             LoadIf(PluginConfig.ScreenComicExtension.Value, new ComicExtensionModule(), "屏幕特效/4016漫画显示扩展");
             LoadIf(PluginConfig.ScreenBackgroundEffects.Value, new BackgroundEffectsModule(), "屏幕特效/屏幕特效扩展");
@@ -164,7 +169,8 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.LoveDrawExternalResources.Value, new LoveDrawExternalResourceModule(), "机制/情侣画修复");
             LoadIf(PluginConfig.MinigameMechanics.Value, new MechanicsModule(), "机制/社交小游戏修复");
             LoadIf(PluginConfig.CustomBadminton.Value, new CustomBadmintonModule(), "机制/羽毛球模型贴图新增");
-            LoadIf(PluginConfig.RoleAvailability.Value, new RoleAvailabilityModule(), "机制/控制角色在列表显示");
+            LoadIf(PluginConfig.MapExtend.Value, new MapExtendModule(), "机制/地图扩展与优化");
+            LoadIf(PluginConfig.RoleAvailability.Value, new RoleAvailabilityModule(), "机制/控制角色可见性");
             _moduleHost.Load(new MapRoleStaticClothModule());
             LoadIf(
                 PluginConfig.MapSocialExternalLive2D.Value,
@@ -184,15 +190,16 @@ namespace EC2BUnofficialPatch.Core
             LoadIf(PluginConfig.CGOptimization.Value, new CGOptimizationModule(), "优化/CG播放与图鉴优化");
             LoadIf(PluginConfig.JsonHotReload.Value, new JsonHotReloadModule(), "优化/.json文件热重载");
             LoadIf(
-                PluginConfig.MapFloorCompatibility.Value ||
+                PluginConfig.MapExtend.Value ||
                 PluginConfig.MapFloorHierarchyExtension.Value,
                 new MapFloorCompatibilityModule(),
-                "优化/地图子地点兼容");
+                "机制/地图扩展与优化");
             LoadIf(
                 PluginConfig.SteamNicknameDialogueReplacement.Value,
                 new SteamNicknameDialogueModule(),
                 "优化/Steam昵称对话替换");
             LoadIf(PluginConfig.ExamManualScore.Value, new ExamManualScoreModule(), "优化/普通考试允许手动输入成绩");
+            LoadIf(PluginConfig.ConsoleHistory.Value, new ConsoleHistoryModule(), "Debug/控制台调取历史记录");
             LoadIf(
                 PluginConfig.AutoOpenGameConsole.Value,
                 new AutoOpenGameConsoleModule(),

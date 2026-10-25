@@ -1,3 +1,4 @@
+using EC2BUnofficialPatch.Features.Mechanics.MapExtend;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace EC2BUnofficialPatch.Services
 
         internal static void RecordSource(ulong modId, string originalCfgPath)
         {
+            if (MapExtendCompatibility.RecordSharedSource(modId, originalCfgPath)) return;
             if (string.IsNullOrWhiteSpace(originalCfgPath) || !Path.IsPathRooted(originalCfgPath)) return;
             string fullPath;
             try
@@ -151,8 +153,9 @@ namespace EC2BUnofficialPatch.Services
 
                     ReloadPlan plan = BuildPlan(orderedFiles, candidate);
                     ApplyPlan(plan);
-                    if (PluginConfig.MapFloorCompatibility?.Value == true ||
-                        PluginConfig.MapFloorHierarchyExtension?.Value == true)
+                    MapExtendCompatibility.EnsureActiveFunction();
+                    if (PluginConfig.MapExtend?.Value == true ||
+                        PluginConfig.MapFloorHierarchyExtension?.Value == true || MapExtendCompatibility.FloorProvider != null)
                         TryRebuildMapFloors(orderedFiles, candidate, "热重载");
                     _acceptedFiles = candidate;
                     _fileFingerprints = nextFingerprints;
@@ -227,10 +230,10 @@ namespace EC2BUnofficialPatch.Services
                 documents.Add(new MapFloorCfgDocument(file.ModId, entries));
             }
 
-            return MapFloorCompatibilityService.Rebuild(
+            return MapExtendCompatibility.RebuildFloors(
                 _baseMapFloors,
                 documents,
-                PluginConfig.MapFloorCompatibility?.Value == true,
+                PluginConfig.MapExtend?.Value == true,
                 PluginConfig.MapFloorHierarchyExtension?.Value == true);
         }
 

@@ -19,6 +19,7 @@ refs=sorted(managed.glob('*.dll'))+[a.bepinex/n for n in ['BepInEx.dll','BepInEx
 qa=ROOT/'qa';qa.mkdir(exist_ok=True)
 up=ROOT/'EC2BUnofficialPatch'
 version=ET.parse(ROOT/'EC2BUnofficialPatch.csproj').findtext('PropertyGroup/Version')
+fileversion=ET.parse(ROOT/'EC2BUnofficialPatch.csproj').findtext('PropertyGroup/FileVersion')
 def sources(folder):
  return sorted(f for f in folder.rglob('*.cs') if not {'bin','obj','UpdaterHelper','Examples'} & set(f.relative_to(folder).parts))
 upsrc=sources(up)
@@ -26,12 +27,16 @@ def sha(f):return hashlib.sha256(f.read_bytes()).hexdigest()
 def compile(name,output,src,resources=(),assemblyversion='1.0.9.0'):
  output.mkdir(parents=True,exist_ok=True)
  attrs=output/(name+'.AssemblyInfo.cs')
- attrs.write_text('using System.Reflection;\n'+f'[assembly:AssemblyVersion("{assemblyversion}")]\n[assembly:AssemblyFileVersion("{version}.0")]\n[assembly:AssemblyInformationalVersion("{version}")]\n')
+ attrs.write_text('using System.Reflection;\n'+f'[assembly:AssemblyVersion("{assemblyversion}")]\n[assembly:AssemblyFileVersion("{fileversion}")]\n[assembly:AssemblyInformationalVersion("{version}")]\n')
  cmd=[dotnet,str(csc),'-nologo','-target:library','-nostdlib+','-langversion:latest','-optimize+','-deterministic+','-define:STUDENTAGE_HANDOFF','-out:'+str(output/(name+'.dll')),'-pathmap:'+str(ROOT)+'=/_/']
  cmd+=['-r:'+str(f) for f in refs]
  cmd+=['-resource:'+str(f)+','+logical for f,logical in resources]
  cmd += [str(f) for f in src]+[str(attrs)]
- run=subprocess.run(cmd,text=True,encoding='utf-8',errors='replace',stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+ # Keep the compiler arguments in a response file; the source/reference list can
+ # exceed Windows' process command-line limit as modules and templates grow.
+ response=output/'compiler.rsp'
+ response.write_text('\n'.join(subprocess.list2cmdline([arg]) for arg in cmd[2:])+'\n',encoding='utf-8')
+ run=subprocess.run(cmd[:2]+['@'+str(response)],text=True,encoding='utf-8',errors='replace',stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
  (qa/(output.name+'-'+name+'-build.log')).write_text(run.stdout)
  print(run.stdout,end='')
  run.check_returncode()
@@ -40,6 +45,9 @@ helper=ROOT/'dist/updater/EC2BUnofficialPatch.Updater.exe'
 helper.parent.mkdir(parents=True,exist_ok=True)
 subprocess.run([dotnet,str(csc),'-nologo','-target:exe','-nostdlib+','-langversion:latest','-optimize+','-deterministic+','-out:'+str(helper)]+['-r:'+str(managed/n) for n in ['mscorlib.dll','System.dll','System.Core.dll']]+[str(up/'UpdaterHelper/Program.cs')],check=True)
 resources=[(helper,'EC2BUnofficialPatch.Embedded.Updater.exe'),(up/'ModAuthorTemplate/ExternalLive2D/readme.txt','EC2BUnofficialPatch.Embedded.ExternalLive2D.Readme.txt')]
+resources.append((up/'ModAuthorTemplate/RoleAvailability说明.txt','EC2BUnofficialPatch.Embedded.RoleAvailability.Readme.txt'))
+resources += [(up/'ModAuthorTemplate/MapExtend'/name, 'EC2BUnofficialPatch.Embedded.MapExtend.'+logical)
+              for name,logical in [('readme.txt','Readme.txt'),('map-extend.html','Tool.html'),('scene-objects.html','SceneTool.html')]]
 # One UP binary, including its audio implementation and original updater helper.
 manifest={'version':version,'gameAssemblySHA256':sha(managed/'Assembly-CSharp.dll'),'bepinexSHA256':sha(a.bepinex/'BepInEx.dll'),'artifacts':{},'validation':'See Docs/VALIDATION.md; compilation is not full gameplay acceptance.'}
 out=ROOT/'dist/merged'

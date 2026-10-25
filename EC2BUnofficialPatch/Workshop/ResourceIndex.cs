@@ -60,7 +60,7 @@ namespace EC2BUnofficialPatch.Workshop
             {
                 CollectLyricFiles(root, lyricFiles);
 
-                foreach (string directory in EnumerateDirectFeatureDirectories(root.Path, "LoveDraw"))
+                foreach (string directory in FeatureContentDiscovery.Directories(root.Path, "LoveDraw"))
                 {
                     loveDrawDirectories.Add(directory);
                     RegisterLoveDrawDirectory(
@@ -285,12 +285,8 @@ namespace EC2BUnofficialPatch.Workshop
 
         private static void CollectLyricFiles(ContentRoot root, ICollection<string> result)
         {
-            AddFileIfExists(
-                Path.Combine(root.Path, "EC2BUnofficialPatch", "ScreenLyrcis", "CustomScreenLyrcis.json"),
-                result);
-            AddFileIfExists(
-                Path.Combine(root.Path, "ScreenLyrcis", "CustomScreenLyrcis.json"),
-                result);
+            foreach (string file in FeatureContentDiscovery.ConfigFiles(root.Path, "ScreenLyrcis", "CustomScreenLyrcis.json"))
+                result.Add(file);
             AddFileIfExists(Path.Combine(root.Path, "CustomLyrics.json"), result);
 
             string cfgDirectory = Path.Combine(root.Path, "Cfgs");
@@ -303,21 +299,6 @@ namespace EC2BUnofficialPatch.Workshop
             {
                 result.Add(file);
             }
-        }
-
-        private static IEnumerable<string> EnumerateDirectFeatureDirectories(string modRoot, string featureName)
-        {
-            string pluginDirectory = ExternalResourceResolver.FindChildDirectory(modRoot, "EC2BUnofficialPatch");
-            if (pluginDirectory != null)
-            {
-                string enhanced = ExternalResourceResolver.FindChildDirectory(pluginDirectory, featureName);
-                if (enhanced != null)
-                    yield return enhanced;
-            }
-
-            string direct = ExternalResourceResolver.FindChildDirectory(modRoot, featureName);
-            if (direct != null)
-                yield return direct;
         }
 
         private static void AddFileIfExists(string path, ICollection<string> result)

@@ -4,7 +4,7 @@ using System.Linq;
 using Config;
 using EC2BUnofficialPatch.Core;
 
-namespace EC2BUnofficialPatch.Services
+namespace EC2BUnofficialPatch.Features.Mechanics.MapExtend
 {
     /// <summary>
     /// 将 MapCfg 的普通“整项覆盖”与父地图 floors 的“多来源累加”分离。
@@ -158,6 +158,20 @@ namespace EC2BUnofficialPatch.Services
                 }
                 throw;
             }
+        }
+
+        internal static int RootMapId(int mapId)
+        {
+            if (MapExtendCompatibility.TryRootMap(mapId, out int sharedRoot)) return sharedRoot;
+            var visited = new HashSet<int>();
+            while (visited.Add(mapId))
+            {
+                if (_parentByChild.TryGetValue(mapId, out int parent)) { mapId = parent; continue; }
+                if (Cfg.MapCfgMap.TryGetValue(mapId, out MapCfg cfg) && cfg.type == 2 && Cfg.MapCfgMap.ContainsKey(mapId / 1000))
+                { mapId /= 1000; continue; }
+                return mapId;
+            }
+            return mapId;
         }
 
         internal static MapCfg ResolveFloorContainer(int mapId, MapCfg current)

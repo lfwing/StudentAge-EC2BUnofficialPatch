@@ -38,6 +38,9 @@ namespace LFBetterAudio.Templates
                 "把 Mod 自定义音频文件放在这里。\n" +
                 "BetterAudio.json 中建议使用相对路径，例如：\n" +
                 "  \"audioPath\": \"Audio/MyAudio.mp3\"\n\n" +
+                "只需复制 BetterAudio 文件夹。推荐 Mod根目录/EC2BUnofficialPatch/BetterAudio，\n" +
+                "其次 Mod根目录/BetterAudio，也支持 Mod根目录/其他容器/BetterAudio（可多层）。\n" +
+                "audioPath/timelinePath 必须为 BetterAudio 目录内的相对路径，禁止绝对路径或 ..。\n\n" +
                 "支持格式取决于游戏当前 ResMgr.LoadAudioAsync / Unity 音频解码能力。\n");
 
             WriteIfMissing(

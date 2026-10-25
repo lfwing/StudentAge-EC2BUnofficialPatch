@@ -7,40 +7,8 @@ using Sdk;
 using UnityEngine;
 using View.Main;
 
-namespace EC2BUnofficialPatch.Features.Effects
+namespace EC2BUnofficialPatch.Features.Mechanics.MapExtend
 {
-    internal static class MapMoveEffectPatches
-    {
-        private const int MoveToMapSubType = 1;
-
-        internal static bool OnRunPrefix(int ___subType, int ___id)
-        {
-            if (___subType != MoveToMapSubType)
-            {
-                return true;
-            }
-
-            if (MapMoveService.MoveTo(___id))
-                PatchLog.Info($"效果模块-100,1地点移动已执行：effect=100,1,{___id}");
-            return false;
-        }
-
-        internal static bool OnToStringPrefix(
-            int ___subType,
-            int ___id,
-            int _type,
-            ref string __result)
-        {
-            if (___subType != MoveToMapSubType)
-            {
-                return true;
-            }
-
-            __result = MapMoveService.GetDescription(___id, _type);
-            return false;
-        }
-    }
-
     internal static class MapMoveService
     {
         private static readonly MethodInfo ChangeSceneMethod =
@@ -77,7 +45,10 @@ namespace EC2BUnofficialPatch.Features.Effects
 
             if (mapId == 1)
             {
-                MoveHome();
+                // Both author-tool clicks and 100,1,1 effects use this shared route.
+                // An existing cycle already covers the move; avoid nesting masks.
+                if (UIMgr.IsShowingMask()) MoveHome();
+                else UIMgr.ShowCycleMask(Vector2.zero, MoveHome, .4f, true, false);
                 return true;
             }
 

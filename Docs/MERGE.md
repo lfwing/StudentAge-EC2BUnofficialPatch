@@ -1,13 +1,15 @@
-# UP 1.0.21 统一维护
+# UP 1.0.23.1 单DLL与兼容说明
 
-只构建和发布 `EC2BUnofficialPatch.dll`，仅注册 `sa.EC2B.UnofficialPatch` 一个 BepInEx 入口。根工程为 `EC2BUnofficialPatch.csproj`，`build.py` 不再提供安装布局选项。
+当前面向游戏1.94，只构建和发布EC2BUnofficialPatch.dll，只注册sa.EC2B.UnofficialPatch一个BepInEx入口。BetterAudio已在1.0.21合并，此后的1.0.23和1.0.23.1继续采用同一布局；不是重新提供独立BA插件。
 
-音频源码迁入 `EC2BUnofficialPatch/Features/Audio/`，由 UP 持久运行时负责初始化与退出清理。音频控制器继续保活，1163 补丁归属为 `sa.EC2B.UnofficialPatch.Audio`，F9 音频热重载不再依赖独立 BA 插件注册。
+根工程为EC2BUnofficialPatch.csproj，音频实现在EC2BUnofficialPatch/Features/Audio，由UP运行时统一初始化和清理。旧LFBetterAudio命名空间、类型名及音频补丁ID是兼容实现，不是第二个可单独安装的入口。F9的音频重载由UP提供。
 
-旧 `LFBetterAudio` 命名空间与部分类型名仅为兼容保留，不再代表独立插件。旧 Mod 的 BetterAudio 资源目录、BetterAudio.json、Timeline 与 1163 指令均不改名。程序集身份仍为 EC2BUnofficialPatch 1.0.9.0，插件版本、文件版本和产品版本为 1.0.21；程序集身份版本用于保持既有 UP 小游戏适配器绑定，不是发布版本。
+插件版本、文件版本和产品版本为1.0.23.1；程序集绑定身份保留EC2BUnofficialPatch, Version=1.0.9.0。两种版本用途不同，不应为了更新发布号修改外部小游戏适配器的绑定身份。
 
-停止提供独立 BA DLL 和分离版构建工程。依赖独立 BA GUID 或程序集的第三方插件需要改为依赖 UP 并重新构建。普通 Mod 的数据与资源无需迁移。
+旧Mod的BetterAudio目录、BetterAudio.json、Timeline和1163指令保持原名。普通数据资源无需因音频合并改名；硬依赖独立BA GUID或程序集的第三方插件须改为依赖UP并重新构建。已安装独立LFBetterAudio.dll的玩家先移走旧副本，避免重复加载。
 
-1.0.24/1.0.25 接手内容已回并到当前 1.0.21：音频监控使用 AudioClip 弱引用和有界日志集合，版本比较缺省值按 0 处理；更新器恢复 schema 1 单文件助手，并以 `layout=merged` 拒绝错误布局。
+1.0.24/1.0.25接手测试文件属于历史开发记录，相关音频、视频和更新器改动此前已经回并；这些旧测试版本号高于1.0.23.1，自动更新不执行降级，需手动替换一次。已安装1.0.23的用户按正常版本递增升级。
 
-在线更新保留原合并版通道，见 [自动更新](AUTO_UPDATE.md)。实际验证范围见 [验证记录](VALIDATION.md)。历史 1.0.23～1.0.25 文件保留为开发过程证据，其有效内容已在 1.0.21 记录中回并。
+本版进一步提供属性/特质效果、新前提、社交/空间可见性、控制台历史及地图等扩展，详见[本版更新](../EC2BUnofficialPatch/Docs/CHANGELOG_1.0.23.1.md)。
+
+构建生成本地候选DLL与匹配update.json，Git提交/推送和Release附件上传是独立步骤；详见[自动更新与发布](AUTO_UPDATE.md)和[验证范围](VALIDATION.md)。

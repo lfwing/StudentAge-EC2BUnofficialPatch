@@ -106,6 +106,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
         private static CustomBadmintonRegistry _registry = CustomBadmintonRegistry.Empty;
         private static ContentRootCatalog _roots;
+        private static ReloadInputSnapshot _inputs;
 
         internal static void Initialize(
             CustomBadmintonRegistry registry,
@@ -113,7 +114,14 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         {
             _registry = registry ?? CustomBadmintonRegistry.Empty;
             _roots = roots;
+            _inputs = CaptureInputs(roots.Roots);
         }
+
+        private static ReloadInputSnapshot CaptureInputs(IReadOnlyList<ContentRoot> roots) => ReloadInputSnapshot.Capture(
+            roots.SelectMany(root => FeatureContentDiscovery.Directories(root.Path, CustomBadmintonRegistry.FolderName))
+                .SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+                .Where(path => string.Equals(Path.GetExtension(path), ".json", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Path.GetExtension(path), ".png", StringComparison.OrdinalIgnoreCase)));
 
         internal static JsonHotReloadResult Reload()
         {
@@ -122,9 +130,14 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
             try
             {
+                var roots = ContentRootCatalog.Discover();
+                var inputs = CaptureInputs(roots.Roots);
+                if (inputs.SameAs(_inputs)) return JsonHotReloadResult.Skip("羽毛球配置及模型贴图无变化");
                 CustomBadmintonRegistry replacement =
-                    CustomBadmintonRegistry.Load(_roots.Roots);
+                    CustomBadmintonRegistry.Load(roots.Roots);
                 _registry = replacement;
+                _roots = roots;
+                _inputs = inputs;
                 return JsonHotReloadResult.Completed(
                     replacement.ConfigFileCount,
                     replacement.VariantCount,
@@ -544,14 +557,9 @@ namespace EC2BUnofficialPatch.Features.Mechanics
                 if (root == null)
                     continue;
 
-                string[] directories =
+                foreach (string directory in FeatureContentDiscovery.Directories(root.Path, FolderName))
                 {
-                    Path.Combine(root.Path, "EC2BUnofficialPatch", FolderName),
-                    Path.Combine(root.Path, FolderName)
-                };
-                foreach (string directory in directories)
-                {
-                    string file = Path.Combine(directory, FileName);
+                    string file = FeatureContentDiscovery.ChildFile(directory, FileName);
                     if (!File.Exists(file))
                         continue;
                     string fullPath = Path.GetFullPath(file);

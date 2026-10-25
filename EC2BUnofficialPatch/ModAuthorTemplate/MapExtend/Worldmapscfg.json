@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "worlds": [
+    {
+      "id": 0,
+      "mapIds": [
+        13
+      ],
+      "autoUnlockMaps": [
+        13
+      ],
+      "travelMaps": [
+        13
+      ]
+    },
+    {
+      "id": 990001,
+      "name": "江畔示范区",
+      "url": "Images/river-town.png",
+      "coordinateSize": [
+        2560,
+        1440
+      ],
+      "mapIds": [
+        31,
+        32,
+        33
+      ],
+      "autoUnlockMaps": [
+        31,
+        31001,
+        32,
+        32001,
+        33,
+        33001
+      ],
+      "travelMaps": [
+        31
+      ],
+      "defaultUnlocked": false
+    }
+  ]
+}

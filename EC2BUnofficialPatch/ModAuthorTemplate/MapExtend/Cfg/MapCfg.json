@@ -1,0 +1,95 @@
+{
+  "13": {
+    "id": 13,
+    "name": "大桥",
+    "shortName": "大桥",
+    "floorName": null,
+    "cond": [],
+    "redpoint": 0,
+    "bg": 203201,
+    "bg2": 0,
+    "type": 0,
+    "floors": []
+  },
+  "31": {
+    "id": 31,
+    "name": "江畔车站",
+    "shortName": "江畔车站",
+    "floorName": "江畔车站",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990201,
+    "bg2": 0,
+    "type": 0,
+    "floors": [
+      31,
+      31001
+    ]
+  },
+  "31001": {
+    "id": 31001,
+    "name": "候车厅",
+    "shortName": "候车厅",
+    "floorName": "候车厅",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990202,
+    "bg2": 0,
+    "type": 2,
+    "floors": []
+  },
+  "32": {
+    "id": 32,
+    "name": "江畔商业街",
+    "shortName": "江畔商业街",
+    "floorName": "江畔商业街",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990203,
+    "bg2": 0,
+    "type": 0,
+    "floors": [
+      32,
+      32001
+    ]
+  },
+  "32001": {
+    "id": 32001,
+    "name": "街角小店",
+    "shortName": "街角小店",
+    "floorName": "街角小店",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990204,
+    "bg2": 0,
+    "type": 2,
+    "floors": []
+  },
+  "33": {
+    "id": 33,
+    "name": "江畔公园",
+    "shortName": "江畔公园",
+    "floorName": "江畔公园",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990205,
+    "bg2": 0,
+    "type": 0,
+    "floors": [
+      33,
+      33001
+    ]
+  },
+  "33001": {
+    "id": 33001,
+    "name": "观景步道",
+    "shortName": "观景步道",
+    "floorName": "观景步道",
+    "cond": [],
+    "redpoint": 0,
+    "bg": 990206,
+    "bg2": 0,
+    "type": 2,
+    "floors": []
+  }
+}

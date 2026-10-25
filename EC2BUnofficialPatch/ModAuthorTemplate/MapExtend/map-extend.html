@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MapExtend · 地图与场景制作台</title>
+<style>
+
+:root{--ink:#10345c;--muted:#58708b;--blue:#075de1;--navy:#061d46;--cyan:#00dcfa;--line:#cddbea;--paper:#f4f8fd}*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--navy);font:14px "Segoe UI","Microsoft YaHei",sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit}button{border-radius:3px;background:white;border:1px solid #b8cde2;color:var(--ink);padding:8px 12px;cursor:pointer;transition:background .12s,box-shadow .12s}button:hover{background:#e3f3ff;border-color:var(--blue)}button.active,button.primary{background:var(--blue);border-color:var(--blue);color:white}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #13bade;outline-offset:2px}button:disabled{opacity:.45;cursor:default}
+input,select,textarea{color:var(--ink);border:1px solid #b8cde2;background:white;border-radius:3px;padding:8px;min-width:0}input[type=number]{width:96px}input[type=file]{width:100%;font-size:12px;padding:6px}input[type=color]{width:48px;height:32px;padding:2px}input[type=checkbox]{accent-color:var(--blue);width:16px;height:16px;flex:0 0 16px}input.path,textarea{width:100%}textarea{font:12px Consolas,monospace;line-height:1.5;resize:vertical}select{max-width:100%}
+header{height:78px;display:flex;gap:24px;align-items:center;padding:14px 28px;color:white;background:#062864;border-bottom:3px solid var(--cyan)}.brand{width:182px;flex-shrink:0;font-size:25px;font-weight:900;font-style:italic;letter-spacing:-1px;line-height:.9}.brand span{color:var(--cyan)}.brand small{font:10px "Segoe UI",sans-serif;letter-spacing:3px;margin:6px 0 0;color:#afd5ff}.header-title h1{font-size:18px;letter-spacing:1px;white-space:normal}.header-title p{color:#b6d4fb;font-size:12px;margin:4px 0 0}header .spacer{flex:1}.save-state{font-size:12px;color:#b6d4fb}.save-state.pending{color:#ffe57a}header button{padding:10px 16px;white-space:nowrap}header button.primary{background:var(--cyan);color:#052855;border-color:var(--cyan);font-weight:700}
+.app-shell{display:grid;grid-template-columns:214px minmax(0,1fr);height:calc(100dvh - 78px)}.workflow{display:flex;flex-direction:column;gap:8px;padding:28px 14px;background:linear-gradient(160deg,#094dad,#06265e 62%,#041835);overflow:auto}.rail-caption{font-size:10px;letter-spacing:3px;color:#80aee3;padding:0 12px;margin:0 0 10px}.workflow button{display:grid;grid-template-columns:35px 1fr;text-align:left;align-items:center;padding:14px 15px;border:0;border-radius:0;background:transparent;color:#a9cdfb;clip-path:polygon(0 0,100% 0,94% 100%,0 100%)}.workflow button b{font-size:23px;font-style:italic;color:#6eabe9}.workflow button span{font-size:15px;font-weight:700}.workflow button small{font-size:10px;letter-spacing:1.6px;margin:3px 0 0;color:inherit;font-weight:400}.workflow button:hover{background:#124c9e;color:white}.workflow button.active{background:white;color:#074fc6;box-shadow:none}.workflow button.active b{color:#075de1}.rail-help{font-size:12px;color:#9cbee9;line-height:1.8;padding:18px 12px;margin-top:auto}.rail-help strong{color:white}
+main{height:100%;min-height:0;display:grid;grid-template-columns:372px minmax(0,1fr);gap:0;padding:0;background:var(--paper)}.sidebar{min-height:0;display:flex;flex-direction:column;background:white;border-right:1px solid var(--line);border-radius:0;overflow:hidden}.steps{display:flex;gap:4px;flex-wrap:wrap;padding:12px;background:#e9f1fc;border-bottom:1px solid var(--line)}.steps button{flex:1;padding:8px 5px;font-size:12px;white-space:nowrap}.steps[hidden]{display:none}.panels{flex:1;overflow:auto;padding:22px 20px}.panel{display:none}.panel.active{display:block}h2{font-size:19px;line-height:1.3;margin:0 0 15px;font-weight:800}h3{font-size:14px;margin:22px 0 10px}.eyebrow{font-size:10px;letter-spacing:2px;color:var(--blue);font-weight:700;margin:0 0 8px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}.row button{flex-grow:1}.form,.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px}.form label{display:flex;align-items:center;gap:8px;justify-content:space-between}.wide{grid-column:1/-1}.wide input:not([type=checkbox]):not([type=color]){flex:1;min-width:0;width:0}.file-field{display:block;margin:14px 0}.file-field span{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:7px}.help,small{display:block;color:var(--muted);line-height:1.65;margin:8px 0}.notice{background:#eaf4fe;border-left:3px solid #1488e3;padding:12px;line-height:1.65;font-size:12px;margin:14px 0}.checklist{padding-left:20px;line-height:1.9}.status,.world-list{color:#137269;line-height:1.7;font-size:12px}.section-heading{margin-top:25px}details{margin:16px 0;border-top:1px solid var(--line);padding-top:12px}summary{color:var(--ink);font-size:13px;cursor:pointer;font-weight:600}details .form{margin-top:12px}pre{white-space:pre-wrap;font:11px Consolas,monospace;overflow:auto;max-height:260px}.layer-pane{display:none}.layer-pane.active{display:block}.layer-tabs{display:flex;gap:5px;margin-bottom:12px}.layer-tabs button{flex:1}.transform-buttons button{flex:1}#mode{display:none}#message{margin:0;padding:12px 18px;font-size:12px;color:var(--ink);line-height:1.6;min-height:60px;max-height:112px;overflow:auto;border-top:1px solid var(--line);background:#eaf3ff}
+.map-area{min-width:0;min-height:0;display:flex;flex-direction:column;background:#e4edf8;border-radius:0;overflow:hidden}.context-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:15px 20px;background:white;border-bottom:1px solid var(--line)}.context-bar label{font-size:12px;display:flex;gap:7px;align-items:center}.context-bar select{max-width:190px}#workspaceTitle{margin:0 0 3px;font-size:16px}#workspaceHint{font-size:12px;color:var(--muted);margin:0}.context-copy{flex:1}.map-context{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.toolbar,.view-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 18px;background:#f3f7fc;border-bottom:1px solid var(--line)}.toolbar button,.view-tools button{padding:6px 10px;font-size:12px}.toolbar .divider{border-left:1px solid var(--line);height:22px;margin:0 4px}.toolbar label{display:flex;gap:5px;align-items:center;font-size:12px}.view-tools small{margin:0 0 0 8px}.view-tools input{width:62px;padding:5px}#editHint{color:var(--muted);font-size:12px;padding:8px 20px;background:#f3f7fc}.stage{flex:1;min-height:0;position:relative;overflow:hidden;padding:0;background:linear-gradient(140deg,#071f48,#113f70)}canvas{position:absolute;max-width:none;max-height:none;display:block;background:transparent;touch-action:none}#sceneStage{display:none}#sceneStage canvas{position:absolute;left:0;top:0;max-height:none}#sceneStage{align-items:center;justify-content:center;padding:0;background-color:#072549;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px}
+.empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;text-align:left;color:white}.empty-card{max-width:450px;padding:34px;border-left:4px solid var(--cyan);background:#092952e8;box-shadow:0 20px 60px #0003}.empty-card .empty-index{color:var(--cyan);font-weight:900;font-size:46px;font-style:italic;line-height:1;margin-bottom:12px}.empty-card h2{font-size:23px;color:white}.empty-card p{color:#b7d6fa;font-size:13px;line-height:1.8;margin:0}.project-card{background:#075de1;color:white;padding:18px;margin-bottom:18px;clip-path:polygon(0 0,100% 0,100% 92%,95% 100%,0 100%)}.project-card h2{font-size:22px;margin:0 0 8px}.project-card p{font-size:12px;line-height:1.7;color:#d1e8ff;margin:0}.start-buttons{display:grid;gap:8px;margin:16px 0 24px}.start-buttons button{text-align:left;padding:13px 15px}.start-buttons button span{display:block;font-size:11px;color:var(--muted);margin-top:3px}.project-counts{font-size:12px;line-height:1.8;color:var(--muted)}#packageStatus{white-space:pre-wrap;font-size:13px;line-height:1.9;padding:14px;background:#edf4fc;border:1px solid var(--line);margin-bottom:15px}#exportPackage{width:100%;font-weight:700;padding:14px}.scene-fields>label,.scene-fields .pair>label{display:block;font-size:12px;margin:12px 0}.scene-fields label input:not([type=checkbox]),.scene-fields label select,.scene-fields label textarea{display:block;width:100%;margin-top:6px}.scene-fields .pair{gap:10px}.scene-fields .pair>label{margin:6px 0}.scene-fields .scene-tab{display:none}.scene-fields .scene-tab.active{display:block}#s-message{font-size:12px;color:#15746e;line-height:1.7}.badge{font-size:10px;padding:3px 7px;background:#ddf4ff;color:#06718a}
+[hidden]{display:none!important}.scene-mode #mapToolbar,.scene-mode #editHint,.scene-mode #mapViewTools,.scene-mode #stage,.scene-mode .map-context{display:none}.scene-mode #sceneStage{display:flex}.scene-mode #sceneToolbar,.scene-mode #sceneViewTools{display:flex}.scene-mode #sceneEmpty[hidden]{display:none}
+@media(max-width:1180px){.app-shell{grid-template-columns:172px minmax(0,1fr)}.workflow{padding:20px 8px}.workflow button{grid-template-columns:28px 1fr;padding:12px 10px}.workflow button span{font-size:13px}.workflow button b{font-size:20px}main{grid-template-columns:332px minmax(0,1fr)}header{padding:12px 20px;gap:15px}.brand{width:142px;font-size:22px}.context-bar{padding:12px}.context-bar select{max-width:140px}.panels{padding:18px 16px}}
+@media(max-width:860px){body{overflow:auto}.app-shell{height:auto;min-height:calc(100dvh - 78px);grid-template-columns:1fr}.workflow{flex-direction:row;padding:8px;gap:4px;overflow:auto}.workflow button{flex:1;min-width:135px;padding:10px;clip-path:none}.workflow button small,.rail-caption,.rail-help{display:none}main{height:calc(100dvh - 142px);min-height:540px;grid-template-columns:300px minmax(0,1fr)}header .brand{width:auto}header .header-title,header .save-state{display:none}.view-tools small{display:none}}
+@media(max-width:620px){header{height:68px;padding:10px 14px;gap:8px}.brand{font-size:20px}.brand small{display:none}header button{font-size:12px;padding:8px}main{height:auto;display:flex;flex-direction:column}.sidebar{max-height:55dvh;border-right:0}.map-area{min-height:420px;height:55dvh}.context-bar .map-context{display:none}.panels{padding:16px}.workflow button{min-width:118px}.context-copy{min-width:140px}}@media(prefers-reduced-motion:reduce){button{transition:none}}
+
+.overview-mode #mapToolbar,.overview-mode #editHint,.overview-mode #mapViewTools,.overview-mode #stage,.overview-mode .map-context{display:none}.overview-mode #projectOverview{display:flex}#projectOverview{display:none;flex:1;overflow:auto;flex-direction:column;padding:38px;gap:24px;background:linear-gradient(140deg,#06265a,#0a4eac);color:white}.overview-hero .eyebrow{color:var(--cyan)}.overview-hero h2{font-size:34px;letter-spacing:-.8px;margin:10px 0}.overview-hero p{color:#b7d6fa;line-height:1.8;font-size:13px;max-width:520px}.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.summary-tile{background:#ffffff10;border-top:3px solid var(--cyan);padding:20px}.summary-tile b{display:block;font-size:38px;font-weight:800;font-style:italic}.summary-tile span{font-size:12px;color:#c3dcf8}.overview-steps{padding:24px;background:#fff;color:var(--ink);clip-path:polygon(0 0,100% 0,100% 94%,97% 100%,0 100%)}.overview-steps h3{margin:0 0 15px;font-size:16px}.overview-steps p{font-size:13px;line-height:1.8;margin:8px 0}.overview-steps p b{display:inline-block;width:26px;color:var(--blue)}.scene-fields label.url-field{display:none}.scene-fields.show-url label.url-field{display:block}#summaryChecks{font-size:12px;color:#b7d6fa;white-space:pre-wrap;line-height:1.8}@media(max-width:1180px){#projectOverview{padding:24px}.overview-hero h2{font-size:26px}.summary-grid{gap:8px}.summary-tile{padding:12px}.summary-tile b{font-size:28px}}@media(max-width:620px){#projectOverview{padding:18px}}
+
+.adjacent-import{border-top:0;padding-top:0;margin-top:8px}dialog{width:min(440px,90vw);padding:24px;border:2px solid var(--blue);color:var(--ink);border-radius:4px}dialog::backdrop{background:#031d45aa}dialog label{display:block;margin:14px 0}dialog input{display:block;width:100%!important;margin-top:7px}dialog .status{min-height:22px;color:#b32525}
+</style>
+<header><div class="brand">MAP<span> / </span>EXTEND<small>AUTHOR STUDIO</small></div><div class="header-title"><h1>地图与场景制作台</h1><p>一个项目 · 两类编辑 · 一个内容包</p></div><span class="spacer"></span><span id="saveState" class="save-state" role="status">尚未导出</span><button id="saveCurrent">保存当前编辑</button><button id="download" class="primary">检查与导出 ↗</button></header>
+<div class="app-shell"><nav class="workflow" aria-label="制作流程"><p class="rail-caption">CREATE YOUR WORLD</p>
+<button data-flow="import" class="active"><b>01</b><span>项目与资料<small>PROJECT</small></span></button>
+<button data-flow="world"><b>02</b><span>大地图<small>WORLD MAP</small></span></button>
+<button data-flow="entry"><b>03</b><span>地点与标点<small>LOCATIONS</small></span></button>
+<button data-flow="scene"><b>04</b><span>场景对象<small>SCENE OBJECTS</small></span></button>
+<button data-flow="export"><b>05</b><span>检查与导出<small>EXPORT</small></span></button>
+<div class="rail-help"><strong>按需要制作</strong><br>只做场景对象，可直接进入 04。<br><br>保存保留当前编辑；导出 ZIP 后才保存到磁盘。</div></nav>
+<main>
+<aside class="sidebar">
+<nav class="steps" id="locationTabs" aria-label="地点编辑" hidden><button data-panel="entry">父地点</button><button data-panel="cfg">子地点</button><button data-panel="region">区域</button><button data-panel="images">图片</button><button data-panel="label">标签</button></nav>
+<nav class="steps" id="sceneTabs" aria-label="场景对象编辑" hidden><button data-scene-tab="scene" class="active">场景</button><button data-scene-tab="basic">对象</button><button data-scene-tab="action">点击行为</button><button data-scene-tab="visual">图片与区域</button></nav>
+<div class="panels"><section id="panel-scene" class="panel scene-fields">
+<p class="eyebrow">04 / SCENE OBJECTS</p><h2 id="s-heading">场景与制作资料</h2>
+<div class="scene-tab active" data-scene-pane="scene">
+<p class="notice">原版用 PersonCfg 表示场景里的可点击物件：它在配置上是一个“角色”，不必是真正的人物。手动填写所属地点与背景 ID，再导入参考图定位对象；无需先进入游戏生成坐标文件，也无需导入人物表。</p>
+<label>已保存场景<select id="s-sceneSelect"><option value="">新建场景</option></select></label><button id="s-deleteScene">删除此场景及绑定内容</button><small>制作另一个场景时选择“新建场景”，再填写它的地点与背景 ID，并点击“确认场景”；已有场景及对象会保留。</small>
+<details open><summary>场景设置与参考图</summary>
+<div class="pair"><label>所属地点 MapId<input id="s-mapId" type="number" min="1" placeholder="手动填写 MapCfg ID"></label><label>场景背景 BgId<input id="s-bgId" type="number" min="1" placeholder="手动填写 BgCfg ID"></label></div><button id="s-confirmScene" class="primary">确认场景（创建 / 切换）</button><p id="s-sceneConfirmStatus" class="status"></p>
+<small>填写这两个 ID 后，点击“确认场景”才创建或切换；未确认输入不会影响当前场景，也不会迁移已有对象。只显示该地点和背景中的对象；不要求地点已经在游戏里建成。地点与背景在安装内容时须按原版 Mod 流程注册。</small>
+<label>场景参考图（仅作定位参考，不导出）<input id="s-background" type="file" accept="image/*"></label>
+<small>参考图不随模组导出；重新打开 MapExtend 内容后，请自行额外导入。建议使用对应的解包背景原图；坐标以背景中心为原点，Y 向上。宽高表示游戏背景的局部坐标尺寸，默认 2560 × 1440，可手动调整；图片像素尺寸与坐标尺寸可以不同。</small>
+<div class="pair"><label>场景坐标宽<input id="s-width" type="number" min="1" value="2560"></label><label>场景坐标高<input id="s-height" type="number" min="1" value="1440"></label></div>
+<button id="s-saveScene" class="primary">保存场景设置</button>
+</details>
+<details open><summary>人物行与事件注册说明</summary>
+<small>在“对象”页填写人物 ID、介绍与点击音效，点击生成原版 PersonCfg 行。导出 Cfg/PersonCfg.json 只含对象的纯净原版行，不包含整份原版人物表，也不生成 kzoneHeadId；请自行注册到 Mod。</small>
+<small>原版物件事件另用 EvtCfg.type=30、npc=PersonCfg ID 并配套 TalkCfg。本工具的四种点击行为按右侧选择执行，不自动消费原版物件事件队列；需要剧情效果时选择“触发介绍的同时执行效果”。</small>
+</details><p id="s-sourceStatus" class="status">填写地点与背景 ID，再导入场景参考图。</p>
+</div>
+<div id="s-objectControls" hidden><label>当前对象<select id="s-selection"></select></label><div class="row"><button id="s-add">新增对象</button><button id="s-remove">删除对象</button></div></div>
+<div class="scene-tab" data-scene-pane="basic">
+<p id="s-ownerStatus" class="notice">所属地点与背景请在“场景”小流程填写。</p>
+<button id="s-moveObject">调整此对象的所属场景</button><small>用于主动迁移或校正旧版保存错误的归属；保留对象的图片及选区。切换编辑场景不会迁移对象。</small>
+<label>对象名字<input id="s-name" placeholder="MapId-BgId-xx，或自定义名称"></label><small>用于制作时区分对象，默认格式为“MapId-BgId-xx”，可自行命名。</small>
+<label>对象 PersonCfg ID<input id="s-personId" type="number" min="1" placeholder="填写原版已注册或新建的 ID"></label>
+<label>介绍<textarea id="s-intro" rows="3" placeholder="点击对象时显示的介绍"></textarea></label>
+<label>点击音效 ID<input id="s-audio" type="number" value="42029" min="0"></label>
+<button id="s-generatePerson" class="primary">生成 / 更新原版 PersonCfg 行</button>
+<small>只在点击此按钮时写入 Cfg/PersonCfg.json 材料；保存对象不改写人物表。每行只生成 id、name、init=[-1]、introduction、clickAudio，不加入已有行的其他字段。导出后仍需按原版流程注册。</small>
+<pre id="s-personPreview"></pre></div>
+<div class="scene-tab" data-scene-pane="action">
+<label>普通图显示条件<textarea id="s-normalCondition" rows="2" placeholder="留空：普通图在此场景里一直显示"></textarea></label>
+<small>不填时，普通图在此场景里一直显示；填写后，仅在满足条件时显示。它不决定能否点击。</small>
+<label>可点击条件<textarea id="s-clickCondition" rows="2" placeholder="留空：默认可点击，悬停时显示悬停图"></textarea></label>
+<small>不填时默认可点击，鼠标移入命中区会显示悬停图；填写后须满足条件才可点击和悬停。可以不提供普通图，例如物件已经画在场景背景里。</small>
+<small>剧情也可用 100,11,1/-1,PersonId 显示/隐藏普通图，用 100,11,2/-2,PersonId 允许/禁止点击和悬停。指令独立于条件；执行后相应状态以最后一次指令为准，并随存档保存。需有对应图片和已注册的对象人物 ID。</small>
+<p class="notice">条件直接按原版写法填写，例如 1,1,1,10;100,10,100001。组内用英文逗号，组间用英文分号；不要手写 [] 或 JSON 数组。导出时工具会自动补齐嵌套括号；各组的具体含义与原版一致，普通条件组需要同时满足。</p>
+<label>点击行为<select id="s-click"><option value="introduction">仅触发介绍</option><option value="introductionEffects">触发介绍的同时执行效果</option><option value="background">切换到某背景</option><option value="scene">切换到某场景</option></select></label>
+<small id="s-actionHint">点击后显示 PersonCfg 中的介绍，保留当前背景和应显示的普通图，收起悬停图。</small>
+<label id="s-effectsField" hidden>效果<textarea id="s-effects" rows="3" placeholder="例如：100,1,100001;101,5,72"></textarea><small>多组效果用英文分号分隔，组内用英文逗号，和原版相同；不要输入 []，导出自动转换。</small></label>
+<label id="s-backgroundTarget" hidden>目标背景 BgId<input id="s-targetBg" type="number" min="1" placeholder="填写已注册的 BgCfg ID"><small>点击后在当前地点切换到此背景；背景资源须已按原版 Mod 流程注册。</small></label>
+<label id="s-sceneTarget" hidden>目标场景 MapId<input id="s-targetMap" type="number" min="1" placeholder="父地点或子地点的 MapCfg ID"><small>复用 UP / MapExtend 的 100,1,MapId 移动流程；父地点与子地点都可填写，地点1会回家。该移动效果会解锁目标地点，请用可点击条件控制入口何时开放。</small></label>
+</div>
+<div class="scene-tab" data-scene-pane="visual">
+<label>编辑图层<select id="s-layer"><option value="normal">普通图</option><option value="hover">悬停图</option><option value="region">可点击区域</option></select></label>
+<small>普通图平时显示，悬停图仅在可点击区域内显示并替换普通图；没有悬停图时保留普通图。两张图片的位置和尺寸分别调整，命中区域独立设置。</small>
+<label>普通图 PNG<input id="s-normal" type="file" accept="image/png"></label><label>普通图相对路径<input id="s-normalPath" placeholder="Images/object.png"></label>
+<label>悬停图 PNG<input id="s-hover" type="file" accept="image/png"></label><label>悬停图相对路径<input id="s-hoverPath" placeholder="Images/object-hover.png"></label>
+<div class="pair"><label>中心 X<input id="s-x" type="number" value="0"></label><label>中心 Y<input id="s-y" type="number" value="0"></label><label>宽<input id="s-w" type="number" value="150" min="1"></label><label>高<input id="s-h" type="number" value="150" min="1"></label></div>
+<label><input id="s-aspect" type="checkbox" checked>图片调整时保持宽高比</label>
+<div class="row"><button id="s-nativeSize">使用图片原始尺寸</button><button id="s-matchArea">将命中区域设为当前图片矩形</button></div>
+<label>命中方式<select id="s-hit"><option value="rectangle">矩形</option><option value="polygon">多边形</option><option value="alpha">普通图透明度</option></select></label>
+<small id="s-pointsStatus">矩形可拖动、缩放；多边形用工具栏圈选、移点或删点。</small>
+<label id="s-alphaField" hidden>透明度阈值<input id="s-threshold" type="number" value="0.1" min="0.01" max="1" step="0.01"></label>
+<label>点击优先级<input id="s-priority" type="number" min="1" value="3"></label><small>同一场景新增对象中，较大值先响应；不改写原版按钮。</small>
+</div><button id="s-save" class="primary" hidden>保存对象</button><p id="s-message" role="status">先填写场景 ID 并导入参考图，再新增对象。</p>
+</section>
+<dialog id="s-newDialog"><h2>新增场景对象</h2><label>对象名字<input id="s-newName" placeholder="MapId-BgId-xx，或自行命名"></label><p id="s-newError" class="status"></p><div class="row"><button id="s-newCancel">取消</button><button id="s-newConfirm" class="primary">创建对象</button></div></dialog>
+<dialog id="s-moveDialog"><h2>调整对象所属场景</h2><label>地点 MapId<input id="s-moveMapId" type="number" min="1"></label><label>背景 BgId<input id="s-moveBgId" type="number" min="1"></label><p>只调整当前对象的归属，图片位置、尺寸及选区保持不变。</p><p id="s-moveError" class="status"></p><div class="row"><button id="s-moveCancel">取消</button><button id="s-moveConfirm" class="primary">确认调整</button></div></dialog>
+<section id="panel-world" class="panel active"><p class="eyebrow">02 / WORLD MAP</p><h2>选择或新增大地图</h2><p class="help">只在鹅城新增父地点：保留大地图 0。新增另一张大地图：点下方“新建大地图”，选择底图，再添加车站和其他父地点。</p><div class="row"><button id="newWorld" class="primary">＋ 新建大地图</button><button id="extendWorld">扩展已有地图</button><button id="saveWorld">保存大地图设置</button></div><div class="form"><label>地图 ID<input id="worldEditId" type="number" min="0" value="0"></label><label>名称<input id="worldName" class="path" value="鹅城"></label><label class="wide">底图路径<input id="worldPath" class="path" placeholder="Images/river-town.png"></label><label>坐标宽<input id="worldW" type="number" min="1" value="2560"></label><label>坐标高<input id="worldH" type="number" min="1" value="1440"></label></div><label class="file-field"><span>新大地图底图 PNG（会打包到 Images）</span><input id="worldImage" type="file" accept="image/png"></label><div class="notice">新区域必须有车站。到“父地点”页创建车站并勾选“交通入口”，工具会维护 mapIds / travelMaps；右键默认进入第一座车站。</div><div id="worldSummary" class="world-list"></div><label class="file-field"><input id="worldDefaultUnlocked" type="checkbox">此大地图默认开放</label><details open><summary>解锁大地图时自动开放的父地点</summary><label class="file-field"><span>地点 ID（逗号分隔）</span><input id="extraUnlock" class="path"></label><small>大地图必须要有至少一个交通入口。这里与父地点页的自动开放选项实时同步；子地点的自动开放请在子地点页设置。</small></details><div class="notice">功能固定为 160，由 DLL 内置。剧情用 [101,1,160] 开启功能；[101,5,地图ID] 开放地图，[101,-5,地图ID] 移除地图。提前开放地图会被记住，但不会提前开启功能或特殊行动。</div><small>鹅城固定为 0、客运站 12 固定登记且不默认解锁。地图 ID 与原版地点 ID 分开，地图 ID 最大 16777215。坐标宽高是游戏内显示尺寸，与 PNG 像素可不同。“扩展已有地图”只贡献地点，底图和默认开放状态由原地图作者定义；可导入其 PNG 用于对齐，参考底图不打包。</small></section>
+
+<section id="panel-cfg" class="panel"><h2>原版子地点与背景</h2><div class="notice">此处只生成原版注册材料。MapExtend/Cfg 不会被插件读取，导出后必须按原版 Mod 流程注册。</div><h2 class="section-heading">为当前父地点新增子地点</h2><div class="form"><label>ID<input id="childId" type="number" min="2"></label><label>名称<input id="childName" class="path"></label><label>背景 ID<input id="childBg" type="number" min="1"></label><label class="wide"><input id="childAutoUnlock" type="checkbox">大地图解锁时自动开放此子地点</label></div><button id="addChild">生成子地点并加入父地点 floors</button><small>先生成父地点原版行（无需先圈选）。原版规则：子地点 ID 整除 1000 必须等于父地点 ID，即父地点 ID × 1000 + 0～999（例如父地点 31 对应 31000～31999）。建议子地点尾号从 001 开始，不建议直接使用 000 尾号。ID 不能重复，最大 2147483647；超出范围会拒绝生成。子地点固定生成 type=2，不用圈选或放标签；floors 会包含父地点本身与子地点 ID。复杂配置可在下方编辑原版 JSON。</small><h2 class="section-heading">生成子地点场景背景行</h2><div class="form"><label>ID<input id="bgId" type="number" min="1"></label><label>名称<input id="bgName" class="path"></label><label class="wide">原版资源 URL<input id="bgUrl" class="path" placeholder="bg/img_chezhan 或作者已注册的资源 key"></label></div><button id="addBg">生成 BgCfg 行</button><small>这里是进入地点后的场景背景；大地图底图在①中设置。资源 URL 遵循原版资源注册，不能直接使用 MapExtend/Images 的 PNG 磁盘路径。</small><details><summary>原版 MapCfg / BgCfg 导入与编辑</summary><label>表<select id="cfgTable"><option>MapCfg</option><option>BgCfg</option></select></label><input id="cfgImport" type="file" accept=".json"><textarea id="cfgEditor" rows="12" spellcheck="false">{}</textarea><button id="applyCfg">保存当前表</button><small>保持原版“ID → 对象”的 JSON 结构。未知字段保留。先导入原有表再修改，可避免丢失已有行。</small></details></section>
+<section id="panel-export" class="panel"><p class="eyebrow">05 / EXPORT</p><h2>检查与导出</h2><div class="notice">导出会统一包含大地图、地点、场景对象和对应素材。原版表放在 Cfg 中，供你注册到 Mod。</div><div id="packageStatus">尚未整理导出清单</div><button id="exportPackage" class="primary">生成并下载 MapExtend.zip</button><button id="rescuePackage">抢救当前编辑</button><small>文件读取失败时先抢救：保留配置与选区，并尽量取回图片；抢救说明会列出仍需补入的文件。不要刷新或关闭当前页面。</small><h2 class="section-heading">解压后分两步安装</h2><ol class="checklist"><li>推荐将整个 MapExtend 放到已启用的 Mod/EC2BUnofficialPatch/ 下；也可以直接放到 Mod/ 下（Mod/MapExtend）。</li><li><strong>将 Cfg 原版表按原版 Mod 注册</strong>，合并到该 Mod 的 Cfgs/zh-cn/ 对应表；新背景资源也按原版规则注册。MapExtend/Cfg 只是待注册材料。</li><li>重启游戏使原版 CFG 生效；只改扩展 JSON 可 F9 后重开地图。</li></ol><p class="help">包含统一工具、三份扩展 JSON、原版表材料和引用图片。仅制作场景对象也能单独导出。导出的模组内容可在“打开已有项目”选择 MapExtend 文件夹直接读取；场景参考图需自行额外导入。MapLayout 是制作辅助资料，不装入 Mod。</p></section>
+<section id="panel-import" class="panel active"><details open><summary>大地图底图与校准资料</summary><label class="file-field"><span>底图来源</span><select id="sourceMode"><option value="screen">完整游戏截图</option><option value="texture">解包背景原图</option></select><small>建议使用解包背景原图</small></label><label class="file-field"><span>截图 / 原图（新区域在大地图页选 PNG）</span><input id="picture" type="file" accept="image/*"></label><label class="file-field"><span>原版标签与坐标 MapLayout.json</span><input id="layout" type="file" accept=".json"></label><div class="notice">第一次制作：更新 DLL 后打开一次鹅城大地图，取 plugins/EC2BUnofficialPatch/MapExtend/MapLayout.json。新区域可复用其中的原版标签样式，无需先在游戏里建成新区域。</div><label class="file-field"><span>已有 MapLocationscfg.json（可选）</span><input id="existing" type="file" accept=".json"></label><p class="help">鹅城截图需完整画面；解包图按实机背景变换映射。新区域直接使用底图 PNG 与①设置的坐标尺寸；MapLayout 用于取得原版标签样式。</p></details><div id="importStatus" class="status">等待截图和坐标辅助文件</div><details><summary>登记数据预览</summary><pre id="preview">尚未保存地点</pre></details></section>
+<section id="panel-entry" class="panel"><p class="eyebrow">03 / LOCATIONS</p><h2>父地点与标点</h2><div class="row"><button id="new">＋ 新建父地点</button><button id="save" class="primary">保存父地点</button></div><div class="form"><label class="wide">大地图 ID<input id="worldId" type="number" min="0" value="0"></label><label class="wide">地点 ID<input id="mapId" type="number" min="2" placeholder="请自行填写数字 ID"></label><label class="wide">名称<input id="name" value="大桥"></label><label class="wide">优先级<input id="priority" type="number" min="1" value="3"></label></div><p class="help">地图归属由顶部选择决定；0 为鹅城。地点 ID 对应原版 MapCfg.id。原版优先级为 2，新增默认 3；数值较大的入口先响应。</p><details><summary>地点数据与解锁说明</summary><small>这里制作父地点的大地图入口。下方可生成原版 MapCfg 行；子地点去“子地点 / CFG”页添加。原版条件、楼层等高级字段可直接编辑原版表。同值时新增入口在原版之后，新增之间较大 ID 响应；设为 1 可位于原版之下。所有标点遵循原版地点解锁、条件和 NPC 显示规则。</small></details></section>
+<section id="panel-region" class="panel"><h2>鼠标可点区域</h2><label>命中方式<select id="hitType"><option value="polygon">圈选多边形</option><option value="alpha">普通 PNG 透明度</option></select></label><details><summary>普通 PNG 透明命中参数</summary><label>透明阈值<input id="alphaThreshold" type="number" value="0.1" min="0.01" max="1" step="0.01"></label><small>仅用于普通 PNG 的透明命中；不会扩大多边形点击区域。</small></details><div class="row"><button id="undo">撤销末点</button><button id="clear">清空区域</button></div><p class="help">画布上方选择“圈选”加点、“移点”拖动已有顶点、“删点”删除顶点。闭合边自动补齐。</p><details><summary>无悬停 PNG 时的描边</summary><div class="form"><label>线颜色<input id="outlineColor" type="color" value="#ffe89f"></label><label>线宽<input id="outlineWidth" type="number" value="3" min="0.1" max="32" step="0.5"></label><label>线透明度<input id="outlineAlpha" type="number" value="1" min="0" max="1" step="0.05"></label></div><label><input id="previewFallback" type="checkbox">预览后备描边（暂不显示悬停 PNG）</label><small>颜色、线宽和透明度调整立即预览。不会改变 PNG 自带描边；顶点控制柄仅是编辑辅助。</small></details></section>
+<section id="panel-images" class="panel"><h2>图片对齐</h2><div class="layer-tabs"><button data-layer="hover" class="active">悬停 PNG</button><button data-layer="normal">普通 PNG</button></div><div id="layers"></div><small>普通图片可留空。编辑时悬停图直接显示；拖图片移动，拖右下控制点缩放。只有“预览”按鼠标进入/离开切换图片。</small></section>
+<section id="panel-label" class="panel"><h2>原版样式标签</h2><div class="form"><label class="wide"><input id="showLabel" type="checkbox" checked>显示标签</label><label>底色<input id="labelColor" type="color" value="#00bfe8"></label><label>文字色<input id="textColor" type="color" value="#ffffff"></label><label>缩放<input id="labelScale" type="number" value="1" min="0.1" max="10" step="0.1"></label><span></span><label>中心 X<input id="labelX" type="number" step="0.1"></label><label>中心 Y<input id="labelY" type="number" step="0.1"></label></div><small>上方选择“标签”，点击地图放置或拖动标签。</small><details><summary>尺寸与透明度</summary><div class="form"><label>宽<input id="labelW" type="number" value="0" min="0"></label><label>高<input id="labelH" type="number" value="0" min="0"></label><label>底色透明度<input id="labelAlpha" type="number" value="1" min="0" max="1" step="0.05"></label><label>文字透明度<input id="textAlpha" type="number" value="1" min="0" max="1" step="0.05"></label></div><small>宽高都为 0 时自动扩宽，否则都需大于 0。默认尺寸、图层、字体取自辅助文件，与游戏使用同一布局。size 调整外框，字号随“缩放”调整。</small></details></section>
+</div><p id="message" role="status">导入已有项目，或选择你要制作的内容。</p>
+</aside>
+<section class="map-area"><div class="context-bar"><div class="context-copy"><h2 id="workspaceTitle">项目预览</h2><p id="workspaceHint">选择制作内容后，这里显示对应画布。</p></div><div class="map-context"><label>大地图<select id="worldSelect" aria-label="当前大地图"></select></label><label>父地点<select id="selected" aria-label="编辑父地点"><option value="">新建父地点</option></select></label></div></div><div id="mapToolbar" class="toolbar" aria-label="画布操作"><button data-mode="polygon" class="active">圈选</button><button data-mode="point">移点</button><button data-mode="delete">删点</button><span class="divider"></span><button data-mode="hover">悬停图</button><button data-mode="normal">普通图</button><button data-mode="label">标签</button><span class="divider"></span><button data-mode="preview">预览</button><label><input id="showHover" type="checkbox" checked>编辑时显示悬停图</label></div><div id="editHint">圈选：点击地图添加顶点。闭合边自动补齐。</div><div id="mapViewTools" class="view-tools"><button id="zoomOut">−</button><label>显示 <input id="zoomValue" type="number" min="5" max="1600" step="5" value="100">%</label><button id="zoomIn">＋</button><button id="fitView">适应窗口</button><button id="actualView">100%</button><small>Ctrl + 滚轮缩放 · 空格拖动 / 中键平移；仅改变视图</small></div><div class="stage" id="stage"><canvas id="canvas" width="1280" height="720" aria-label="地图编辑与悬停预览"></canvas><div class="empty-state" id="mapEmpty"><div class="empty-card"><div class="empty-index">MAP /</div><h2>从一张地图开始</h2><p>导入 MapExtend 项目，或选择大地图底图。<br>只做场景点击对象？直接选择左侧「场景对象」。</p></div></div></div><div id="projectOverview"><div class="overview-hero"><p class="eyebrow">MAPEXTEND / YOUR PROJECT</p><h2>把想法放进游戏场景</h2><p>大地图决定区域，地点决定场景，对象决定玩家能点击什么。按你的需要制作，最后一起导出。</p></div><div class="summary-grid"><div class="summary-tile"><b id="summaryWorlds">0</b><span>新增大地图</span></div><div class="summary-tile"><b id="summaryLocations">0</b><span>地图标点</span></div><div class="summary-tile"><b id="summaryObjects">0</b><span>场景对象</span></div></div><div class="overview-steps"><h3>从制作到安装</h3><p><b>01</b>打开已有项目，或选择需要的制作功能。</p><p><b>02</b>保存当前编辑，检查图片与原版表材料。</p><p><b>03</b>导出一个 MapExtend.zip，安装目录并注册 Cfg。</p></div><p id="summaryChecks">制作资料留在工具中，点击「检查与导出」统一打包。</p></div><div id="sceneToolbar" class="toolbar" hidden><button data-scene-mode="polygon">圈选</button><button data-scene-mode="point">移点</button><button data-scene-mode="delete">删点</button><button data-scene-mode="move">移动区域</button><span class="divider"></span><button data-scene-mode="normal" class="active">普通图</button><button data-scene-mode="hover">悬停图</button><button data-scene-mode="preview">悬停预览</button><button id="s-undo">撤销顶点</button><button id="s-clearArea">重画区域</button><span class="badge" id="sceneCanvasCaption">地点 2</span></div><div id="sceneViewTools" class="view-tools" hidden><button id="s-zoomOut">−</button><label>显示 <input id="s-zoomValue" type="number" min="5" max="1600" step="5" value="100">%</label><button id="s-zoomIn">＋</button><button id="s-fit">适应窗口</button><button id="s-actual">100%</button><small>Ctrl + 滚轮缩放 · 空格拖动 / 中键平移；图片拖右下角调整尺寸</small></div><div class="stage" id="sceneStage"><canvas id="s-canvas" width="1280" height="720" aria-label="场景对象编辑与悬停预览"></canvas><div class="empty-state" id="sceneEmpty"><div class="empty-card"><div class="empty-index">SCENE /</div><h2>给场景添加一个对象</h2><p>先在「场景」填写地点、背景 ID，并导入参考图。<br>新增对象后，拖动位置或绘制可点击轮廓。</p></div></div></div></section>
+<select id="mode" aria-hidden="true" tabindex="-1"><option value="polygon">圈选</option><option value="point">移点</option><option value="delete">删点</option><option value="hover">悬停图</option><option value="normal">普通图</option><option value="label">标签</option><option value="preview">预览</option></select>
+</main></div>
+<dialog id="newWorldDialog" aria-labelledby="newWorldTitle"><h2 id="newWorldTitle">新建大地图</h2><label>地图 ID<input id="newWorldId" type="number" min="1" max="16777215" placeholder="请自行填写数字 ID"></label><label>名称（可选）<input id="newWorldName" placeholder="留空则使用新区域 + 地图 ID"></label><p id="newWorldError" class="status" role="alert"></p><div class="row"><button id="cancelNewWorld">取消</button><button id="createWorld" class="primary">创建大地图</button></div></dialog>
+<script>
+
+'use strict';
+const toolSource='<!doctype html>\n'+document.documentElement.outerHTML;
+let studioPanel='import';
+const globalAssets=()=>assets;
+
+const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
+const layers=['hover','normal'];
+for(const key of layers){$('layers').insertAdjacentHTML('beforeend',`<div id="layer-${key}" class="layer-pane ${key==='hover'?'active':''}"><label class="file-field"><span>选择 PNG 文件</span><input id="${key}File" type="file" accept="image/png"></label><label class="file-field"><span>相对 MapExtend 的路径</span><input class="path" id="${key}Path" placeholder="如 Images/img_bridge.png"></label><div class="form"><label>中心 X<input id="${key}X" type="number" step="0.1"></label><label>中心 Y<input id="${key}Y" type="number" step="0.1"></label><label>宽<input id="${key}W" type="number" min="0.1" step="0.1"></label><label>高<input id="${key}H" type="number" min="0.1" step="0.1"></label><label class="wide"><input id="${key}Ratio" type="checkbox" checked>保持比例</label></div><div class="row transform-buttons"><button id="${key}Smaller">缩小 5%</button><button id="${key}Larger">放大 5%</button></div><div class="row transform-buttons"><button id="${key}Center">移到圈选中心</button><button id="${key}Clear">移除</button></div><div class="row"><button id="${key}Download">下载 PNG</button></div><small>完整包会自动包含已导入的 PNG；单张下载用于额外备份。路径建议使用 Images/文件名.png。</small></div>`);}
+let retainedFiles=new Map();
+let image=null,calibration=null,points=[],labelPoint=null,database={schema:2,locations:[]},loadedId=null,drag=null,pointer=null,dirty=false;
+let labelAssets=null;
+const assets=new Map(),round=n=>Math.round(n*1000)/1000,message=t=>$('message').textContent=t;
+const n=id=>Number($(id).value),copy=v=>JSON.parse(JSON.stringify(v)),pair=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
+function validLayout(l){return l&&l.schema===2&&Number.isFinite(l.screenWidth)&&l.screenWidth>0&&Number.isFinite(l.screenHeight)&&l.screenHeight>0&&pair(l.origin)&&pair(l.basisX)&&pair(l.basisY)&&Math.abs(l.basisX[0]*l.basisY[1]-l.basisY[0]*l.basisX[1])>1e-8&&l.labelStyle?.rendering==='unity-image-alpha-v1'&&pair(l.labelStyle.size)&&l.labelStyle.size.every(v=>v>0)&&Array.isArray(l.labelStyle.layers)&&l.labelStyle.text?.glyphs;}
+function screenPoint(p){
+  const l=calibration;
+  if($('sourceMode').value==='screen')return [p[0]*l.screenWidth/canvas.width,p[1]*l.screenHeight/canvas.height];
+  const bg=l.background;if(!bg)throw Error('辅助文件未找到背景变换，请改用完整游戏截图。');
+  return bg.origin.map((v,i)=>v+p[0]/canvas.width*bg.axisX[i]+p[1]/canvas.height*bg.axisY[i]);
+}
+function bitmapPoint(p){
+  const l=calibration;
+  if($('sourceMode').value==='screen')return [p[0]*canvas.width/l.screenWidth,p[1]*canvas.height/l.screenHeight];
+  const bg=l.background;if(!bg)throw Error('辅助文件未找到背景变换，请改用完整游戏截图。');
+  const x=p[0]-bg.origin[0],y=p[1]-bg.origin[1],d=bg.axisX[0]*bg.axisY[1]-bg.axisY[0]*bg.axisX[1];
+  return [(x*bg.axisY[1]-y*bg.axisY[0])/d*canvas.width,(bg.axisX[0]*y-bg.axisX[1]*x)/d*canvas.height];
+}
+function toLocal(p){if(activeWorldId!==0){const size=currentWorld().coordinateSize||[2560,1440];return [round((p[0]/canvas.width-.5)*size[0]),round((.5-p[1]/canvas.height)*size[1])];}const l=calibration,q=screenPoint(p),px=q[0]-l.origin[0],py=q[1]-l.origin[1],d=l.basisX[0]*l.basisY[1]-l.basisX[1]*l.basisY[0];return [round((px*l.basisY[1]-py*l.basisY[0])/d),round((l.basisX[0]*py-l.basisX[1]*px)/d)];}
+function toScreen(p){if(activeWorldId!==0){const size=currentWorld().coordinateSize||[2560,1440];return [(p[0]/size[0]+.5)*canvas.width,(.5-p[1]/size[1])*canvas.height];}const l=calibration;return bitmapPoint([l.origin[0]+p[0]*l.basisX[0]+p[1]*l.basisY[0],l.origin[1]+p[0]*l.basisX[1]+p[1]*l.basisY[1]]);}
+function sourceReady(){return calibration&&labelAssets&&(activeWorldId!==0||((calibration.worldId??0)===0&&($('sourceMode').value==='screen'||calibration.background)));}
+function bounds(poly){const xs=poly.map(p=>p[0]),ys=poly.map(p=>p[1]);return {min:[Math.min(...xs),Math.min(...ys)],max:[Math.max(...xs),Math.max(...ys)]};}
+function center(){if(points.length){const b=bounds(points);return b.min.map((v,i)=>(v+b.max[i])/2);}return sourceReady()?toLocal([canvas.width/2,canvas.height/2]):[0,0];}
+function validPath(path){return path&&!/^(?:[a-z]:|[\\/])|[<>:"|?*]/i.test(path)&&!path.split(/[\\/]/).some(p=>!p||p==='..'||p==='.')&&/\.png$/i.test(path);}
+function readLayer(k){const path=$(k+'Path').value.trim();if(!path)return null;if(!validPath(path))throw Error(k+' 图片必须使用登记目录内的 PNG 相对路径。');const position=[n(k+'X'),n(k+'Y')],size=[n(k+'W'),n(k+'H')];if(!pair(position)||!pair(size)||size.some(v=>v<=0))throw Error(k+' 图片位置/尺寸无效。');return {image:path,position,size};}
+function layerForDraw(k){try{return readLayer(k);}catch{return null;}}
+function contains(poly,p){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[j],b=poly[i],cross=(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);if(Math.abs(cross)<0.001&&(p[0]-a[0])*(p[0]-b[0])+(p[1]-a[1])*(p[1]-b[1])<=0)return true;if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
+function hits(p){if($('hitType').value==='polygon')return points.length>=3&&contains(points,p);const v=layerForDraw('normal'),a=v&&assets.get(v.image);if(!a)return false;const u=(p[0]-v.position[0])/v.size[0]+0.5,w=0.5-(p[1]-v.position[1])/v.size[1];if(u<0||u>=1||w<0||w>=1)return false;return a.alpha[Math.floor(w*a.image.height)*a.image.width+Math.floor(u*a.image.width)]/255>=n('alphaThreshold');}
+function color(id,alpha){return $(id).value+Math.round(n(alpha)*255).toString(16).padStart(2,'0');}
+function localCanvas(fn){const o=toScreen([0,0]),x=toScreen([1,0]),y=toScreen([0,1]);ctx.save();ctx.setTransform(x[0]-o[0],x[1]-o[1],y[0]-o[0],y[1]-o[1],...o);fn();ctx.restore();}
+function alphaOutline(asset){const tint=color('outlineColor','outlineAlpha'),threshold=n('alphaThreshold'),key=tint+':'+threshold;if(asset.outlineKey!==key){const off=document.createElement('canvas');off.width=asset.image.width;off.height=asset.image.height;const oc=off.getContext('2d'),pixels=oc.createImageData(off.width,off.height),rgb=[1,3,5].map(i=>parseInt(tint.slice(i,i+2),16)),alpha=parseInt(tint.slice(7,9),16);for(let i=0;i<asset.alpha.length;i++){pixels.data.set(rgb,i*4);pixels.data[i*4+3]=asset.alpha[i]/255>=threshold?alpha:0;}oc.putImageData(pixels,0,0);asset.outline=off;asset.outlineKey=key;}return asset.outline;}
+function drawImageLayer(v,a){if(!v||!a)return;localCanvas(()=>{ctx.translate(v.position[0]-v.size[0]/2,v.position[1]+v.size[1]/2);ctx.scale(v.size[0]/a.image.width,-v.size[1]/a.image.height);ctx.drawImage(a.image,0,0);});}
+function labelMetrics(){
+  const style=calibration.labelStyle,text=style.text,scale=Math.max(0.1,Math.min(10,n('labelScale')||1));
+  let advance=0;ctx.font=`${text.fontSize}px system-ui`;
+  for(const ch of $('name').value)advance+=(text.glyphs[ch]?.advance??ctx.measureText(ch).width/text.unitsPerPixel)*text.unitsPerPixel*text.scaleX;
+  const size=[n('labelW')||Math.max(style.size[0],advance+style.padding),n('labelH')||style.size[1]];
+  return {w:size[0]*scale,h:size[1]*scale,scale,size,advance};
+}
+function layerFrame(layer,size){const base=calibration.labelStyle.size;return layer.frame.map((v,i)=>v+(size[0]-base[0])*layer.widthChange[i]+(size[1]-base[1])*layer.heightChange[i]);}
+function tintImage(asset,color){
+  if(!asset)return null;if(asset.tintColor===color)return asset.tinted;
+  const off=document.createElement('canvas');off.width=asset.image.width;off.height=asset.image.height;const oc=off.getContext('2d');oc.drawImage(asset.image,0,0);const pixels=oc.getImageData(0,0,off.width,off.height),rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16)/255);
+  for(let i=0;i<pixels.data.length;i+=4)for(let c=0;c<3;c++)pixels.data[i+c]=Math.round((asset.alphaMask?255:pixels.data[i+c])*rgb[c]);oc.putImageData(pixels,0,0);asset.tintColor=color;asset.tinted=off;return off;
+}
+function drawNativeLayer(layer,asset,size){
+  const f=layerFrame(layer,size),image=tintImage(asset,layer.tint?color('labelColor','labelAlpha'):'#'+layer.color);
+  if(!image)return;let w=Math.max(0.01,f[2]),h=Math.max(0.01,f[3]),x=f[0]-w/2,y=-f[1]-h/2;if(layer.preserveAspect&&!layer.sliced){const ratio=layer.spriteSize[0]/layer.spriteSize[1];if(w/h>ratio){const width=h*ratio;x+=(w-width)*layer.pivot[0];w=width;}else{const height=w/ratio;y+=(h-height)*(1-layer.pivot[1]);h=height;}}
+  ctx.save();const tint=layer.tint?color('labelColor','labelAlpha'):'#'+layer.color;ctx.globalAlpha=tint.length===9?parseInt(tint.slice(7),16)/255:1;
+  if(!layer.sliced){const p=layer.padding;ctx.drawImage(image,x+w*p[0]/layer.spriteSize[0],y+h*p[3]/layer.spriteSize[1],w*(layer.spriteSize[0]-p[0]-p[2])/layer.spriteSize[0],h*(layer.spriteSize[1]-p[1]-p[3])/layer.spriteSize[1]);}
+  else{
+    const p=layer.padding,pu=layer.paddingUnits,b=layer.border.map((v,i)=>Math.max(0,v-p[i])),u=[...layer.borderUnits];
+    if(u[0]+u[2]>w){const scale=w/(u[0]+u[2]);u[0]*=scale;u[2]*=scale;}if(u[1]+u[3]>h){const scale=h/(u[1]+u[3]);u[1]*=scale;u[3]*=scale;}
+    const sx=[0,b[0],image.width-b[2],image.width],sy=[0,b[3],image.height-b[1],image.height],dx=[x+pu[0],x+u[0],x+w-u[2],x+w-pu[2]],dy=[y+pu[3],y+u[3],y+h-u[1],y+h-pu[1]];
+    for(let j=0;j<3;j++)for(let i=0;i<3;i++)if(sx[i+1]>sx[i]&&sy[j+1]>sy[j]&&dx[i+1]>dx[i]&&dy[j+1]>dy[j])ctx.drawImage(image,sx[i],sy[j],sx[i+1]-sx[i],sy[j+1]-sy[j],dx[i],dy[j],dx[i+1]-dx[i],dy[j+1]-dy[j]);
+  }ctx.restore();
+}
+function glyphImage(ch){
+  const style=calibration.labelStyle.text,g=style.glyphs[ch];if(!g||!labelAssets?.atlas)return null;
+  labelAssets.glyphs??=new Map();if(labelAssets.glyphs.has(ch))return labelAssets.glyphs.get(ch);
+  const atlas=labelAssets.atlas,off=document.createElement('canvas');off.width=Math.max(1,g.maxX-g.minX);off.height=Math.max(1,g.maxY-g.minY);const oc=off.getContext('2d');
+  const src=[0,1,2,3].map(i=>[g.uv[i*2]*atlas.width,(1-g.uv[i*2+1])*atlas.height]),dest=[[0,off.height],[0,0],[off.width,0],[off.width,off.height]];
+  const [a,b,c]=src,[p,q,r]=dest,d=(b[0]-a[0])*(c[1]-a[1])-(c[0]-a[0])*(b[1]-a[1]);
+  if(Math.abs(d)>1e-8){const ax=((q[0]-p[0])*(c[1]-a[1])-(r[0]-p[0])*(b[1]-a[1]))/d,bx=((r[0]-p[0])*(b[0]-a[0])-(q[0]-p[0])*(c[0]-a[0]))/d,ay=((q[1]-p[1])*(c[1]-a[1])-(r[1]-p[1])*(b[1]-a[1]))/d,by=((r[1]-p[1])*(b[0]-a[0])-(q[1]-p[1])*(c[0]-a[0]))/d;oc.setTransform(ax,ay,bx,by,p[0]-ax*a[0]-bx*a[1],p[1]-ay*a[0]-by*a[1]);oc.drawImage(atlas,0,0);}
+  // Unity's font atlas carries glyph coverage in alpha; its RGB may be black.
+  const asset={image:off,alphaMask:true};labelAssets.glyphs.set(ch,asset);return asset;
+}
+function drawNativeText(metrics,tint,offset=[0,0]){
+  const style=calibration.labelStyle.text,f=layerFrame(style,metrics.size),u=style.unitsPerPixel;
+  let x=f[0]-metrics.advance/2+offset[0],baseline=f[1]+style.baseline*style.scaleY+offset[1];
+  ctx.save();ctx.globalAlpha=tint.length===9?parseInt(tint.slice(7),16)/255:1;
+  for(const ch of $('name').value){const g=style.glyphs[ch],asset=glyphImage(ch);if(g&&asset){if(g.maxX>g.minX&&g.maxY>g.minY)ctx.drawImage(tintImage(asset,tint),x+g.minX*u*style.scaleX,-baseline-g.maxY*u*style.scaleY,(g.maxX-g.minX)*u*style.scaleX,(g.maxY-g.minY)*u*style.scaleY);x+=g.advance*u*style.scaleX;}else{ctx.fillStyle=tint.slice(0,7);ctx.font=`${style.fontSize*style.scaleY}px system-ui`;ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText(ch,x,-baseline);x+=ctx.measureText(ch).width;}}ctx.restore();
+}
+function drawLabel(){
+  if(!$('showLabel').checked||!labelPoint||!labelAssets)return;
+  const m=labelMetrics(),style=calibration.labelStyle;
+  localCanvas(()=>{ctx.translate(...labelPoint);ctx.scale(m.scale,-m.scale);style.layers.forEach((layer,i)=>drawNativeLayer(layer,labelAssets.layers[i],m.size));
+    for(const shadow of style.text.shadows||[]){const [x,y]=shadow.distance,offsets=shadow.outline?[[x,y],[-x,y],[x,-y],[-x,-y]]:[[x,y]];for(const offset of offsets)drawNativeText(m,'#'+shadow.color,offset);}
+    drawNativeText(m,color('textColor','textAlpha'));
+  });
+}
+function labelHit(p){if(!labelPoint||!$('showLabel').checked)return false;const m=labelMetrics();return Math.abs(p[0]-labelPoint[0])<=m.w/2&&Math.abs(p[1]-labelPoint[1])<=m.h/2;}
+function drawImageControls(key){const layer=layerForDraw(key),asset=layer&&assets.get(layer.image);if(!layer||!asset)return;const [x,y]=layer.position,[w,h]=layer.size;localCanvas(()=>{ctx.strokeStyle='#79e6ff';ctx.lineWidth=1;ctx.setLineDash([5,4]);ctx.strokeRect(x-w/2,y-h/2,w,h);ctx.setLineDash([]);});const corner=toScreen([x+w/2,y-h/2]),c=toScreen(layer.position),unit=canvas.width/Math.max(1,canvas.getBoundingClientRect().width);ctx.fillStyle='#79e6ff';ctx.fillRect(corner[0]-6*unit,corner[1]-6*unit,12*unit,12*unit);ctx.beginPath();ctx.arc(...c,4*unit,0,Math.PI*2);ctx.fill();}
+function draw(){
+  if($('mapEmpty'))$('mapEmpty').hidden=!!image;
+  applyView();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(image)ctx.drawImage(image,0,0);
+  if(!sourceReady())return;
+  const mode=$('mode').value,preview=mode==='preview';
+  const forceFallback=$('previewFallback').checked;
+  const active=forceFallback||(preview&&pointer&&(hits(pointer)||labelHit(pointer)));
+  const normal=layerForDraw('normal'),hover=layerForDraw('hover'),ha=!forceFallback&&hover&&assets.get(hover.image);
+  const showHover=ha&&(preview?active:$('showHover').checked);
+  if(!showHover)drawImageLayer(normal,normal&&assets.get(normal.image));
+  if(showHover)drawImageLayer(hover,ha);
+  if(points.length&&(!preview||(active&&!ha))){
+    localCanvas(()=>{ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));if(points.length>2)ctx.closePath();if(!preview){ctx.fillStyle='#ffd36c18';ctx.fill();}ctx.lineWidth=n('outlineWidth');ctx.strokeStyle=color('outlineColor','outlineAlpha');ctx.stroke();});
+    if(!preview){const unit=canvas.width/Math.max(1,canvas.getBoundingClientRect().width);points.forEach((p,i)=>{const q=toScreen(p);ctx.beginPath();ctx.arc(...q,5*unit,0,Math.PI*2);ctx.fillStyle='#ffd36c';ctx.fill();ctx.font=`${14*unit}px system-ui`;ctx.textAlign='left';ctx.fillText(i+1,q[0]+7*unit,q[1]-7*unit);});}
+  }
+  if(active&&!ha&&$('hitType').value==='alpha'){
+    const a=normal&&assets.get(normal.image);if(a){const radius=n('outlineWidth'),step=Math.PI/8;for(let angle=0;angle<Math.PI*2;angle+=step)drawImageLayer({...normal,position:[normal.position[0]+Math.cos(angle)*radius,normal.position[1]+Math.sin(angle)*radius]}, {image:alphaOutline(a)});drawImageLayer(normal,a);}
+  }
+  drawLabel();
+  if(!preview&&layers.includes(mode))drawImageControls(mode);
+}
+function selectPanel(name){for(const button of document.querySelectorAll('[data-panel]')){const active=button.dataset.panel===name;button.classList.toggle('active',active);button.setAttribute('aria-pressed',active);}for(const panel of document.querySelectorAll('.panel'))panel.classList.toggle('active',panel.id==='panel-'+name);}
+function selectLayer(key){for(const button of document.querySelectorAll('[data-layer]')){const active=button.dataset.layer===key;button.classList.toggle('active',active);button.setAttribute('aria-pressed',active);}for(const pane of document.querySelectorAll('.layer-pane'))pane.classList.toggle('active',pane.id==='layer-'+key);}
+const modeHints={polygon:'圈选：点击添加顶点；移动已有顶点请选“移点”。',point:'移点：拖动黄色顶点，不会添加新点。',delete:'删点：点击黄色顶点删除。',hover:'悬停图：拖动图片移动，拖右下控制点缩放；左侧可精确输入尺寸。',normal:'普通图：拖动图片移动，拖右下控制点缩放。',label:'标签：点击地图放置，拖动调整位置。',preview:'预览：鼠标进入可点区域或标签显示悬停图，移出恢复。'};
+function selectMode(mode){$('mode').value=mode;pointer=null;for(const button of document.querySelectorAll('[data-mode]')){const active=button.dataset.mode===mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',active);}if(layers.includes(mode)){selectPanel('images');selectLayer(mode);$('showHover').checked=mode==='hover';}else if(['polygon','point','delete'].includes(mode))selectPanel('region');else if(mode==='label')selectPanel('label');$('showHover').disabled=mode==='preview';$('editHint').textContent=modeHints[mode];canvas.style.cursor=mode==='preview'?'default':layers.includes(mode)?'move':'crosshair';draw();}
+for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>selectMode(button.dataset.mode);
+for(const button of document.querySelectorAll('[data-layer]'))button.onclick=()=>selectMode(button.dataset.layer);
+function validatePolygon(poly){const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]),on=(a,b,p)=>Math.abs(cross(a,b,p))<1e-6&&(p[0]-a[0])*(p[0]-b[0])+(p[1]-a[1])*(p[1]-b[1])<=0;let area=0;for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length];if(Math.hypot(a[0]-b[0],a[1]-b[1])<0.01)throw Error('存在重复顶点。');area+=a[0]*b[1]-a[1]*b[0];for(let j=i+1;j<poly.length;j++){if(j===i+1||(i===0&&j===poly.length-1))continue;const c=poly[j],d=poly[(j+1)%poly.length];if((cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b))throw Error('轮廓边不能交叉或接触。');}}if(Math.abs(area)<0.001)throw Error('轮廓面积为零。');}
+function save(){if(!image||!sourceReady())throw Error('请导入底图和新版 MapLayout.json，并检查底图来源。');const worldId=n('worldId'),mapId=n('mapId'),priority=n('priority');if(!Number.isInteger(worldId)||worldId<0||worldId!==activeWorldId)throw Error('标点必须属于当前选择的大地图。');if(!Number.isInteger(mapId)||mapId<=1||!Number.isInteger(priority)||priority<1)throw Error('地点 ID 必须大于 1，优先级至少 1。');if(activeWorldId===0&&(calibration.nativeLocations||[]).some(row=>row.node==='_pos_'+mapId))throw Error('该 ID 已有原版入口，请用新地点 ID。');const normal=readLayer('normal'),hover=readLayer('hover'),hitType=$('hitType').value;if(hitType==='polygon'){if(points.length<3||points.length>256)throw Error('需要 3～256 个顶点。');validatePolygon(points);}else if(!normal)throw Error('透明命中必须提供普通 PNG。');for(const [id,min,max] of [['alphaThreshold',0.00001,1],['outlineWidth',0.00001,32],['labelScale',0.00001,10],['labelAlpha',0,1],['textAlpha',0,1],['outlineAlpha',0,1]])if(!Number.isFinite(n(id))||n(id)<min||n(id)>max)throw Error('请检查透明度、阈值、线宽和缩放。');if((n('labelW')!==0||n('labelH')!==0)&&(!(n('labelW')>0)||!(n('labelH')>0)))throw Error('标签宽高同时为 0 或同时大于 0。');const lp=labelPoint||center();if(!pair(lp))throw Error('标签位置无效。');const old=database.locations.find(row=>row.mapId===mapId)||{},entry={...copy(old),worldId,mapId,priority};entry.hitArea={...old.hitArea,type:hitType,alphaThreshold:n('alphaThreshold')};if(hitType==='polygon')entry.hitArea.points=copy(points);else delete entry.hitArea.points;entry.visual={...old.visual,normal:normal?{...old.visual?.normal,...normal}:null,hover:hover?{...old.visual?.hover,...hover}:null,fallbackOutline:{...old.visual?.fallbackOutline,color:color('outlineColor','outlineAlpha'),width:n('outlineWidth')}};entry.label={...old.label,text:$('name').value,visible:$('showLabel').checked,position:lp,backgroundColor:color('labelColor','labelAlpha'),textColor:color('textColor','textAlpha'),scale:n('labelScale')};if(n('labelW'))entry.label.size=[n('labelW'),n('labelH')];else delete entry.label.size;delete entry.enabled;delete entry.visibility;database.locations=database.locations.filter(row=>row.mapId!==mapId);database.locations.push(entry);loadedId=mapId;labelPoint=lp;dirty=false;refreshList();$('preview').textContent=JSON.stringify(database,null,2);message('已保存地点 '+mapId+'。配置和 PNG 放在同一登记目录，按相对路径组织。');draw();}
+function setColor(id,alpha,value,fallback){const v=value||fallback;$(id).value=v.slice(0,7);$(alpha).value=v.length===9?round(parseInt(v.slice(7),16)/255):1;}
+function loadRow(row){loadedId=row?.mapId??null;const r=row||{},h=r.hitArea||{},v=r.visual||{},l=r.label||{},f=v.fallbackOutline||{};$('worldId').value=r.worldId??calibration?.worldId??0;$('mapId').value=r.mapId??'';$('priority').value=r.priority??3;$('name').value=l.text??'新父地点';$('hitType').value=h.type||'polygon';points=copy(h.points||[]);labelPoint=pair(l.position)?copy(l.position):center();$('previewFallback').checked=false;$('showLabel').checked=l.visible!==false;$('labelScale').value=l.scale??1;$('labelW').value=l.size?.[0]??0;$('labelH').value=l.size?.[1]??0;setColor('labelColor','labelAlpha',l.backgroundColor,'#00BFE8FF');setColor('textColor','textAlpha',l.textColor,'#FFFFFFFF');setColor('outlineColor','outlineAlpha',f.color,'#FFE89FFF');$('outlineWidth').value=f.width??3;$('alphaThreshold').value=h.alphaThreshold??0.1;for(const k of layers){const a=v[k]||{};$(k+'Path').value=a.image||'';$(k+'X').value=a.position?.[0]??0;$(k+'Y').value=a.position?.[1]??0;$(k+'W').value=a.size?.[0]??0;$(k+'H').value=a.size?.[1]??0;$(k+'File').value='';}syncLabel();dirty=false;refreshList();draw();message('参数已回填；图片预览需重新选择对应 PNG 文件，现有路径和尺寸会保留。');}
+function syncLabel(){if(labelPoint){$('labelX').value=labelPoint[0];$('labelY').value=labelPoint[1];}}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function snapshotFile(file,path=file.name||'所选文件'){try{const blob=new Blob([await file.arrayBuffer()],{type:file.type||'application/octet-stream'});Object.defineProperty(blob,'name',{value:file.name||path.split('/').pop()});return blob;}catch(e){throw Error('无法读取文件：'+path+'。原文件可能已被替换、移动或失去读取权限；当前编辑数据仍在，请勿刷新。可先抢救备份，再重新补入该文件。');}}
+async function readImage(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(url);resolve(im);};im.onerror=()=>{URL.revokeObjectURL(url);reject(Error('图片无法读取。'));};im.src=url;});}
+async function dataImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('辅助文件中的原版标签素材无法读取。'));im.src=url;});}
+$('sourceMode').onchange=()=>{if(activeWorldId===0)nativeSourceMode=$('sourceMode').value;if(activeWorldId===0&&calibration&&!sourceReady())message('辅助文件未找到背景变换，请使用完整游戏截图。');else if(calibration)message('底图映射已切换。已保存的地点坐标保持不变。');pointer=null;draw();};
+$('selected').onchange=()=>{if(dirty&&!confirm('当前地点有未保存修改，仍要切换吗？')){$('selected').value=loadedId??'';return;}loadRow(database.locations.find(r=>r.mapId===Number($('selected').value)));};
+$('new').onclick=()=>{if(dirty&&!confirm('当前地点有未保存修改，仍要新建吗？'))return;loadRow(null);};
+for(const k of layers){$(k+'File').onchange=async e=>{try{if(!sourceReady()||!image)throw Error('先导入底图和新版坐标辅助文件，选择正确来源。');let file=e.target.files[0];if(!file)return;file=await snapshotFile(file);if(!/\.png$/i.test(file.name))throw Error('请选择 PNG。');const im=await readImage(file),path=validPath($(k+'Path').value.trim())?$(k+'Path').value.trim():'Images/'+file.name,off=document.createElement('canvas');off.width=im.width;off.height=im.height;const oc=off.getContext('2d');oc.drawImage(im,0,0);const pixels=oc.getImageData(0,0,im.width,im.height).data,alpha=new Uint8Array(im.width*im.height);for(let i=0;i<alpha.length;i++)alpha[i]=pixels[i*4+3];assets.set(path,{file,image:im,alpha});$(k+'Path').value=path;if(!(n(k+'W')>0&&n(k+'H')>0)){const p=center(),b=points.length>=3?bounds(points):null,w=b&&b.max[0]>b.min[0]?b.max[0]-b.min[0]:Math.abs(toLocal([im.width,0])[0]-toLocal([0,0])[0]);$(k+'X').value=p[0];$(k+'Y').value=p[1];$(k+'W').value=round(w);$(k+'H').value=round(w*im.height/im.width);}dirty=true;selectMode(k);message('PNG 已显示在地图上。拖动图片移动，拖右下控制点缩放；不在视野内可点“移到圈选中心”。');}catch(e){message(e.message);}};$(k+'Path').addEventListener('change',e=>{const previous=e.target.dataset.previous;if(previous&&assets.has(previous))assets.set(e.target.value.trim(),assets.get(previous));e.target.dataset.previous=e.target.value.trim();});$(k+'Path').addEventListener('focus',e=>e.target.dataset.previous=e.target.value.trim());for(const axis of ['W','H'])$(k+axis).addEventListener('input',()=>{const v=layerForDraw(k),a=v&&assets.get(v.image);if(a&&$(k+'Ratio').checked){$(k+(axis==='W'?'H':'W')).value=round(n(k+axis)*(axis==='W'?a.image.height/a.image.width:a.image.width/a.image.height));}draw();});$(k+'Clear').onclick=()=>{$(k+'Path').value='';$(k+'File').value='';dirty=true;draw();};$(k+'Download').onclick=()=>{const path=$(k+'Path').value.trim(),asset=assets.get(path);if(!asset){message('先导入对应 PNG 文件。');return;}if(!validPath(path)){message('请填写有效的 PNG 相对路径。');return;}downloadBlob(asset.file,path.split(/[\\/]/).pop());message('PNG 已下载；请按 '+path+' 放到登记目录中。');};}
+function canvasPoint(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];}
+canvas.onpointerdown=e=>{
+  if(!image||!sourceReady()){message('先导入底图和新版辅助文件，检查底图来源。');return;}
+  const screen=canvasPoint(e),p=toLocal(screen),mode=$('mode').value;
+  if(mode==='preview')return;
+  const tolerance=12*canvas.width/canvas.getBoundingClientRect().width;
+  const idx=points.findIndex(q=>Math.hypot(...toScreen(q).map((v,i)=>v-screen[i]))<tolerance);
+  if(mode==='delete'){if(idx<0)return;points.splice(idx,1);}
+  else if(mode==='point'){if(idx<0){message('请拖动已有的黄色顶点。');return;}drag={type:'point',idx};}
+  else if(mode==='polygon'){if(idx>=0){message('该位置已有顶点，移动请选“移点”。');return;}if(points.length>=256)return;points.push(p);}
+  else if(mode==='label'){labelPoint=p;syncLabel();drag={type:'label'};}
+  else if(layers.includes(mode)){
+    const layer=layerForDraw(mode),asset=layer&&assets.get(layer.image);
+    if(!layer||!asset){message('先导入该层 PNG 并设置有效尺寸。');return;}
+    const corner=toScreen([layer.position[0]+layer.size[0]/2,layer.position[1]-layer.size[1]/2]);
+    if(Math.hypot(corner[0]-screen[0],corner[1]-screen[1])<tolerance)drag={type:'size',key:mode,position:[...layer.position],size:[...layer.size]};
+    else if(Math.abs(p[0]-layer.position[0])<=layer.size[0]/2&&Math.abs(p[1]-layer.position[1])<=layer.size[1]/2)drag={type:mode,offset:p.map((v,i)=>v-layer.position[i])};
+    else{message('请拖动图片矩形或右下控制点；找不到图片可点“移到圈选中心”。');return;}
+  }
+  dirty=true;canvas.setPointerCapture(e.pointerId);draw();
+};
+canvas.onpointermove=e=>{
+  if(!sourceReady())return;pointer=toLocal(canvasPoint(e));
+  if(drag){
+    if(drag.type==='point')points[drag.idx]=pointer;
+    else if(drag.type==='label'){labelPoint=pointer;syncLabel();}
+    else if(drag.type==='size'){
+      const k=drag.key,w=Math.max(0.1,2*(pointer[0]-drag.position[0])),h=Math.max(0.1,2*(drag.position[1]-pointer[1]));
+      if($(k+'Ratio').checked){const scale=Math.max(w/drag.size[0],h/drag.size[1]);$(k+'W').value=round(drag.size[0]*scale);$(k+'H').value=round(drag.size[1]*scale);}
+      else{$(k+'W').value=round(w);$(k+'H').value=round(h);}
+    }else{const k=drag.type;$(k+'X').value=round(pointer[0]-drag.offset[0]);$(k+'Y').value=round(pointer[1]-drag.offset[1]);}
+    dirty=true;
+  }
+  draw();
+};
+canvas.onpointerup=()=>drag=null;canvas.onpointercancel=()=>drag=null;canvas.onpointerleave=()=>{pointer=null;draw();};
+for(const k of layers){
+  $(k+'Center').onclick=()=>{if(!sourceReady()||!image){message('先导入底图和新版辅助文件，检查底图来源。');return;}const p=center();$(k+'X').value=p[0];$(k+'Y').value=p[1];dirty=true;selectMode(k);};
+  for(const [suffix,factor] of [['Smaller',0.95],['Larger',1.05]])$(k+suffix).onclick=()=>{const layer=layerForDraw(k);if(!layer){message('先导入图片并设置有效尺寸。');return;}$(k+'W').value=round(layer.size[0]*factor);$(k+'H').value=round(layer.size[1]*factor);dirty=true;selectMode(k);};
+}
+$('undo').onclick=()=>{points.pop();dirty=true;draw();};$('clear').onclick=()=>{points=[];dirty=true;draw();};
+for(const id of ['labelX','labelY'])$(id).addEventListener('input',()=>{labelPoint=[n('labelX'),n('labelY')];draw();});
+for(const input of document.querySelectorAll('input:not([type=file]),select')){input.addEventListener('input',()=>{if(['mapId','name','priority','hitType','alphaThreshold','outlineColor','outlineWidth','outlineAlpha','showLabel','labelColor','textColor','labelScale','labelX','labelY','labelW','labelH','labelAlpha','textAlpha'].includes(input.id)||/^(hover|normal)(Path|X|Y|W|H)$/.test(input.id))dirty=true;draw();});}
+$('save').onclick=()=>{try{save();}catch(e){message(e.message);}};
+// Project workflow: MapExtend configs are the output; MapLayout is only a source of native style/calibration.
+let activeWorldId=0,worldDirty=false,cfgDirty=false,projectPending=false,cfgEditingTable='MapCfg',nativeSourceMode='screen';
+let worldData={schema:1,worlds:[{id:0,name:'鹅城',mapIds:[12],autoUnlockMaps:[],travelMaps:[12]}]};
+let nativeCfg={MapCfg:{},BgCfg:{},PersonCfg:{},EvtCfg:{},TalkCfg:{}};
+const worldPictures=new Map(),layouts=new Map();
+const packageReadme="MapExtend 地图与场景制作台（UP / 独立MapExtend通用）\n打开 map-extend.html，统一制作大地图、父/子地点、标点与场景点击对象。\n流程：01项目与资料 → 02大地图 → 03地点与标点 → 04场景对象 → 05检查与导出。\n场景对象的小流程：场景 / 对象 / 点击行为 / 图片与区域，资料默认展开。只做对象无需新增大地图。\n手动填写场景 MapId / BgId 和坐标宽高，导入对应场景参考图；建议用解包背景原图。无需先在游戏里建成地点，也无需导入游戏坐标文件或原版人物表。坐标宽高默认2560×1440，按实际背景局部坐标尺寸调整，不一定等于图片像素尺寸。\n原版使用 PersonCfg 承担场景物件。对象名字自行填写，默认 MapId-BgId-xx；人物编号、介绍和音效由“生成 / 更新原版 PersonCfg 行”按钮单独生成，保存对象不改人物表。PersonCfg 只输出对象的纯净原版行：id、name、init=[-1]、introduction、clickAudio，不夹带整份原版人物表或其他字段，供作者自行注册。\n普通图显示条件和可点击条件独立；前者留空始终显示普通图，后者留空默认可点击并显示悬停图。没有普通图也可点击背景中已画好的物件。两者都以所属地点及实际背景为范围。\n条件/效果按原版填写：1,1,1,10;100,10,100001，英文逗号分参数、英文分号分组。不要手写 []，工具导出时自动转换为二维数组。普通条件组按原版同时满足。\n四种行为任选一：仅介绍、介绍同时执行效果、切指定 BgId 背景、切指定 MapId 场景。只有当前行为的专用内容显示。背景与场景 ID 均须已注册。\n切场景复用 UP 的 100,1,MapId，支持父/子地点和家1；此移动会解锁目标地点，可点击条件用于控制入口。回家指令与对象点击共用原版圆形遮罩过渡。\n普通图平时显示，命中且可点击时悬停图替换普通图；移出恢复。图片位置/尺寸独立，命中区独立，可不用普通图。场景画布支持 Ctrl+滚轮、空格/中键平移、拖动图片及尺寸手柄、锁比例、圈选/移点/删点。预览不判断游戏剧情条件。\nUP新增物件介绍保留当前背景与本场景应显示的普通图，介绍时收起悬停图；在家沿用原版模糊遮罩，地图场景复用当前已显示的背景精灵，不重新读取BgCfg原图。普通图仍受各自条件和100,11显示/隐藏效果控制，介绍结束后恢复场景交互。原版物件的介绍流程不改动。\n大地图用 MapLayout.json 校准标签与坐标；场景采用中心原点、Y向上坐标。场景坐标宽高与地点/背景绑定写入 SceneObjectscfg.json 的 scenes 设置，重开模组内容时直接读取。场景参考图只用于本次编辑，不导出；玩家需自行额外导入参考图。\n场景按 MapId + BgId 分开保存和显示；当前场景的所有对象选区与图片同时保留，切换场景不会迁移对象。已保存场景可来回切换，导出后重开仍按同一归属恢复。填写或修改 MapId/BgId 后必须点击“确认场景（创建 / 切换）”，输入过程不创建场景、不切换当前编辑范围；确认的空场景也随模组保存。可在已保存场景选框下删除当前场景，含对象、参考图或自定义尺寸时再次确认；删除对象、选区、参考图及独占图片/人物行，共享内容保留；需要主动迁移对象或校正旧版误存的归属时，在“对象”页使用“调整此对象的所属场景”，图片位置、尺寸和选区保持不变。\n一个项目共享 PNG、MapCfg/BgCfg/PersonCfg/EvtCfg/TalkCfg 材料，统一导出 MapExtend.zip。解压后的模组内容可通过“打开已有项目”直接读取并继续编辑，不生成 Editor 文件夹或额外项目资料。保存当前编辑保留网页内数据；导出ZIP才保存到磁盘。Ctrl+S 保存当前编辑。\n请按原版 Mod 流程注册 Cfg/*.json。UP和独立MapExtend均不会自动读取 MapExtend/Cfg。原版 type=30 物件事件另配 EvtCfg/TalkCfg；新四种点击行为不会自动消费该事件队列。\n安装推荐 Mod/EC2BUnofficialPatch/MapExtend，其次 Mod/MapExtend，也支持其他容器中的 MapExtend。PNG 路径相对扩展JSON目录。模板生成位置与流程不变。\nWorldmapscfg schema=1、MapLocationscfg schema=2；新 SceneObjectscfg schema=2。DLL 保留旧 schema=1 读取；旧非空对象配置需按新流程重新登记，工具不会擅自改其行为。\nF9 可刷新扩展 JSON/图片；原版 CFG 和资源新增须重启游戏。\n大地图和父地点 ID 自行填写；大地图名称留空默认“新区域<ID>”。\n勾选交通入口后，父地点自动开放强制勾选且不可取消，第二步清单也不能去掉其 ID；取消交通入口后恢复可调整，但不自动取消勾选。自动开放不会反向设置交通入口。\n交通父地点在大地图解锁时自动开放，子地点仍独立选择，不随入口全部开放；鹅城12保留原版剧情解锁，只初始化一次，不覆盖既有剧情锁定。\n子地点固定生成 type=2；ID 整除1000必须等于父ID（父ID×1000+0～999），不可重复、不可超过2147483647。建议尾号从001开始，不建议直接使用000。非法输入不会改动原版表。\n\n文件读取报错时：不要刷新或关闭工具，也不要重新导入替换编辑。点击“抢救当前编辑”，下载并检查抢救备份和说明。导入的内容与PNG在读取成功时复制为内存Blob，导出不再依赖本地文件引用；原文件之后被移动、替换或权限变化不会影响已缓存内容。导出读取失败会显示具体相对路径，并提示保留页面及使用“抢救当前编辑”。抢救包保留当前配置/选区、未保存表单和可读取图片；不可读取PNG尽量从已解码图片重建，说明中列出重建及仍需补入的文件，不将不完整抢救包宣称为完整模组包。\n\n场景物件效果：100,11,1,PersonId 显示普通图；100,11,-1,PersonId 隐藏普通图；100,11,2,PersonId 允许点击及悬停；100,11,-2,PersonId 禁止点击及悬停。\n这些指令独立于普通图显示条件/可点击条件，不改写条件。未执行指令时遵循条件；执行后相应方面以最后一次明确指令为准，显示和点击状态互不影响，并随存档保存。仍限于对象所属地点及背景。旧存档没有指令记录时继续按条件判断。\nPersonId 必须已按原版注册，且在启用内容的 SceneObjectscfg.json 中能找到对象。显示/隐藏要求普通图；可点击/不可点击要求普通图或悬停图至少一张；没有所需图时不记入状态并提示日志。相同 PersonId 绑定的多个对象共享这一状态，需独立控制时使用不同人物编号。兼容运行时旧 schema=1 对象。\n移动指令 100,1,MapId 已归入 MapExtendEffects/MapMoveService，复用原有父/子地点与回家过渡；同时启用移动修复和地图扩展只注册一次。\n\n独立MapExtend插件与完整版UP使用同一模组格式、作者工具、生成目录和WorldMaps.v2存档键，制作内容可互通，无需转换。工具生成位置仍是BepInEx/plugins/EC2BUnofficialPatch/MapExtend，不因DLL放在MapExtend目录而改变。两版共存时优先使用已启用的UP地图模块，独立版不重复读取和注册；UP地图模块关闭时由独立版补齐，移动效果和子地点提供者仍各保留一份。不要复制两套相同的模组内容或安装多份同名DLL。\n";
+const ids=(text,allowEmpty=true)=>{const values=text.trim()?text.trim().split(/[,，\s]+/).map(Number):[];if((!allowEmpty&&!values.length)||values.some(v=>!Number.isInteger(v)||v<=1||v>2147483647))throw Error('地点 ID 必须为大于 1 的整数，使用逗号分隔。');return [...new Set(values)];};
+const currentWorld=()=>worldData.worlds.find(w=>w.id===activeWorldId);
+const parentDefaults=(id,name,bg)=>({id,name,shortName:name,floorName:name,cond:[],redpoint:0,bg,bg2:0,type:0,floors:[]});
+function isChildUnlock(w,id){const row=nativeCfg.MapCfg[id];return row?.type===2||w.mapIds.some(parent=>parent!==id&&(nativeCfg.MapCfg[parent]?.floors||[]).includes(id))||(!w.mapIds.includes(id)&&w.mapIds.includes(Math.floor(id/1000)));}
+function parentUnlockIds(w=currentWorld()){return w.autoUnlockMaps.filter(id=>!isChildUnlock(w,id));}
+function requiredTravelParents(w){const id=n('mapId'),editing=Number.isInteger(id)&&id>1;return [...new Set([...w.travelMaps.filter(v=>!editing||v!==id||$('station').checked),...($('station').checked&&editing?[id]:[])])].filter(v=>!(w.id===0&&v===12));}
+function renderParentUnlock(){const w=currentWorld();w.autoUnlockMaps=[...new Set([...w.autoUnlockMaps,...requiredTravelParents(w)])];$('extraUnlock').value=parentUnlockIds(w).join(', ');const station=$('station').checked&&!(w.id===0&&n('mapId')===12);$('entryAutoUnlock').checked=station||w.autoUnlockMaps.includes(n('mapId'));$('entryAutoUnlock').disabled=station;$('extraUnlock').setCustomValidity('');}
+function parseParentUnlock(w){const values=ids($('extraUnlock').value);if(values.some(id=>isChildUnlock(w,id)))throw Error('这里仅填写父地点 ID；子地点的自动开放请在子地点页设置。');return [...new Set([...values,...requiredTravelParents(w)])].filter(id=>!(w.id===0&&id===12));}
+function syncParentUnlockText(){try{const w=currentWorld(),entered=ids($('extraUnlock').value),values=parseParentUnlock(w);w.autoUnlockMaps=[...new Set([...w.autoUnlockMaps.filter(id=>isChildUnlock(w,id)),...values])];if(requiredTravelParents(w).some(id=>!entered.includes(id))){$('extraUnlock').value=values.join(', ');message('交通入口必须在大地图解锁时开放，已保留对应 ID。');}const station=$('station').checked&&!(w.id===0&&n('mapId')===12);$('entryAutoUnlock').checked=station||values.includes(n('mapId'));$('entryAutoUnlock').disabled=station;$('extraUnlock').setCustomValidity('');projectPending=true;}catch(e){$('extraUnlock').setCustomValidity(e.message);message(e.message);}}
+function syncParentUnlockCheckbox(){const id=n('mapId');if(!Number.isInteger(id)||id<=1||id>2147483647){$('entryAutoUnlock').checked=false;message('请先填写有效的父地点数字 ID。');return;}const w=currentWorld();if(isChildUnlock(w,id)){$('entryAutoUnlock').checked=false;message('该 ID 已用于子地点，不能作为父地点自动开放。');return;}if($('station').checked&&!(w.id===0&&id===12))$('entryAutoUnlock').checked=true;w.autoUnlockMaps=w.autoUnlockMaps.filter(v=>v!==id);if($('entryAutoUnlock').checked&&!(w.id===0&&id===12))w.autoUnlockMaps.push(id);projectPending=true;renderParentUnlock();}
+function validateChildId(parentId,id){if(!Number.isInteger(parentId)||parentId<=1||parentId>2147483647)throw Error('请先填写有效的父地点 ID。');const low=parentId*1000,high=Math.min(parentId*1000+999,2147483647);if(low>2147483647)throw Error('该父地点 ID 太大，无法生成符合原版规则的子地点 ID（最大 2147483647）。');if(!Number.isInteger(id)||id<low||id>high)throw Error('子地点 ID 必须为 '+low+'～'+high+'，整除 1000 等于父地点 '+parentId+'。');if(nativeCfg.MapCfg[id]||database.locations.some(r=>r.mapId===id)||worldData.worlds.some(w=>w.mapIds.includes(id)))throw Error('该子地点 ID 已占用，请换一个 ID；已有行请使用原版 JSON 编辑。');}
+function createWorld(id,name){if(!Number.isInteger(id)||id<=0||id>16777215||worldData.worlds.some(w=>w.id===id))throw Error('地图 ID 必须为未使用的 1～16777215 整数。');if(dirty)save();if(worldDirty)saveWorldSettings();worldData.worlds.push({id,name:name.trim()||'新区域'+id,defaultUnlocked:false,url:'',coordinateSize:[2560,1440],mapIds:[],autoUnlockMaps:[],travelMaps:[]});projectPending=true;selectWorld(id);selectPanel('world');message('新大地图已建立：选择底图 PNG，再创建父地点并设置交通入口。');}
+function generateParentCfg(){
+  if(cfgDirty)applyCfg();const id=n('mapId'),name=$('name').value.trim(),bg=n('parentBg'),floors=ids($('parentFloors').value);
+  if(!$('generateParent').checked)throw Error('请勾选生成父地点行；复用已有原版行时，可先在 CFG 页导入该行再添加子地点。');
+  if(!Number.isInteger(id)||id<=1||id>2147483647||!name||!Number.isInteger(bg)||bg<=0||bg>2147483647)throw Error('请填写有效的父地点 ID、名称和进入场景背景 ID。');
+  const old=nativeCfg.MapCfg[id]||{};
+  nativeCfg.MapCfg[id]={...parentDefaults(id,name,bg),...old,id,name,shortName:old.shortName||name,floorName:old.floorName||name,bg,type:0,floors:floors.length?[...new Set([id,...floors])]:[]};
+  if($('station').checked)nativeCfg.MapCfg[id].cond=[];
+  projectPending=true;showCfg();return id;
+}
+function validateWorldDocument(v){
+  if(!v||v.schema!==1||!Array.isArray(v.worlds))throw Error('大地图表需要 schema=1 和 worlds 数组。');
+  const used=new Set(),maps=new Set();
+  for(const w of v.worlds){
+    if(!w||!Number.isInteger(w.id)||w.id<0||w.id>16777215||used.has(w.id))throw Error('大地图 ID 必须为 0～16777215，且不能重复。');used.add(w.id);
+    for(const key of ['mapIds','autoUnlockMaps','travelMaps'])if(!Array.isArray(w[key])||w[key].some(id=>!Number.isInteger(id)||id<=1||id>2147483647))throw Error('地图 '+w.id+' 的 '+key+' 需要地点 ID 数组。');
+    if(w.travelMaps.some(id=>!w.mapIds.includes(id)))throw Error('交通入口必须属于该地图的父地点。');
+    if(w.id!==0&&!w.extension){if(!w.name?.trim()||!validPath(w.url)||!pair(w.coordinateSize)||w.coordinateSize.some(n=>n<=0))throw Error('新地图需要名称、PNG 相对路径和正坐标尺寸。');if(!w.mapIds.length||!w.travelMaps.length)throw Error('新大地图必须要有至少一个交通入口。');if(typeof w.defaultUnlocked!=='boolean')throw Error('请设置地图是否默认开放。');}
+    for(const id of w.mapIds){if(maps.has(id))throw Error('父地点 '+id+' 不能属于两张地图。');maps.add(id);}
+  }
+}
+function validateLocations(v){if(!v||v.schema!==2||!Array.isArray(v.locations)||v.locations.some(r=>!r||!Number.isInteger(r.mapId)||r.mapId<=1)||new Set(v.locations.map(r=>r.mapId)).size!==v.locations.length)throw Error('标点表需要 schema=2 和不重复的地点 ID。');}
+function validateTable(table,v){if(!v||Array.isArray(v)||typeof v!=='object')throw Error(table+' 需要原版 ID → 对象结构。');for(const [key,row] of Object.entries(v))if(!row||!Number.isInteger(row.id)||String(row.id)!==key)throw Error(table+' 的 key/id 不一致：'+key);return v;}
+function showCfg(){cfgEditingTable=$('cfgTable').value;cfgDirty=false;$('cfgEditor').value=JSON.stringify(nativeCfg[$('cfgTable').value],null,2);}
+function applyCfg(){nativeCfg[cfgEditingTable]=validateTable(cfgEditingTable,JSON.parse($('cfgEditor').value));cfgDirty=false;projectPending=true;}
+function refreshWorlds(){const s=$('worldSelect');s.replaceChildren();for(const w of worldData.worlds){const opt=document.createElement('option');opt.value=w.id;opt.textContent=w.id+' · '+(w.name||(w.id===0?'鹅城':'已有地图 '+w.id));s.append(opt);}s.value=activeWorldId;}
+function worldForm(){
+  const w=currentWorld();w.autoUnlockMaps=[...new Set([...w.autoUnlockMaps,...w.travelMaps.filter(id=>!(w.id===0&&id===12))])];$('worldEditId').value=w.id;$('worldEditId').disabled=w.id===0;
+  $('worldName').value=w.name||(w.id===0?'鹅城':'已有地图 '+w.id);$('worldName').disabled=w.id===0||!!w.extension;
+  $('worldPath').value=w.url||'';$('worldPath').disabled=w.id===0||!!w.extension;$('worldImage').disabled=w.id===0;
+  $('worldW').value=w.coordinateSize?.[0]??2560;$('worldH').value=w.coordinateSize?.[1]??1440;
+  for(const k of ['worldW','worldH'])$(k).disabled=w.id===0;
+  $('worldDefaultUnlocked').checked=w.id===0||w.defaultUnlocked===true;$('worldDefaultUnlocked').disabled=w.id===0||!!w.extension;
+  $('extraUnlock').value=parentUnlockIds(w).join(', ');$('worldId').value=w.id;$('worldId').readOnly=true;
+  $('sourceMode').disabled=w.id!==0;$('sourceMode').value=w.id!==0?'texture':nativeSourceMode;
+  worldDirty=false;updateWorldSummary();
+}
+function updateWorldSummary(){const w=currentWorld();$('worldSummary').textContent='当前：'+(w.name||w.id)+(w.extension?'（地点贡献）':'')+' ｜ 父地点：'+(w.mapIds.join(', ')||'尚未添加')+' ｜ 交通入口：'+(w.id===0?'12（内置）'+(w.travelMaps.filter(id=>id!==12).length?'、':''):'')+w.travelMaps.filter(id=>w.id!==0||id!==12).join(', ');}
+function saveWorldSettings(){
+  const w=currentWorld(),url=$('worldPath').value.trim(),size=[n('worldW'),n('worldH')],id=n('worldEditId'),name=$('worldName').value.trim()||'新区域'+id,unlock=parseParentUnlock(w);
+  if(!Number.isInteger(id)||id<0||id>16777215||(w.id!==id&&worldData.worlds.some(row=>row.id===id))||(w.id!==0&&id===0))throw Error('地图 ID 无效或已存在。');
+  if(w.id!==0&&(!pair(size)||size.some(v=>v<=0)||(!w.extension&&(!name||!validPath(url)))))throw Error('请填写地图名称、PNG 路径和坐标尺寸。');
+  if(w.id!==0){
+    const old=w.id;if(id!==old){for(const row of database.locations)if(row.worldId===old)row.worldId=id;if(worldPictures.has(old)){worldPictures.set(id,worldPictures.get(old));worldPictures.delete(old);}if(layouts.has(old)){layouts.set(id,layouts.get(old));layouts.delete(old);}w.id=id;activeWorldId=id;}
+    w.name=name;w.url=url;w.coordinateSize=size;if(!w.extension)w.defaultUnlocked=$('worldDefaultUnlocked').checked;
+    if(worldPictures.has(w.id)&&url)assets.set(url,worldPictures.get(w.id));
+  }
+  w.autoUnlockMaps=[...new Set([...w.autoUnlockMaps.filter(id=>isChildUnlock(w,id)),...unlock])];$('worldName').value=w.name;renderParentUnlock();
+  worldDirty=false;projectPending=true;refreshWorlds();updateWorldSummary();$('worldId').value=w.id;draw();
+}
+function refreshList(){const select=$('selected');select.replaceChildren();const fresh=document.createElement('option');fresh.value='';fresh.textContent='新建父地点';select.append(fresh);for(const row of database.locations.filter(r=>(r.worldId??0)===activeWorldId)){const opt=document.createElement('option');opt.value=row.mapId;opt.textContent=row.mapId+' · '+(row.label?.text||nativeCfg.MapCfg[row.mapId]?.name||'');select.append(opt);}select.value=loadedId??'';}
+const originalLoadRow=loadRow;
+loadRow=function(row){originalLoadRow(row);$('worldId').value=activeWorldId;const cfg=nativeCfg.MapCfg[row?.mapId]||{},w=currentWorld();$('parentBg').value=cfg.bg||'';$('parentFloors').value=(cfg.floors||[]).join(', ');$('generateParent').checked=!row||!!nativeCfg.MapCfg[row.mapId];$('station').checked=!!row&&w.travelMaps.includes(row.mapId);$('entryAutoUnlock').checked=!!row&&(w.autoUnlockMaps.includes(row.mapId)||$('station').checked&&!(w.id===0&&row.mapId===12));$('entryAutoUnlock').disabled=$('station').checked&&!(w.id===0&&row?.mapId===12);$('childId').value='';$('childName').value='';$('childBg').value='';if(!row)$('mapId').value='';};
+const saveMarker=save;
+save=function(){
+  if(worldDirty)saveWorldSettings();if(cfgDirty)applyCfg();
+  const id=n('mapId'),gen=$('generateParent').checked,station=$('station').checked,bg=n('parentBg'),floor=ids($('parentFloors').value);
+  if(gen&&!$('name').value.trim())throw Error('请输入父地点名称。');
+  if(gen&&(!Number.isInteger(bg)||bg<=0||bg>2147483647))throw Error('生成父地点原版行需要有效的进入场景背景 ID（MapCfg.bg）。');
+  if(station&&!$('showLabel').checked)throw Error('车站必须显示标签，否则无法建立返回入口。');
+  const other=worldData.worlds.find(w=>w.id!==activeWorldId&&w.id!==0&&w.mapIds.includes(id));if(other)throw Error('该父地点已属于 '+other.name+'，请换一个 ID。');
+  const previous=database.locations.find(r=>r.mapId===id);if(previous&&(previous.worldId??0)!==activeWorldId)throw Error('该地点 ID 已用于另一张地图，请换一个 ID。');
+  saveMarker();projectPending=true;
+  if(gen){const old=nativeCfg.MapCfg[id]||{};nativeCfg.MapCfg[id]={...parentDefaults(id,$('name').value,bg),...old,id,name:$('name').value,shortName:old.shortName||$('name').value,floorName:old.floorName||$('name').value,bg,type:0,floors:floor.length?[...new Set([id,...floor])]:[]};if(station)nativeCfg.MapCfg[id].cond=[];}
+  const w=currentWorld();if(!w.mapIds.includes(id))w.mapIds.push(id);if(!station)w.travelMaps=w.travelMaps.filter(v=>v!==id);else if(!w.travelMaps.includes(id))w.travelMaps.push(id);w.autoUnlockMaps=w.autoUnlockMaps.filter(v=>v!==id);if(($('entryAutoUnlock').checked||station)&&!(w.id===0&&id===12))w.autoUnlockMaps.push(id);w.autoUnlockMaps=[...new Set(w.autoUnlockMaps)];renderParentUnlock();$('extraUnlock').value=parentUnlockIds(w).join(', ');updateWorldSummary();showCfg();message('父地点 '+id+' 已保存：标点归属 '+w.name+'。'+(gen?'MapCfg 行已生成，导出后需按原版注册。':'复用已由原版注册的父地点。'));
+};
+function selectWorld(id){activeWorldId=id;const record=worldPictures.get(id);image=record?.image||null;if(image){canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;}const style=layouts.get(id)||layouts.get(0)||layouts.values().next().value;if(style){calibration=style.layout;labelAssets=style.assets;}else{calibration=null;labelAssets=null;}
+refreshWorlds();worldForm();loadRow(database.locations.find(r=>(r.worldId??0)===id)||null);updateImportStatus();draw();}
+function updateImportStatus(){$('importStatus').textContent='当前大地图：'+(currentWorld().name||currentWorld().id)+' ｜ '+(image?'底图已导入':'待导入底图')+' ｜ '+(sourceReady()?'原版标签/坐标就绪':'待导入新版 MapLayout');}
+async function imageAsset(file){file=await snapshotFile(file);const im=await readImage(file),off=document.createElement('canvas');off.width=im.width;off.height=im.height;const oc=off.getContext('2d');oc.drawImage(im,0,0);const p=oc.getImageData(0,0,im.width,im.height).data,alpha=new Uint8Array(im.width*im.height);for(let i=0;i<alpha.length;i++)alpha[i]=p[i*4+3];return {file,image:im,alpha};}
+async function setWorldImage(file){if(activeWorldId===0)throw Error('鹅城底图请在“导入资料”选择截图或原图。');if(!/\.png$/i.test(file.name))throw Error('大地图底图必须是 PNG。');const record=await imageAsset(file);if(!$('worldPath').value.trim())$('worldPath').value='Images/'+file.name;worldDirty=true;saveWorldSettings();worldPictures.set(activeWorldId,record);assets.set(currentWorld().url,record);image=record.image;canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;updateImportStatus();draw();message('新地图底图已显示。先导入任意新版 MapLayout 取得原版标签样式，再新增车站父地点。');}
+async function importLayout(file){const v=JSON.parse(await file.text());if(!validLayout(v))throw Error('需要新版 MapLayout（schema=2，含 unity-image-alpha-v1 标签样式）。请更新 DLL 后打开大地图重新生成。');const loaded={layers:await Promise.all(v.labelStyle.layers.map(async layer=>({image:await dataImage(layer.png)}))),atlas:await dataImage(v.labelStyle.text.atlas)};layouts.set(v.worldId??0,{layout:v,assets:loaded});if(activeWorldId===0&&(v.worldId??0)!==0)throw Error('鹅城需要 worldId=0 的 MapLayout；新区域可复用任意地图导出的标签样式。');calibration=v;labelAssets=loaded;updateImportStatus();draw();message(activeWorldId===0?'鹅城校准与原版标签已导入，请确认截图/解包图来源。':'原版标签样式已导入，新区域按底图原图和坐标宽高直接定位。');}
+async function importProject(files){
+  const named=new Map();for(const file of files){let path=file.webkitRelativePath.replace(/\\/g,'/'),idx=path.lastIndexOf('/MapExtend/');path=idx>=0?path.slice(idx+"/MapExtend/".length):path.split('/').slice(1).join('/');if(named.has(path))throw Error('所选目录有重复文件：'+path);if(/^Editor\//i.test(path)||['map-extend.html','scene-objects.html'].includes(path))continue;named.set(path,await snapshotFile(file,path));}
+  if(!['Worldmapscfg.json','MapLocationscfg.json','SceneObjectscfg.json'].some(n=>named.has(n)))throw Error('请选择包含扩展 JSON 的 MapExtend 文件夹。');
+  const worlds=named.has('Worldmapscfg.json')?JSON.parse(await named.get('Worldmapscfg.json').text()):{schema:1,worlds:[{id:0,mapIds:[12],autoUnlockMaps:[],travelMaps:[12]}]},locations=named.has('MapLocationscfg.json')?JSON.parse(await named.get('MapLocationscfg.json').text()):{schema:2,locations:[]};validateWorldDocument(worlds);validateLocations(locations);
+  const tables={MapCfg:{},BgCfg:{},PersonCfg:{},EvtCfg:{},TalkCfg:{}};for(const table of Object.keys(tables)){const file=named.get('Cfg/'+table+'.json');if(file)tables[table]=validateTable(table,JSON.parse(await file.text()));}
+  const imported=new Map();for(const [path,file] of named)if(/\.png$/i.test(path)&&validPath(path))imported.set(path,await imageAsset(file));
+  await sceneEditor.loadProject(named,tables,imported);retainedFiles=named;projectPending=false;dirty=worldDirty=cfgDirty=false;worldData=worlds;if(!worldData.worlds.some(w=>w.id===0))worldData.worlds.unshift({id:0,name:'鹅城',mapIds:[],autoUnlockMaps:[],travelMaps:[]});database=locations;nativeCfg=tables;assets.clear();worldPictures.clear();for(const [path,value] of imported)assets.set(path,value);for(const w of worldData.worlds)if(w.id!==0&&assets.has(w.url))worldPictures.set(w.id,assets.get(w.url));selectWorld(worldData.worlds.find(w=>w.id!==0)?.id??0);showCfg();$('preview').textContent=JSON.stringify(database,null,2);sceneEditor.open();updateStudioStatus();message('模组内容已导入：地图、地点、对象与素材已读取；场景参考图需自行额外导入。');
+}
+function ensureExport(){
+  const objectCount=sceneEditor.check();for(const w of worldData.worlds)w.autoUnlockMaps=[...new Set([...w.autoUnlockMaps,...w.travelMaps.filter(id=>!(w.id===0&&id===12))])];
+  if(worldDirty)saveWorldSettings();if(cfgDirty)applyCfg();if(dirty)save();
+  validateWorldDocument(worldData);validateLocations(database);for(const [table,v] of Object.entries(nativeCfg))validateTable(table,v);
+  const wanted=new Set(),warnings=[];
+  for(const w of worldData.worlds){if(w.id!==0&&!w.extension)wanted.add(w.url);for(const id of w.travelMaps){const cfg=nativeCfg.MapCfg[id],entry=database.locations.find(r=>r.mapId===id&&(r.worldId??0)===w.id);if(w.id!==0&&!w.extension&&(!entry||entry.label?.visible===false))throw Error(w.name+' 的车站 '+id+' 缺少启用的标点/标签。');if(cfg&&(cfg.type!==0||!cfg.bg||(cfg.cond||[]).length))throw Error('车站 '+id+' 必须为 type=0、有背景且 cond=[]。');}}
+  for(const row of database.locations){const w=worldData.worlds.find(w=>w.id===(row.worldId??0));if(!w||!w.mapIds.includes(row.mapId))throw Error('标点 '+row.mapId+' 未包含在所属地图 mapIds 中。');const cfg=nativeCfg.MapCfg[row.mapId];if(!cfg)warnings.push('地点 '+row.mapId+' 需复用或另行注册 MapCfg');else if(cfg.type!==0||!cfg.bg)throw Error('父地点 '+row.mapId+' 必须为 type=0 且有背景 ID。');if(row.hitArea?.type==='polygon')validatePolygon(row.hitArea.points||[]);for(const key of ['normal','hover']){const path=row.visual?.[key]?.image;if(path)wanted.add(path);}}
+  for(const cfg of Object.values(nativeCfg.MapCfg)){if(!nativeCfg.BgCfg[cfg.bg])warnings.push('背景 '+cfg.bg+' 需复用或另行注册 BgCfg');for(const id of cfg.floors||[])if(!nativeCfg.MapCfg[id])warnings.push('子地点 '+id+' 需复用或另行注册 MapCfg');}
+  for(const path of wanted)if(!validPath(path)||!assets.get(path)?.file)throw Error('缺少需要打包的 PNG：'+path+'。请导入整个 MapExtend 文件夹或重新选择该图片。');
+  const result={wanted,warnings:[...new Set(warnings)]};$('packageStatus').textContent='大地图 '+worldData.worlds.length+' 张（含鹅城） · 标点 '+database.locations.length+' 个\nPNG '+new Set([...wanted,...sceneEditor.imagePaths()]).size+' 张 · 原版 MapCfg '+Object.keys(nativeCfg.MapCfg).length+' 行\n场景对象 '+objectCount+' 个 · PersonCfg '+Object.keys(sceneEditor.personRows()).length+' 行\n原版表是注册材料，UP 不会自动读取。'+(result.warnings.length?'\n需要作者确认的原版引用：\n'+result.warnings.join('\n'):'');showCfg();return result;
+}
+// Uncompressed ZIP with UTF-8 names; offline and no external library/download dependency.
+function crc32(bytes){let crc=0xffffffff;for(const b of bytes){crc^=b;for(let bit=0;bit<8;bit++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
+function zipHeader(size,fields){const b=new Uint8Array(size),v=new DataView(b.buffer);for(const [offset,value,width] of fields)width===2?v.setUint16(offset,value,true):v.setUint32(offset,value,true);return b;}
+async function readPackageFile(file,path){try{return await file.arrayBuffer();}catch(e){throw Error('无法读取导出文件：'+path+'。当前对象与选区没有清空。请保持页面打开，先点击“抢救当前编辑”，再补入这个文件。');}}
+async function zipFiles(files){const encoder=new TextEncoder(),parts=[],central=[];let offset=0;
+  for(const [path,file] of files){const name=encoder.encode(path),bytes=new Uint8Array(await readPackageFile(file,path)),crc=crc32(bytes);if(offset+bytes.length>0xffffffff)throw Error('内容包过大，请拆分。');const h=zipHeader(30,[[0,0x04034b50,4],[4,20,2],[6,0x800,2],[12,33,2],[14,crc,4],[18,bytes.length,4],[22,bytes.length,4],[26,name.length,2]]);parts.push(h,name,bytes);central.push(zipHeader(46,[[0,0x02014b50,4],[4,20,2],[6,20,2],[8,0x800,2],[14,33,2],[16,crc,4],[20,bytes.length,4],[24,bytes.length,4],[28,name.length,2],[42,offset,4]]),name);offset+=h.length+name.length+bytes.length;}
+  const centralSize=central.reduce((sum,b)=>sum+b.length,0);return new Blob([...parts,...central,zipHeader(22,[[0,0x06054b50,4],[8,files.size,2],[10,files.size,2],[12,centralSize,4],[16,offset,4]])],{type:'application/zip'});
+}
+async function exportPackage(){const {wanted}=ensureExport(),files=new Map([...retainedFiles].filter(([p])=>!/^Editor\//i.test(p)&&!['scene-objects.html','map-extend.html'].includes(p)).map(([p,f])=>['MapExtend/'+p,f])),json=v=>new Blob([JSON.stringify(v,null,2)+'\n'],{type:'application/json'});files.set('MapExtend/SceneObjectscfg.json',json(sceneEditor.data()));files.set('MapExtend/Worldmapscfg.json',json(exportWorldData()));files.set('MapExtend/MapLocationscfg.json',json({schema:2,locations:database.locations.map(({enabled,visibility,...row})=>row)}));files.delete('MapExtend/Cfg/PersonCfg.json');for(const [table,stored]of Object.entries(nativeCfg)){const v=table==='PersonCfg'?sceneEditor.personRows():stored;if(Object.keys(v).length)files.set('MapExtend/Cfg/'+table+'.json',json(v));}for(const path of wanted)files.set('MapExtend/'+path.replace(/\\/g,'/'),assets.get(path).file);files.set('MapExtend/readme.txt',new Blob([packageReadme],{type:'text/plain;charset=utf-8'}));files.set('MapExtend/map-extend.html',new Blob([toolSource],{type:'text/html;charset=utf-8'}));downloadBlob(await zipFiles(files),'MapExtend.zip');projectPending=false;updateStudioStatus();message('内容包已导出。将 MapExtend 安装到 Mod，再按原版流程注册 Cfg 材料。');}
+// Can also run in the console of an already-open older MapExtend tool.
+async function rescueMapExtend(){
+ const report=[],form=[...document.querySelectorAll('input,select,textarea')].filter(e=>e.id&&e.type!=='file').map(e=>({id:e.id,value:e.value,checked:e.checked}));
+ try{if(sceneEditor.hasDraft())sceneEditor.save();if(typeof worldDirty!=='undefined'&&worldDirty)saveWorldSettings();if(typeof cfgDirty!=='undefined'&&cfgDirty)applyCfg();if(typeof dirty!=='undefined'&&dirty)save();}catch(e){report.push('未完成表单保存：'+e.message+'；当前表单原文已另外保存。');}
+ const json=v=>new Blob([JSON.stringify(v,null,2)+'\n'],{type:'application/json'}),scene=sceneEditor.data(),world=typeof exportWorldData==='function'?exportWorldData():worldData,files=new Map(),source=new Map(retainedFiles);
+ // Snapshot all text/config data before attempting any local file read.
+ files.set('MapExtend/SceneObjectscfg.json',json(scene));files.set('MapExtend/Worldmapscfg.json',json(world));files.set('MapExtend/MapLocationscfg.json',json(database));
+ for(const [table,rows]of Object.entries(nativeCfg))if(Object.keys(rows).length)files.set('MapExtend/Cfg/'+table+'.json',json(rows));
+ files.set('MapExtend/readme.txt',new Blob([packageReadme]));files.set('MapExtend/map-extend.html',new Blob([toolSource],{type:'text/html'}));
+ files.set('未保存表单.json',json({form,sceneDrafts:sceneEditor.recoveryData?.()||null}));
+ const images=new Set();for(const w of world.worlds||[])if(w.id!==0&&!w.extension&&w.url)images.add(w.url);for(const r of [...scene.objects||[],...database.locations||[]])for(const v of Object.values(r?.visual||{}))if(v?.image)images.add(v.image);
+ for(const [path,a]of globalAssets())if(a?.file)source.set(path,a.file);
+ for(const path of new Set([...source.keys(),...images])){
+  if(/^Editor\//i.test(path)||files.has('MapExtend/'+path)||['scene-objects.html','map-extend.html'].includes(path))continue;
+  try{const f=source.get(path);if(!f)throw Error('无文件引用');files.set('MapExtend/'+path,new Blob([await f.arrayBuffer()],{type:f.type||''}));}
+  catch(e){
+   const im=sceneEditor.decodedImage?.(path)||globalAssets().get(path)?.image;
+   if(/\.png$/i.test(path)&&im){try{const c=document.createElement('canvas');c.width=im.naturalWidth||im.width;c.height=im.naturalHeight||im.height;if(!c.width||!c.height)throw Error('图片无尺寸');c.getContext('2d').drawImage(im,0,0);const b=await new Promise(resolve=>c.toBlob(resolve,'image/png'));if(!b)throw Error('PNG转换失败');files.set('MapExtend/'+path,b);report.push('图片由内存解码内容重建（PNG字节与原文件可能不同）：'+path);continue;}catch{}}
+   report.push('仍需从原文件补入：'+path+'（'+e.message+'）');
+  }
+ }
+ report.unshift('这是抢救备份，请先解压检查。配置、对象、选区来自当前网页内存；普通导出失败并不代表它们被清空。参考图仍不打包。未保存表单.json只供核对，工具不会自动将非法/未生成表单写回原版表。');
+ files.set('抢救说明.txt',new Blob([report.join('\n')],{type:'text/plain;charset=utf-8'}));
+ downloadBlob(await zipFiles(files),'MapExtend-抢救备份.zip');message('抢救备份已下载。请查看抢救说明，确认配置、选区与图片完整后再关闭原页面。');return report;
+}
+
+$('rescuePackage').onclick=async()=>{const b=$('rescuePackage');b.disabled=true;try{await rescueMapExtend();}catch(e){message('抢救未完成：'+e.message+'。请保留页面。');}finally{b.disabled=false;}};
+// Add parent registration controls to the existing compact marker editor.
+$('panel-entry').insertAdjacentHTML('beforeend',`<h2 class="section-heading">原版父地点注册材料</h2><label><input id="generateParent" type="checkbox" checked>生成 / 更新 Cfg/MapCfg.json 中的父地点行</label><div class="form"><label class="wide">进入场景背景 ID<input id="parentBg" type="number" min="1" placeholder="MapCfg.bg"></label><label class="wide">子地点 ID<input id="parentFloors" class="path" placeholder="逗号分隔；可在子地点页自动添加"></label><label class="wide"><input id="station" type="checkbox">作为交通入口</label><label class="wide"><input id="entryAutoUnlock" type="checkbox">大地图解锁时自动开放此父地点</label></div><small>背景 ID 是进入场景后的 BgCfg.id，不是大地图 ID。交通入口自动写入 travelMaps 并设 cond=[]；新地图的第一座车站用于右键进入。已注册的父地点可取消生成，但作者需自行保证 type=0、背景和条件有效。</small><div class="row"><button id="generateParentCfg" class="primary">生成父地点原版行（无需圈选）</button><button id="deleteEntry">删除当前父地点登记</button></div>`);
+$('panel-import').insertAdjacentHTML('afterbegin',`<div class="project-card"><h2>开始你的项目</h2><p>大地图、地点与场景对象在这里一起制作。<br>只需要哪项，就从哪项开始。</p></div><div class="start-buttons"><button data-start="world">制作大地图 / 地点<span>新增区域、父地点与地图标点</span></button><button data-start="scene">只制作场景对象<span>物件、介绍和切换场景的入口</span></button></div><p id="projectCounts" class="project-counts">尚未导入项目</p><label class="file-field"><span>打开已有项目 · 选择导出的 MapExtend 文件夹</span><input id="projectFolder" type="file" webkitdirectory multiple></label><details open class="adjacent-import"><summary>只导入 Worldmapscfg.json</summary><input id="worldsImport" type="file" accept=".json"><small>随后导入标点 JSON，并重新选择需要打包的 PNG。</small></details>`);
+for(const b of document.querySelectorAll('[data-flow]'))b.onclick=()=>{if(b.dataset.flow==='export'){try{ensureExport();}catch(e){$('packageStatus').textContent='待补齐：'+e.message;message(e.message);}}if(b.dataset.flow==='region')selectMode('polygon');else selectPanel(b.dataset.flow);};
+const originalSelectPanel=selectPanel;
+selectPanel=function(name){if(studioPanel==='scene'&&name!=='scene'&&sceneEditor.hasDraft()){try{sceneEditor.save();}catch(e){message(e.message);return;}}originalSelectPanel(name);$('panel-'+name)?.closest('.panels').scrollTo(0,0);const flow=name==='import'?'import':name==='world'?'world':name==='scene'?'scene':name==='export'?'export':'entry';studioPanel=name;updateWorkspace(name);for(const b of document.querySelectorAll('[data-flow]'))b.classList.toggle('active',b.dataset.flow===flow);};
+for(const b of document.querySelectorAll('[data-panel]'))b.onclick=()=>{const p=b.dataset.panel;if(p==='export'){try{ensureExport();}catch(e){$('packageStatus').textContent='待补齐：'+e.message;message(e.message);}}if(p==='images')selectMode(document.querySelector('[data-layer].active').dataset.layer);else if(p==='label')selectMode('label');else if(p==='region')selectMode('polygon');else selectPanel(p);};
+$('generateParentCfg').onclick=()=>{try{const id=generateParentCfg();message('父地点 '+id+' 的原版行已生成，可继续添加子地点；标点在③圈选后保存。');}catch(e){message(e.message);}};
+$('saveWorld').onclick=()=>{try{saveWorldSettings();message('大地图设置已保存；新区域还需保存车站标点。');}catch(e){message(e.message);}};
+$('newWorld').onclick=()=>{$('newWorldId').value='';$('newWorldName').value='';$('newWorldError').textContent='';$('newWorldDialog').showModal();$('newWorldId').focus();};
+$('cancelNewWorld').onclick=()=>$('newWorldDialog').close();
+$('createWorld').onclick=()=>{try{createWorld(Number($('newWorldId').value),$('newWorldName').value);$('newWorldDialog').close();}catch(e){$('newWorldError').textContent=e.message;}};
+$('worldEditId').title='鹅城 ID 固定；新区域直接修改上方地图 ID 后保存';
+$('panel-world').insertAdjacentHTML('beforeend',`<details><summary>删除当前草稿地图</summary><button id="deleteWorld">删除当前地图及标点</button><small>鹅城 0 固定。删除只移除本工具中的地图、标点和生成的地点行。</small></details>`);
+$('deleteWorld').onclick=()=>{if(activeWorldId===0){message('不能删除鹅城。');return;}if(!confirm('删除当前地图及其标点 / 生成的地点行？'))return;projectPending=true;const w=currentWorld();for(const id of w.mapIds){const cfg=nativeCfg.MapCfg[id];for(const floor of cfg?.floors||[])delete nativeCfg.MapCfg[floor];delete nativeCfg.MapCfg[id];}database.locations=database.locations.filter(r=>r.worldId!==w.id);worldData.worlds=worldData.worlds.filter(r=>r.id!==w.id);worldPictures.delete(w.id);selectWorld(0);refreshWorlds();showCfg();};
+$('worldSelect').onchange=()=>{const id=Number($('worldSelect').value);try{if(dirty)save();if(worldDirty)saveWorldSettings();selectWorld(id);}catch(e){$('worldSelect').value=activeWorldId;message(e.message);}};
+$('worldImage').onchange=async e=>{try{if(e.target.files[0])await setWorldImage(e.target.files[0]);}catch(e){message(e.message);}};
+$('picture').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(activeWorldId!==0){await setWorldImage(file);return;}const record=await imageAsset(file);worldPictures.set(0,record);image=record.image;canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;updateImportStatus();draw();message('鹅城底图已导入；选择完整截图或解包原图并导入 worldId=0 的 MapLayout。');}catch(e){message(e.message);}};
+$('layout').onchange=async e=>{try{if(e.target.files[0])await importLayout(e.target.files[0]);}catch(e){message(e.message);}};
+$('projectFolder').onchange=async e=>{try{if((dirty||worldDirty||cfgDirty||projectPending||sceneEditor.hasDraft())&&!confirm('导入项目会替换工具中未导出的内容，继续？'))return;await importProject(e.target.files);}catch(e){message(e.message);}};
+$('worldsImport').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;const v=JSON.parse(await file.text());validateWorldDocument(v);if((dirty||worldDirty)&&!confirm('导入大地图表会替换地图定义，继续？'))return;worldData=v;projectPending=true;if(!v.worlds.some(w=>w.id===0))v.worlds.unshift({id:0,name:'鹅城',mapIds:[],autoUnlockMaps:[],travelMaps:[]});selectWorld(v.worlds.find(w=>w.id!==0)?.id??0);refreshWorlds();message('大地图定义已导入，请导入标点表及实际 PNG，或改用完整文件夹导入。');}catch(e){message(e.message);}};
+$('existing').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;const v=JSON.parse(await file.text());validateLocations(v);if(dirty&&!confirm('替换标点表会丢弃未保存编辑，继续？'))return;database=v;projectPending=true;for(const r of v.locations){const w=worldData.worlds.find(w=>w.id===(r.worldId??0));if(w&&!w.mapIds.includes(r.mapId))w.mapIds.push(r.mapId);}loadRow(v.locations.find(r=>(r.worldId??0)===activeWorldId)||null);updateWorldSummary();}catch(e){message(e.message);}};
+function addChild(){
+  const parentId=n('mapId'),id=n('childId'),bg=n('childBg'),name=$('childName').value.trim();
+  // Validate a pending CFG table and every child field before any project mutation.
+  const pending=cfgDirty?validateTable(cfgEditingTable,JSON.parse($('cfgEditor').value)):null;
+  validateChildId(parentId,id);
+  if(pending&&cfgEditingTable==='MapCfg'&&pending[id])throw Error('该子地点 ID 已占用，请换一个 ID。');
+  if(!Number.isInteger(bg)||bg<=0||bg>2147483647||!name)throw Error('请填写有效的子地点名称和背景 ID。');
+  const parents=pending&&cfgEditingTable==='MapCfg'?pending:nativeCfg.MapCfg;
+  if(!$('generateParent').checked&&!parents[parentId])throw Error('请先生成或导入当前父地点的原版行，不需要先圈选。');
+  if($('generateParent').checked){ids($('parentFloors').value);const pb=n('parentBg');if(!$('name').value.trim()||!Number.isInteger(pb)||pb<=0||pb>2147483647)throw Error('请先填写父地点名称和有效的进入场景背景 ID。');}
+  else if(parents[parentId].type!==0)throw Error('当前父地点必须是 type=0 的 MapCfg 行。');
+  if(pending)applyCfg();if($('generateParent').checked)generateParentCfg();
+  nativeCfg.MapCfg[id]={...parentDefaults(id,name,bg),type:2};
+  const p=nativeCfg.MapCfg[parentId];p.floors=[...new Set([parentId,...(p.floors||[]),id])];$('parentFloors').value=p.floors.join(', ');
+  if($('childAutoUnlock').checked)currentWorld().autoUnlockMaps=[...new Set([...currentWorld().autoUnlockMaps,id])];
+  renderParentUnlock();projectPending=true;dirty=true;showCfg();message('子地点 '+id+' 已加入父地点 '+parentId+' 的 floors。完成③圈选后保存标点。');
+}
+$('addChild').onclick=()=>{try{addChild();}catch(e){message(e.message);}};
+$('addBg').onclick=()=>{try{if(cfgDirty)applyCfg();const id=n('bgId'),name=$('bgName').value.trim(),url=$('bgUrl').value.trim();if(!Number.isInteger(id)||id<=0||id>2147483647||!name||!url)throw Error('请填写背景 ID、名称和原版资源 URL。');if(nativeCfg.BgCfg[id])throw Error('该背景 ID 已有行，请在下方 JSON 中编辑。');nativeCfg.BgCfg[id]={id,name,url,audio:0,cloth:[],gaozhongUrl:0,gaozhongCond:[]};projectPending=true;$('cfgTable').value='BgCfg';showCfg();message('BgCfg 行已生成；场景图片资源仍需按原版注册。');}catch(e){message(e.message);}};
+$('cfgEditor').oninput=()=>cfgDirty=true;
+$('cfgTable').onchange=()=>{try{if(cfgDirty){$('cfgTable').value=cfgEditingTable;throw Error('请先保存当前表，或重新导入该表。');}showCfg();}catch(e){message(e.message);}};
+$('applyCfg').onclick=()=>{try{applyCfg();message('原版表编辑已保存，导出后仍需注册。');}catch(e){message(e.message);}};
+$('cfgImport').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;const table=$('cfgTable').value,v=validateTable(table,JSON.parse(await file.text()));nativeCfg[table]={...nativeCfg[table],...v};projectPending=true;showCfg();message(table+' 已合并导入；同 ID 使用导入文件的行。');}catch(e){message(e.message);}};
+$('deleteEntry').onclick=()=>{if(loadedId===null){message('先选择已保存的父地点。');return;}if(!confirm('删除该父地点的标点与生成的地点行？'))return;projectPending=true;const id=loadedId,w=currentWorld(),floors=nativeCfg.MapCfg[id]?.floors||[];database.locations=database.locations.filter(r=>r.mapId!==id);w.mapIds=w.mapIds.filter(v=>v!==id);w.travelMaps=w.travelMaps.filter(v=>v!==id);w.autoUnlockMaps=w.autoUnlockMaps.filter(v=>v!==id&&!floors.includes(v));for(const f of floors)delete nativeCfg.MapCfg[f];delete nativeCfg.MapCfg[id];loadRow(null);worldForm();showCfg();};
+$('extraUnlock').addEventListener('input',syncParentUnlockText);
+$('entryAutoUnlock').addEventListener('input',syncParentUnlockCheckbox);
+$('station').addEventListener('input',()=>{if($('station').checked){$('entryAutoUnlock').checked=true;syncParentUnlockCheckbox();}else{$('entryAutoUnlock').disabled=false;renderParentUnlock();}});
+$('mapId').addEventListener('input',()=>{$('entryAutoUnlock').checked=currentWorld().autoUnlockMaps.includes(n('mapId'));if($('station').checked&&Number.isInteger(n('mapId'))&&n('mapId')>1){$('entryAutoUnlock').checked=true;syncParentUnlockCheckbox();}});
+for(const id of ['worldEditId','worldName','worldPath','worldW','worldH','worldDefaultUnlocked','extraUnlock'])$(id).addEventListener('input',()=>worldDirty=true);
+for(const id of ['parentBg','parentFloors','generateParent','station','entryAutoUnlock'])$(id).addEventListener('input',()=>dirty=true);
+$('download').onclick=()=>{try{ensureExport();}catch(e){$('packageStatus').textContent='待补齐：'+e.message;message(e.message);}selectPanel('export');};
+$('exportPackage').onclick=async()=>{const b=$('exportPackage');b.disabled=true;try{await exportPackage();}catch(e){$('packageStatus').textContent='待补齐：'+e.message;message(e.message);}finally{b.disabled=false;}};
+window.addEventListener('beforeunload',e=>{if(dirty||worldDirty||cfgDirty||projectPending||sceneEditor.hasDraft()){e.preventDefault();e.returnValue='';}});
+const cameraView={scale:1,x:0,y:0,width:0,height:0,fitted:true},stage=$('stage');
+let spacePan=false,panDrag=null;
+function fitScale(){return Math.max(.01,Math.min(stage.clientWidth/canvas.width,stage.clientHeight/canvas.height));}
+function applyView(){
+  if(cameraView.width!==canvas.width||cameraView.height!==canvas.height){cameraView.width=canvas.width;cameraView.height=canvas.height;cameraView.x=cameraView.y=0;cameraView.fitted=true;}
+  if(cameraView.fitted)cameraView.scale=fitScale();
+  const w=canvas.width*cameraView.scale,h=canvas.height*cameraView.scale;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';canvas.style.left=((stage.clientWidth-w)/2+cameraView.x)+'px';canvas.style.top=((stage.clientHeight-h)/2+cameraView.y)+'px';
+  $('zoomValue').value=Math.round(cameraView.scale*100);
+}
+function zoomView(scale,anchor=[stage.clientWidth/2,stage.clientHeight/2]){
+  const next=Math.max(.05,Math.min(16,scale)),ratio=next/cameraView.scale;
+  cameraView.x=anchor[0]-stage.clientWidth/2-(anchor[0]-stage.clientWidth/2-cameraView.x)*ratio;
+  cameraView.y=anchor[1]-stage.clientHeight/2-(anchor[1]-stage.clientHeight/2-cameraView.y)*ratio;
+  cameraView.scale=next;cameraView.fitted=false;draw();
+}
+$('zoomOut').onclick=()=>zoomView(cameraView.scale/1.25);$('zoomIn').onclick=()=>zoomView(cameraView.scale*1.25);
+$('zoomValue').onchange=()=>zoomView(n('zoomValue')/100);
+$('fitView').onclick=()=>{cameraView.x=cameraView.y=0;cameraView.fitted=true;draw();};
+$('actualView').onclick=()=>{cameraView.x=cameraView.y=0;zoomView(1);};
+stage.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const r=stage.getBoundingClientRect();zoomView(cameraView.scale*Math.exp(-e.deltaY*.0015),[e.clientX-r.left,e.clientY-r.top]);},{passive:false});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.target.matches('input,textarea,select,button')){spacePan=true;e.preventDefault();}});
+window.addEventListener('keyup',e=>{if(e.code==='Space')spacePan=false;});
+window.addEventListener('blur',()=>{spacePan=false;panDrag=null;drag=null;});
+stage.addEventListener('pointerdown',e=>{if(e.button!==1&&!(spacePan&&e.button===0))return;e.preventDefault();e.stopPropagation();panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,panX:cameraView.x,panY:cameraView.y};stage.setPointerCapture(e.pointerId);},true);
+stage.addEventListener('pointermove',e=>{if(!panDrag||panDrag.id!==e.pointerId)return;cameraView.x=panDrag.panX+e.clientX-panDrag.x;cameraView.y=panDrag.panY+e.clientY-panDrag.y;pointer=null;draw();});
+for(const type of ['pointerup','pointercancel'])stage.addEventListener(type,e=>{if(panDrag?.id===e.pointerId)panDrag=null;});
+new ResizeObserver(()=>draw()).observe(stage);
+for(const id of ['outlineColor','outlineAlpha','outlineWidth'])$(id).addEventListener('input',()=>{$('previewFallback').checked=true;draw();});
+function exportWorldData(){return {schema:1,worlds:worldData.worlds.map(w=>w.extension?{id:w.id,extension:true,coordinateSize:w.coordinateSize||[2560,1440],mapIds:w.mapIds,autoUnlockMaps:w.autoUnlockMaps,travelMaps:w.travelMaps}:w.id===0?{id:0,mapIds:w.mapIds.filter(id=>id!==12),autoUnlockMaps:w.autoUnlockMaps.filter(id=>id!==12),travelMaps:w.travelMaps.filter(id=>id!==12)}:{id:w.id,name:w.name,url:w.url,coordinateSize:w.coordinateSize,defaultUnlocked:w.defaultUnlocked===true,mapIds:w.mapIds,autoUnlockMaps:w.autoUnlockMaps,travelMaps:w.travelMaps})};}
+$('extendWorld').onclick=()=>{try{const id=Number(prompt('已有大地图 ID（鹅城请选择顶部 0，不用新增引用）'));if(!Number.isInteger(id)||id<=0||id>16777215||worldData.worlds.some(w=>w.id===id))throw Error('请填写未在本项目登记的正数大地图 ID。');if(dirty)save();if(worldDirty)saveWorldSettings();worldData.worlds.push({id,extension:true,name:'已有地图 '+id,url:'',coordinateSize:[2560,1440],mapIds:[],autoUnlockMaps:[],travelMaps:[]});projectPending=true;selectWorld(id);refreshWorlds();selectPanel('world');message('已创建地点贡献；请选择原地图底图 PNG 和相同坐标尺寸用于对齐。底图不打包，开放状态由原作者定义。');}catch(e){message(e.message);}};
+$('panel-entry').insertAdjacentHTML('beforeend','<h3>为这个地点制作场景对象</h3><button id="sceneForLocation">进入场景对象编辑 →</button><p class="help">沿用当前地点 ID，在室内背景上添加物件或场景入口。</p>');
+for(const table of ['EvtCfg','TalkCfg'])$('cfgTable').append(new Option(table,table));
+const sceneEditor=(()=>{
+'use strict';
+const $=id=>document.getElementById('s-'+id),canvas=$('canvas'),ctx=canvas.getContext('2d'),stage=document.getElementById('sceneStage');
+let objects=[],selected=-1,personCfg={},personDrafts=new Map(),files=new Map(),assets=new Map(),scenes=new Map(),selectionMemory=new Map(),imageRequests=new Map(),referenceRequests=new Map(),moveKey='',sceneKey='',draft=false,mode='normal',hovered=-1,drag=null,space=false,zoom=1,pan=[0,0],viewReady=false,vertex=-1;
+const copy=x=>JSON.parse(JSON.stringify(x)),num=id=>Number($(id).value),message=t=>{$('message').textContent=t;document.getElementById('message').textContent=t;};
+const pending=()=>{projectPending=true;updateStudioStatus();},changed=()=>{if(selected>=0)draft=true;pending();};
+const integer=v=>Number.isInteger(v)&&v>0&&v<=2147483647;
+function parseGroups(text,label='条件'){
+ if(!text.trim())return [];
+ if(/[\[\]{}]/.test(text))throw Error(label+'请按原版逗号、英文分号写法填写，不要输入 [] 或 JSON 数组。');
+ const number=/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
+ return text.split(';').map(group=>{const words=group.split(',').map(s=>s.trim());if(!group.trim()||words.some(s=>!number.test(s)||!Number.isFinite(Number(s))))throw Error(label+'格式错误：组内用英文逗号、组间用英文分号，且每项都须为数字。');return words.map(Number);});
+}
+const formatGroups=groups=>(groups||[]).map(g=>g.join(',')).join(';');
+function safePath(p){return typeof p==='string'&&p.length>0&&!/^(?:[A-Za-z]:|[\\/])/.test(p)&&!p.replace(/\\/g,'/').split('/').some(v=>v==='..'||v==='.'||!v);}
+function validatePolygon(p){if(p.length<3||p.length>256||p.some(q=>!Array.isArray(q)||q.length!==2||q.some(n=>!Number.isFinite(n))))throw Error('多边形需要3～256个有效顶点');const sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],cross=(a,b)=>a[0]*b[1]-a[1]*b[0],dot=(a,b)=>a[0]*b[0]+a[1]*b[1],on=(a,b,q,c)=>Math.abs(c)<.0001&&dot(sub(q,a),sub(q,b))<=0;let area=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];if(dot(sub(a,b),sub(a,b))<.0001)throw Error('重复顶点');area+=cross(a,b);for(let j=i+1;j<p.length;j++){if(j===i+1||(i===0&&j===p.length-1))continue;const c=p[j],d=p[(j+1)%p.length],ac=cross(sub(b,a),sub(c,a)),ad=cross(sub(b,a),sub(d,a)),ca=cross(sub(d,c),sub(a,c)),cb=cross(sub(d,c),sub(b,c));if(ac*ad<0&&ca*cb<0||on(a,b,c,ac)||on(a,b,d,ad)||on(c,d,a,ca)||on(c,d,b,cb))throw Error('多边形不能自交或自接触');}}if(Math.abs(area)<.001)throw Error('多边形面积为零');}
+function validate(row){
+ if(!row.key||!row.name?.trim()||!integer(row.mapId)||!integer(row.personId)||!integer(row.bgId))throw Error('请填写对象名字、有效的地点和 PersonCfg ID，并填写有效的背景 BgId。');
+ if(objects.some((r,i)=>i!==selected&&r.key===row.key))throw Error('对象内部编号重复，请重新新增对象。');
+ if(!['introduction','introductionEffects','background','scene'].includes(row.click?.type))throw Error('请选择四种点击行为之一。');
+ if(['background','scene'].includes(row.click.type)&&!integer(row.click.target))throw Error('请填写有效的目标 BgId / MapId。');
+ if(row.click.type==='introductionEffects'&&!row.click.effects?.length)throw Error('请填写效果。');
+ for(const groups of [row.normalCondition,row.clickCondition,row.click.effects||[]])if(!Array.isArray(groups)||groups.some(g=>!Array.isArray(g)||!g.length||g.some(n=>!Number.isFinite(n))))throw Error('条件/效果转换失败，请使用原版分号写法。');
+ if(!integer(row.priority))throw Error('点击优先级须为正整数。');
+ if(row.hitArea.type==='polygon')validatePolygon(row.hitArea.points);
+ else if(row.hitArea.type!=='alpha'||!row.visual.normal||!Number.isFinite(row.hitArea.alphaThreshold)||row.hitArea.alphaThreshold<=0||row.hitArea.alphaThreshold>1)throw Error('透明度命中需要普通 PNG，阈值须大于0且不超过1。');
+ for(const v of Object.values(row.visual))if(!safePath(v.image)||!(/\.png$/i).test(v.image)||!Array.isArray(v.position)||v.position.length!==2||v.position.some(n=>!Number.isFinite(n))||!Array.isArray(v.size)||v.size.length!==2||v.size.some(n=>!Number.isFinite(n)||n<=0))throw Error('图片相对路径、位置或尺寸无效。');
+}
+function rectangle(x,y,w,h){return [[x-w/2,y-h/2],[x+w/2,y-h/2],[x+w/2,y+h/2],[x-w/2,y+h/2]];}
+function bounds(points){if(!points?.length)return {position:[0,0],size:[150,150]};const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);return {position:[(Math.min(...xs)+Math.max(...xs))/2,(Math.min(...ys)+Math.max(...ys))/2],size:[Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)]};}
+function current(){return objects[selected];}
+function scene(){return scenes.get(sceneKey);}
+function read(){
+ const row=copy(current());if(!row)throw Error('请先新增对象。');
+ row.name=$('name').value.trim();row.personId=num('personId');row.priority=num('priority');
+ row.normalCondition=parseGroups($('normalCondition').value,'普通图显示条件');row.clickCondition=parseGroups($('clickCondition').value,'可点击条件');
+ const type=$('click').value;row.click={type};if(type==='introductionEffects')row.click.effects=parseGroups($('effects').value,'效果');if(type==='background')row.click.target=num('targetBg');if(type==='scene')row.click.target=num('targetMap');
+ const layer=$('layer').value,position=[num('x'),num('y')],size=[num('w'),num('h')];if([...position,...size].some(n=>!Number.isFinite(n))||size.some(n=>n<=0))throw Error('位置和尺寸无效。');
+ for(const k of ['normal','hover']){const path=$(k+'Path').value.trim();if(!path)delete row.visual[k];else row.visual[k]={...(row.visual[k]||{position:[0,0],size:[150,150]}),image:path};}
+ if(layer!=='region'&&row.visual[layer]){row.visual[layer].position=position;row.visual[layer].size=size;}
+ if($('hit').value==='alpha')row.hitArea={type:'alpha',alphaThreshold:num('threshold')};
+ else {if(row.hitArea.type!=='polygon')row.hitArea={type:'polygon',points:rectangle(...position,...size)};if(layer==='region'){const old=bounds(row.hitArea.points);if($('hit').value==='rectangle')row.hitArea.points=rectangle(...position,...size);else if(old.size.every(n=>n>0))row.hitArea.points=row.hitArea.points.map(p=>[position[0]+(p[0]-old.position[0])*size[0]/old.size[0],position[1]+(p[1]-old.position[1])*size[1]/old.size[1]]);}}
+ return row;
+}
+function commitDraft(){if(selected>=0)objects[selected]=read();}
+function rememberPerson(){if(!current())return;const edited={id:num('personId'),introduction:$('intro').value,clickAudio:num('audio')},material=nativeCfg.PersonCfg[edited.id];if(material&&edited.introduction===(material.introduction||'')&&edited.clickAudio===(material.clickAudio??0))personDrafts.delete(current().key);else personDrafts.set(current().key,edited);}
+function save(){if(selected<0){message('场景资料已保留；完成后导出 ZIP 保存到磁盘。');return;}const row=read();validate(row);rememberPerson();objects[selected]=row;draft=false;pending();refreshList();draw();message('对象已保存；人物表仅在点击「生成 / 更新原版 PersonCfg 行」时写入。');}
+function generatePerson(){
+ const id=num('personId'),audio=num('audio');if(!integer(id)||!Number.isInteger(audio)||audio<0||audio>2147483647)throw Error('请填写有效的 PersonCfg ID 和点击音效 ID。');
+ const name=$('name').value.trim();if(!name)throw Error('请填写对象名字。');personCfg=nativeCfg.PersonCfg;personCfg[id]=purePerson({id,name,introduction:$('intro').value,clickAudio:audio});rememberPerson();
+ $('personPreview').textContent=JSON.stringify(personCfg[id],null,2);pending();message('已生成 PersonCfg '+id+' 注册材料。保存对象不会再次改写此行。');
+}
+function purePerson(p){return {id:p.id,name:p.name||'',init:[-1],introduction:p.introduction||'',clickAudio:p.clickAudio??0};}
+function personRows(){const result={};for(const r of objects){const p=nativeCfg.PersonCfg[r.personId];if(p)result[r.personId]=purePerson(p);}return result;}
+function belongsHere(r){return r.mapId+':'+r.bgId===sceneKey;}
+function localObjects(){return objects.map((r,i)=>({r,i})).filter(({r})=>belongsHere(r));}
+function refreshList(){const local=localObjects();$('selection').replaceChildren(...(local.length?local.map(({r,i})=>new Option(r.name,i)):[new Option('当前场景暂无对象','')]));$('selection').value=selected<0?'':selected;$('selection').disabled=!local.length;$('remove').disabled=selected<0;}
+function setAction(){const t=$('click').value;$('effectsField').hidden=t!=='introductionEffects';$('backgroundTarget').hidden=t!=='background';$('sceneTarget').hidden=t!=='scene';$('actionHint').textContent={introduction:'点击后显示 PersonCfg 中的介绍，保留当前背景和应显示的普通图，收起悬停图。',introductionEffects:'同一次点击显示介绍，并执行填写的原版效果；普通图随条件和显示效果更新。',background:'保持所属地点，切换到指定 BgCfg 的背景。',scene:'移动到指定 MapCfg 场景，父地点与子地点均可。'}[t];}
+function setTab(tab){for(const b of document.querySelectorAll('[data-scene-tab]'))b.classList.toggle('active',b.dataset.sceneTab===tab);for(const pane of document.querySelectorAll('[data-scene-pane]'))pane.classList.toggle('active',pane.dataset.scenePane===tab);$('objectControls').hidden=tab==='scene';$('save').hidden=tab==='scene';$('heading').textContent={scene:'场景与制作资料',basic:'场景点击对象',action:'对象点击行为',visual:'对象图片与可点击区域'}[tab];}
+function sceneInputsPending(){return (num('mapId')>0||num('bgId')>0||sceneKey)&&num('mapId')+':'+num('bgId')!==sceneKey;}
+function requireConfirmedScene(){if(!scene()||sceneInputsPending())throw Error('请先点击“确认场景”，再编辑此场景内容。');}
+function sourceStatus(){const sc=scene(),owner='地点 '+(sc?.mapId||'待确认')+' / 背景 '+(sc?.bgId||'待确认');$('sceneConfirmStatus').textContent=sceneInputsPending()?'ID 尚未确认；当前场景与对象保持不变。':sc?'场景已确认。':'填写地点和背景 ID 后点击确认场景。';$('deleteScene').disabled=!sc;$('sourceStatus').textContent=owner+' · '+(sc?.reference?'参考图已导入（不导出）':'参考图需自行额外导入');$('ownerStatus').textContent=owner+'；在“场景”小流程切换场景；切换不会改变已有对象的归属。';}
+function selectScene(key,fit=true){if(sceneKey!==key)$('background').value='';sceneKey=key;const sc=scene();$('sceneSelect').value=key;if(sc){$('width').value=sc.width;$('height').value=sc.height;$('bgId').value=sc.bgId;$('mapId').value=sc.mapId;}else{$('mapId').value='';$('bgId').value='';$('width').value=2560;$('height').value=1440;}sourceStatus();if(fit)fitView();else draw();}
+function listScenes(){$('sceneSelect').replaceChildren(new Option('新建场景',''),...[...scenes].map(([key,sc])=>new Option('地点 '+sc.mapId+' · 背景 '+sc.bgId,key)));$('sceneSelect').value=sceneKey;}
+function validateScene(sc){if(sc.schema!==1||!integer(sc.mapId)||!integer(sc.bgId)||!Number.isFinite(sc.width)||!Number.isFinite(sc.height)||sc.width<=0||sc.height<=0)throw Error('请手动填写有效的 MapId、BgId，以及正数场景坐标宽高。');return sc;}
+function saveScene(){requireConfirmedScene();const sc=validateScene({schema:1,mapId:num('mapId'),bgId:num('bgId'),width:num('width'),height:num('height')}),key=sc.mapId+':'+sc.bgId;scenes.set(key,{...scenes.get(key),...sc});sceneKey=key;listScenes();sourceStatus();pending();return scene();}
+function fillTransform(){const row=current(),layer=$('layer').value;if(!row)return;const v=layer==='region'?bounds(row.hitArea.points):row.visual[layer]||{position:[0,0],size:[150,150]};for(const [id,n] of [['x',v.position[0]],['y',v.position[1]],['w',v.size[0]],['h',v.size[1]]])$(id).value=Math.round((layer==='region'&&['w','h'].includes(id)?Math.max(1,n):n)*100)/100;$('pointsStatus').textContent=row.hitArea.type==='polygon'?row.hitArea.points.length+' 个顶点；圈选添加、移点拖动、删点移除。':'按普通图透明像素检测；悬停图不改变命中区。';$('alphaField').hidden=$('hit').value!=='alpha';}
+function select(i){drag=null;hovered=-1;vertex=-1;$('normal').value=$('hover').value='';selected=i;const r=current();if(!r){clearObjectFields();refreshList();draw();return;}selectionMemory.set(r.mapId+':'+r.bgId,r.key);const material=nativeCfg.PersonCfg[r.personId]||{},p=personDrafts.get(r.key)?.id===r.personId?personDrafts.get(r.key):material;
+ const values={mapId:r.mapId,bgId:r.bgId,name:r.name,personId:r.personId||'',intro:p.introduction||'',audio:p.clickAudio??42029,normalCondition:formatGroups(r.normalCondition),clickCondition:formatGroups(r.clickCondition),click:r.click.type,effects:formatGroups(r.click.effects),targetBg:r.click.type==='background'?r.click.target:'',targetMap:r.click.type==='scene'?r.click.target:'',normalPath:r.visual.normal?.image||'',hoverPath:r.visual.hover?.image||'',priority:r.priority,hit:r.hitArea.type==='alpha'?'alpha':'polygon',threshold:r.hitArea.alphaThreshold||.1};for(const [k,v]of Object.entries(values))$(k).value=v;
+ $('personPreview').textContent=p.id?JSON.stringify(p,null,2):'';const key=r.mapId+':'+r.bgId;if(scenes.has(key))selectScene(key);else{sceneKey='';$('sceneSelect').value='';$('bgId').value=r.bgId;sourceStatus();}
+ refreshList();setAction();fillTransform();draw();
+}
+function clearObjectFields(){const values={name:'',personId:'',intro:'',audio:42029,normalCondition:'',clickCondition:'',click:'introduction',effects:'',targetBg:'',targetMap:'',normalPath:'',hoverPath:'',priority:3,threshold:.1,x:0,y:0,w:150,h:150,hit:'rectangle',layer:'normal'};for(const [k,v]of Object.entries(values))$(k).value=v;$('normal').value=$('hover').value='';$('personPreview').textContent='';$('pointsStatus').textContent='当前场景暂无选中对象；请新增对象。';mode='normal';$('alphaField').hidden=true;setAction();}
+function rememberSelection(){const r=current();if(r)selectionMemory.set(r.mapId+':'+r.bgId,r.key);}
+function chooseLocalObject(){const local=localObjects(),remembered=selectionMemory.get(sceneKey),next=local.find(({r})=>r.key===remembered)||local[0];select(next?next.i:-1);}
+function switchScene(key){if(draft)save();rememberSelection();selected=-1;draft=false;drag=null;hovered=-1;vertex=-1;selectScene(key,false);chooseLocalObject();fitView();}
+function confirmScene(){const sc=validateScene({schema:1,mapId:num('mapId'),bgId:num('bgId'),width:num('width'),height:num('height')}),key=sc.mapId+':'+sc.bgId;if(draft)save();rememberSelection();if(!scenes.has(key))scenes.set(key,sc);listScenes();switchScene(key);pending();message('场景已确认：地点 '+sc.mapId+' / 背景 '+sc.bgId+'。');}
+function deleteScene(){const sc=scene();if(!sc)return;const key=sceneKey,removed=objects.filter(r=>belongsHere(r));if((removed.length||sc.reference||sc.width!==2560||sc.height!==1440)&&!confirm('删除地点 '+sc.mapId+' / 背景 '+sc.bgId+'？将一并删除 '+removed.length+' 个对象、选区、参考图及不再被其他内容使用的图片和人物行。'))return;const paths=new Set(removed.flatMap(r=>Object.values(r.visual).filter(Boolean).map(v=>v.image))),people=new Set(removed.map(r=>r.personId));for(const r of removed){personDrafts.delete(r.key);imageRequests.delete(r.key+':normal');imageRequests.delete(r.key+':hover');}objects=objects.filter(r=>!belongsHere(r));scenes.delete(key);selectionMemory.delete(key);referenceRequests.delete(key);const used=new Set(objects.flatMap(r=>Object.values(r.visual).filter(Boolean).map(v=>v.image)));for(const w of worldData.worlds)if(w.url)used.add(w.url);for(const r of database.locations)for(const v of Object.values(r.visual||{}))if(v?.image)used.add(v.image);for(const path of paths)if(!used.has(path)){files.delete(path);assets.delete(path);globalAssets().delete(path);}for(const id of people)if(!objects.some(r=>r.personId===id))delete nativeCfg.PersonCfg[id];personCfg=nativeCfg.PersonCfg;if(Object.keys(personCfg).length)files.set('Cfg/PersonCfg.json',new Blob([JSON.stringify(personRows(),null,2)],{type:'application/json'}));else files.delete('Cfg/PersonCfg.json');selected=-1;draft=false;drag=null;hovered=-1;vertex=-1;listScenes();selectScene('');clearObjectFields();refreshList();pending();draw();message('场景及其独占绑定内容已删除；共享图片和人物行仍保留。');}
+
+function dimensions(){return [num('width'),num('height')];}
+function fitView(){const [w,h]=dimensions();zoom=Math.max(.05,Math.min((stage.clientWidth-44)/w,(stage.clientHeight-44)/h));if(!Number.isFinite(zoom)||zoom<=0)zoom=.5;pan=[0,0];viewReady=true;draw();}
+function pixel(p){return [canvas.width/2+pan[0]+p[0]*zoom,canvas.height/2+pan[1]-p[1]*zoom];}
+function world(p){return [(p[0]-canvas.width/2-pan[0])/zoom,-(p[1]-canvas.height/2-pan[1])/zoom];}
+function pointer(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];}
+function zoomAt(value,p=[canvas.width/2,canvas.height/2]){const before=world(p);zoom=Math.min(16,Math.max(.05,value));pan=[p[0]-canvas.width/2-before[0]*zoom,p[1]-canvas.height/2+before[1]*zoom];viewReady=true;draw();}
+function chosenVisual(row,i){if(mode==='preview')return i===hovered&&row.visual.hover?row.visual.hover:row.visual.normal;return $('layer').value==='hover'?row.visual.hover||row.visual.normal:row.visual.normal;}
+function draw(){
+ canvas.width=Math.max(1,stage.clientWidth||1280);canvas.height=Math.max(1,stage.clientHeight||720);canvas.style.width=canvas.width+'px';canvas.style.height=canvas.height+'px';ctx.clearRect(0,0,canvas.width,canvas.height);
+ const s=scene(),bg=s?.reference,[w,h]=dimensions();if(bg){const p=pixel([-w/2,h/2]);ctx.drawImage(bg,...p,w*zoom,h*zoom);}document.getElementById('sceneEmpty').hidden=!!bg||localObjects().length>0;$('zoomValue').value=Math.round(zoom*100);document.getElementById('sceneCanvasCaption').textContent='地点 '+(s?.mapId||'待确认')+' · 背景 '+(s?.bgId||'待确认')+' · 中心原点 / Y向上';
+ const order=localObjects().sort((a,b)=>a.r.priority-b.r.priority);
+ for(const {r:stored,i} of order){let r=stored;if(i===selected){try{r=read();}catch{}}if(!belongsHere(r))continue;const v=chosenVisual(r,i),im=assets.get(v?.image);if(v&&im){const p=pixel([v.position[0]-v.size[0]/2,v.position[1]+v.size[1]/2]);ctx.drawImage(im,...p,v.size[0]*zoom,v.size[1]*zoom);}
+  if(mode==='preview')continue;
+  const pts=r.hitArea.points||[],active=i===selected;ctx.strokeStyle=active?'#00dcfa':'#88a6bf';ctx.lineWidth=active?2:1;if(pts.length){ctx.beginPath();pts.forEach((p,j)=>j?ctx.lineTo(...pixel(p)):ctx.moveTo(...pixel(p)));ctx.closePath();ctx.stroke();if(active&&['polygon','point','delete'].includes(mode))for(const p of pts){ctx.fillStyle='#fff';const q=pixel(p);ctx.fillRect(q[0]-4,q[1]-4,8,8);}}
+  if(active){const layer=$('layer').value,t=layer==='region'?bounds(pts):r.visual[layer];if(t){const p=pixel([t.position[0]-t.size[0]/2,t.position[1]+t.size[1]/2]);ctx.strokeStyle='#fff';ctx.strokeRect(...p,t.size[0]*zoom,t.size[1]*zoom);const handle=pixel([t.position[0]+t.size[0]/2,t.position[1]-t.size[1]/2]);ctx.fillStyle='#00dcfa';ctx.fillRect(handle[0]-5,handle[1]-5,10,10);}}
+ }
+}
+async function image(file){const u=URL.createObjectURL(file);try{return await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('图片无法读取'));im.src=u;});}finally{URL.revokeObjectURL(u);}}
+function uniqueFile(prefix,name){let p=prefix+name,n=1;while(files.has(p))p=prefix+n+++'-'+name;return p;}
+async function attachReference(file){const sc=saveScene(),key=sc.mapId+':'+sc.bgId,request={};referenceRequests.set(key,request);const im=await image(file),target=scenes.get(key);if(!target||referenceRequests.get(key)!==request)return;referenceRequests.delete(key);target.reference=im;if(sceneKey===key){sourceStatus();fitView();message('参考图已导入，仅在本次编辑使用；导出后重新打开时需自行额外导入。');}}
+$('background').onchange=async e=>{try{if(e.target.files[0])await attachReference(e.target.files[0]);}catch(e){message(e.message);}};
+$('saveScene').onclick=()=>{try{saveScene();if(current())save();fitView();message('场景设置已保存；无需游戏生成的坐标文件。');}catch(e){message(e.message);}};
+$('sceneSelect').onchange=()=>{const key=$('sceneSelect').value;try{switchScene(key);}catch(e){$('sceneSelect').value=sceneKey;message(e.message);}};
+for(const k of ['normal','hover'])$(k).onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(!current())throw Error('请先新增对象。');if(!/\.png$/i.test(f.name))throw Error('请使用 PNG 图片。');commitDraft();const key=current().key,requestKey=key+':'+k,request={};imageRequests.set(requestKey,request);const cached=await snapshotFile(f),im=await image(cached),target=objects.find(r=>r.key===key);if(!target||imageRequests.get(requestKey)!==request)return;imageRequests.delete(requestKey);const path=uniqueFile('Images/',f.name);files.set(path,cached);assets.set(path,im);target.visual[k]={image:path,position:target.visual[k]?.position||[0,0],size:[im.naturalWidth||im.width,im.naturalHeight||im.height]};pending();if(current()?.key===key&&belongsHere(target)){$(k+'Path').value=path;$('layer').value=k;setMode(k);fillTransform();draft=true;draw();}}catch(e){message(e.message);}};
+
+$('confirmScene').onclick=()=>{try{confirmScene();}catch(e){message(e.message);}};
+$('deleteScene').onclick=()=>{try{deleteScene();}catch(e){message(e.message);}};
+for(const id of ['mapId','bgId'])$(id).addEventListener('input',sourceStatus);
+const editFields=['name','personId','intro','audio','normalCondition','clickCondition','click','effects','targetBg','targetMap','normalPath','hoverPath','priority','threshold'];
+for(const id of editFields)$(id).addEventListener('input',()=>{changed();if(id==='click')setAction();if(id==='personId'){const p=nativeCfg.PersonCfg[num('personId')];if(p){$('intro').value=p.introduction||'';$('audio').value=p.clickAudio??0;$('personPreview').textContent=JSON.stringify(p,null,2);}}draw();});
+for(const id of ['width','height'])$(id).addEventListener('input',()=>{try{if(integer(num('mapId'))&&integer(num('bgId')))saveScene();fitView();}catch(e){message(e.message);}});
+for(const id of ['x','y','w','h'])$(id).addEventListener('input',()=>{try{if(!current())return;const layer=$('layer').value,v=current().visual[layer];if($('aspect').checked&&v&&['w','h'].includes(id)){const ratio=v.size[0]/v.size[1];$(id==='w'?'h':'w').value=id==='w'?num('w')/ratio:num('h')*ratio;}commitDraft();changed();draw();}catch(e){message(e.message);}});
+$('layer').onchange=()=>{fillTransform();setMode($('layer').value==='region'?'move':$('layer').value);};
+$('hit').onchange=()=>{try{if(!current())return;commitDraft();fillTransform();changed();draw();}catch(e){message(e.message);}};
+$('selection').onchange=()=>{try{const value=$('selection').value,next=Number(value);if(value===''||!localObjects().some(({i})=>i===next))return;if(draft)save();select(next);}catch(e){$('selection').value=selected;message(e.message);}};
+$('add').onclick=()=>{try{if(draft)save();saveScene();$('newName').value=num('mapId')+'-'+num('bgId')+'-xx';$('newError').textContent='';$('newDialog').showModal();$('newName').focus();}catch(e){message(e.message);}};
+$('newCancel').onclick=()=>$('newDialog').close();
+$('newConfirm').onclick=()=>{const name=$('newName').value.trim();if(!name){$('newError').textContent='请输入对象名字。';return;}let n=1;while(objects.some(r=>r.key==='object-'+n))n++;objects.push({key:'object-'+n,name,mapId:num('mapId'),bgId:num('bgId'),personId:0,priority:3,normalCondition:[],clickCondition:[],click:{type:'introduction'},visual:{},hitArea:{type:'polygon',points:rectangle(0,0,150,150)}});draft=false;select(objects.length-1);$('hit').value='rectangle';setTab('basic');draft=true;pending();$('newDialog').close();message('请填写 PersonCfg ID 和介绍，并单独生成原版人物表行。');};
+$('save').onclick=()=>{try{save();}catch(e){message(e.message);}};
+$('generatePerson').onclick=()=>{try{generatePerson();}catch(e){message(e.message);}};
+$('remove').onclick=()=>{const r=current();if(!r||!belongsHere(r))return;personDrafts.delete(r.key);imageRequests.delete(r.key+':normal');imageRequests.delete(r.key+':hover');objects.splice(selected,1);selected=-1;draft=false;drag=null;hovered=-1;chooseLocalObject();pending();draw();};
+$('moveObject').onclick=()=>{try{if(!current())throw Error('请先选择对象。');if(draft)save();moveKey=current().key;$('moveMapId').value=current().mapId;$('moveBgId').value=current().bgId;$('moveError').textContent='';$('moveDialog').showModal();}catch(e){message(e.message);}};
+$('moveCancel').onclick=()=>$('moveDialog').close();
+$('moveConfirm').onclick=()=>{try{const mapId=num('moveMapId'),bgId=num('moveBgId');if(!integer(mapId)||!integer(bgId))throw Error('请填写有效的地点和背景 ID。');const r=objects.find(row=>row.key===moveKey);if(!r)throw Error('该对象已不存在。');const key=mapId+':'+bgId;r.mapId=mapId;r.bgId=bgId;if(!scenes.has(key))scenes.set(key,{schema:1,mapId,bgId,width:2560,height:1440});selectionMemory.set(key,r.key);listScenes();switchScene(key);pending();$('moveDialog').close();message('对象归属已调整，图片及选区保持不变。');}catch(e){$('moveError').textContent=e.message;}};
+$('nativeSize').onclick=()=>{try{if(!current())return;commitDraft();const v=current().visual[$('layer').value],im=assets.get(v?.image);if(!im)throw Error('请先选择普通图或悬停图并导入 PNG。');v.size=[im.naturalWidth||im.width,im.naturalHeight||im.height];fillTransform();changed();draw();}catch(e){message(e.message);}};
+$('matchArea').onclick=()=>{try{if(!current())return;commitDraft();const v=current().visual[$('layer').value];if(!v)throw Error('请先选择一张已导入的图片。');current().hitArea={type:'polygon',points:rectangle(...v.position,...v.size)};$('hit').value='rectangle';$('layer').value='region';fillTransform();setMode('move');changed();draw();}catch(e){message(e.message);}};
+function setMode(next){mode=next;hovered=-1;if(next==='normal'||next==='hover')$('layer').value=next;else if(['polygon','point','delete','move'].includes(next)){$('layer').value='region';if(next==='polygon')$('hit').value='polygon';}for(const b of document.querySelectorAll('[data-scene-mode]'))b.classList.toggle('active',b.dataset.sceneMode===next);fillTransform();draw();}
+for(const b of document.querySelectorAll('[data-scene-mode]'))b.onclick=()=>{try{commitDraft();setMode(b.dataset.sceneMode);setTab('visual');}catch(e){message(e.message);}};
+for(const b of document.querySelectorAll('[data-scene-tab]'))b.onclick=()=>setTab(b.dataset.sceneTab);
+function hit(row,p){if(row.hitArea.type==='polygon')return contains(row.hitArea.points,p);const v=row.visual.normal,im=assets.get(v?.image);if(!im)return false;const u=(p[0]-v.position[0])/v.size[0]+.5,w=.5-(p[1]-v.position[1])/v.size[1];if(u<0||u>=1||w<0||w>=1)return false;const off=document.createElement('canvas');off.width=im.width;off.height=im.height;const c=off.getContext('2d');c.drawImage(im,0,0);return c.getImageData(Math.floor(u*im.width),Math.floor(w*im.height),1,1).data[3]/255>=row.hitArea.alphaThreshold;}
+function nearest(points,p){let found=-1,best=10;points.forEach((q,i)=>{const v=pixel(q),d=Math.hypot(v[0]-p[0],v[1]-p[1]);if(d<best){best=d;found=i;}});return found;}
+canvas.onpointerdown=e=>{try{
+ const screen=pointer(e);if(e.button===1||space){drag={kind:'pan',screen,pan:[...pan]};canvas.setPointerCapture(e.pointerId);e.preventDefault();return;}if(mode==='preview'||!current())return;
+ commitDraft();const p=world(screen),row=current(),points=row.hitArea.points||[];vertex=nearest(points,screen);
+ if(mode==='polygon'){row.hitArea={type:'polygon',points:[...points,p.map(v=>Math.round(v*100)/100)]};$('hit').value='polygon';fillTransform();changed();draw();return;}
+ if(mode==='delete'){if(vertex>=0){points.splice(vertex,1);fillTransform();changed();draw();}return;}
+ if(mode==='point'){if(vertex>=0)drag={kind:'point',vertex,p,row:copy(row)};}
+ else{const layer=$('layer').value,t=layer==='region'?bounds(points):row.visual[layer];if(!t)return;const handle=pixel([t.position[0]+t.size[0]/2,t.position[1]-t.size[1]/2]);if(Math.hypot(screen[0]-handle[0],screen[1]-handle[1])<12)drag={kind:'resize',layer,p,row:copy(row),transform:copy(t)};else if(layer==='region'?contains(points,p):Math.abs(p[0]-t.position[0])<=t.size[0]/2&&Math.abs(p[1]-t.position[1])<=t.size[1]/2)drag={kind:'move',layer,p,row:copy(row),transform:copy(t)};}
+ if(drag)canvas.setPointerCapture(e.pointerId);
+ }catch(e){message(e.message);}};
+canvas.onpointermove=e=>{
+ const screen=pointer(e),p=world(screen);if(drag?.kind==='pan'){pan=[drag.pan[0]+screen[0]-drag.screen[0],drag.pan[1]+screen[1]-drag.screen[1]];draw();return;}
+ if(mode==='preview'){hovered=-1;for(let i=0;i<objects.length;i++){const r=objects[i];if(!belongsHere(r))continue;if(hit(r,p)&&(hovered<0||r.priority>=objects[hovered].priority))hovered=i;}draw();return;}
+ if(!drag||selected<0||!belongsHere(current())||drag.row.key!==current().key)return;
+ const row=copy(drag.row),dx=p[0]-drag.p[0],dy=p[1]-drag.p[1];
+ if(drag.kind==='point')row.hitArea.points[drag.vertex]=p.map(v=>Math.round(v*100)/100);
+ else{const t=drag.transform,position=[...t.position],size=[...t.size];if(drag.kind==='move'){position[0]+=dx;position[1]+=dy;}else{size[0]=Math.max(1,t.size[0]+dx);size[1]=Math.max(1,t.size[1]-dy);if($('aspect').checked&&drag.layer!=='region'){const ratio=t.size[0]/t.size[1];if(Math.abs(dx/t.size[0])>=Math.abs(dy/t.size[1]))size[1]=size[0]/ratio;else size[0]=size[1]*ratio;}position[0]+=(size[0]-t.size[0])/2;position[1]-=(size[1]-t.size[1])/2;}
+  if(drag.layer==='region'){if(t.size.every(n=>n>0))row.hitArea.points=row.hitArea.points.map(q=>[position[0]+(q[0]-t.position[0])*size[0]/t.size[0],position[1]+(q[1]-t.position[1])*size[1]/t.size[1]]);}else{row.visual[drag.layer].position=position;row.visual[drag.layer].size=size;}}
+ objects[selected]=row;fillTransform();changed();draw();
+};
+canvas.onpointerup=canvas.onpointercancel=()=>drag=null;canvas.onpointerleave=()=>{hovered=-1;draw();};
+canvas.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();zoomAt(zoom*Math.exp(-e.deltaY*.002),pointer(e));},{passive:false});
+canvas.oncontextmenu=e=>e.preventDefault();
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){space=true;if(document.body.classList.contains('scene-mode'))e.preventDefault();}});document.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;drag=null;hovered=-1;});
+$('undo').onclick=()=>{if(!current()?.hitArea.points)return;current().hitArea.points.pop();fillTransform();changed();draw();};
+$('clearArea').onclick=()=>{if(!current())return;current().hitArea={type:'polygon',points:[]};$('hit').value='polygon';setMode('polygon');changed();draw();};
+$('fit').onclick=fitView;$('actual').onclick=()=>zoomAt(1);$('zoomIn').onclick=()=>zoomAt(zoom*1.2);$('zoomOut').onclick=()=>zoomAt(zoom/1.2);$('zoomValue').onchange=()=>{if(Number.isFinite(num('zoomValue')))zoomAt(num('zoomValue')/100);};
+function prepare(row){if(row.bgId==null)throw Error('这是旧版场景对象配置：请手动填写 MapId / BgId，再按四种新行为重新登记对象。旧配置仍可由 DLL 读取，但制作台不会擅自转换其事件/功能行为。');return {...row,priority:row.priority??3,normalCondition:row.normalCondition||[],clickCondition:row.clickCondition||[],click:row.click||{type:'introduction'},visual:row.visual||{}};}
+async function loadProject(named,tables,loaded){
+ const data=named.has('SceneObjectscfg.json')?JSON.parse(await named.get('SceneObjectscfg.json').text()):{schema:2,objects:[]};if(![1,2].includes(data.schema)||!Array.isArray(data.objects))throw Error('场景对象表需要 schema=2 和 objects 数组');
+ const rows=data.objects.map(prepare),old=objects,oldSelected=selected;try{objects=rows;for(let i=0;i<rows.length;i++){selected=i;validate(rows[i]);}}finally{objects=old;selected=oldSelected;}
+ const importedScenes=new Map();if(data.scenes!=null&&!Array.isArray(data.scenes))throw Error('scenes 必须为场景设置数组');for(const r of data.scenes||[]){const sc=validateScene({schema:1,mapId:r.mapId,bgId:r.bgId,width:r.width,height:r.height});importedScenes.set(sc.mapId+':'+sc.bgId,sc);}
+ for(const r of rows){const key=r.mapId+':'+r.bgId;if(!importedScenes.has(key))importedScenes.set(key,{schema:1,mapId:r.mapId,bgId:r.bgId,width:2560,height:1440});}
+ const importedAssets=new Map([...loaded].filter(([path])=>!/^Editor\//i.test(path)).map(([path,a])=>[path,a.image]));
+ objects=rows;personDrafts=new Map();files=named;for(const path of [...files.keys()])if(/^Editor\//i.test(path))files.delete(path);const clean={};for(const r of rows){const p=tables.PersonCfg[r.personId];if(p)clean[r.personId]=purePerson(p);}personCfg=tables.PersonCfg=clean;assets=importedAssets;scenes=importedScenes;selectionMemory=new Map();imageRequests.clear();referenceRequests.clear();sceneKey=rows.length?rows[0].mapId+':'+rows[0].bgId:scenes.keys().next().value||'';draft=false;selected=-1;drag=null;hovered=-1;vertex=-1;viewReady=false;listScenes();if(sceneKey)selectScene(sceneKey);else sourceStatus();clearObjectFields();refreshList();
+ message('模组内容已读取；场景对象和图片已恢复，场景参考图需自行额外导入。');
+}
+function check(){
+ personCfg=nativeCfg.PersonCfg;if(sceneInputsPending())throw Error('场景ID尚未确认，请确认或还原后再导出。');if(scene())saveScene();if(draft)save();if(!objects.length)return 0;const old=selected;
+ try{for(let i=0;i<objects.length;i++){selected=i;const r=objects[i];validate(r);if(!personCfg[r.personId])throw Error('对象 '+r.name+' 缺少 PersonCfg 注册材料，请点击生成原版行。');const edited=personDrafts.get(r.key),material=personCfg[r.personId];if(edited?.id===r.personId&&(edited.introduction!==(material.introduction||'')||edited.clickAudio!==(material.clickAudio??0)))throw Error('对象 '+r.name+' 的人物字段尚未生成，请点击「生成 / 更新原版 PersonCfg 行」。');for(const v of Object.values(r.visual)){if(!files.has(v.image)){const a=globalAssets().get(v.image);if(a?.file){files.set(v.image,a.file);assets.set(v.image,a.image);}else throw Error('对象 '+r.name+' 缺少 PNG：'+v.image);}}}}finally{selected=old;}
+ return objects.length;
+}
+function open(map){personCfg=nativeCfg.PersonCfg;files=retainedFiles;if(map>0){if(draft)save();const row=objects.find(r=>r.mapId===map),key=row?row.mapId+':'+row.bgId:[...scenes].find(([k,sc])=>sc.mapId===map)?.[0]||'';switchScene(key);if(!key){$('mapId').value=map;sourceStatus();}}else if(!draft){if(current()&&belongsHere(current()))select(selected);else chooseLocalObject();}if(!viewReady)fitView();else draw();}
+new ResizeObserver(()=>{if(document.body.classList.contains('scene-mode')){if(!viewReady)fitView();else draw();}}).observe(stage);
+return {recoveryData:()=>({personDrafts:[...personDrafts],selectedKey:current()?.key}),decodedImage:path=>assets.get(path),loadProject,check,open,draw,save,personRows,hasDraft:()=>draft,count:()=>objects.length,imagePaths:()=>[...new Set(objects.flatMap(r=>Object.values(r.visual).map(v=>v.image)))],data:()=>({schema:2,scenes:[...scenes.values()].map(({mapId,bgId,width,height})=>({mapId,bgId,width,height})),objects:copy(objects)})};
+
+})();
+
+refreshWorlds();worldForm();loadRow(null);showCfg();selectPanel(location.hash==='#scene'?'scene':'import');message('导入已有项目，或从左侧选择要制作的内容。');
+
+
+function updateStudioStatus(){const pending=dirty||worldDirty||cfgDirty||projectPending||sceneEditor.hasDraft(),s=$('saveState');s.textContent=pending?'有修改 · 请导出保存':'项目就绪';s.classList.toggle('pending',pending);const worlds=worldData.worlds.filter(w=>w.id!==0).length,locations=database.locations.length,objects=sceneEditor.count(),c=$('projectCounts');if(c)c.textContent=worlds+' 张新增大地图 · '+locations+' 个标点 · '+objects+' 个场景对象';$('summaryWorlds').textContent=worlds;$('summaryLocations').textContent=locations;$('summaryObjects').textContent=objects;}
+function updateWorkspace(name){const scene=name==='scene';document.body.classList.toggle('scene-mode',scene);document.body.classList.toggle('overview-mode',['import','export'].includes(name));$('sceneToolbar').hidden=!scene;$('sceneViewTools').hidden=!scene;$('sceneTabs').hidden=!scene;$('locationTabs').hidden=!['entry','cfg','region','images','label'].includes(name);const descriptions={import:['项目与资料','选择制作内容，或继续已有 MapExtend 项目。'],world:['大地图预览','底图与切换入口属于当前选择的大地图。'],entry:['地点与标点','登记父地点，再编辑可点击区域、图片与标签。'],cfg:['子地点与原版表','生成注册材料；高级字段可在 JSON 中调整。'],region:['编辑可点击区域','圈选、移点或使用 PNG 透明度定义命中。'],images:['编辑普通与悬停图片','图片位置与命中区域分别设置。'],label:['编辑地点标签','标签样式取自游戏导出的 MapLayout。'],scene:['场景对象预览','手动填写场景 ID、导入参考图，再编辑对象、点击行为、图片与区域。'],export:['内容包检查','大地图、地点、场景对象一起检查并导出。']};[$('workspaceTitle').textContent,$('workspaceHint').textContent]=descriptions[name]||descriptions.entry;if(scene)sceneEditor.open();else draw();if(name==='export')$('summaryChecks').textContent=$('packageStatus').textContent;updateStudioStatus();}
+$('saveCurrent').onclick=()=>{try{if(studioPanel==='scene')sceneEditor.save();else if(studioPanel==='world'){saveWorldSettings();message('大地图设置已保存。');}else if(studioPanel==='cfg'){if(cfgDirty)applyCfg();message('原版表材料已保存。');}else if(studioPanel==='import'||studioPanel==='export'){ensureExport();message('项目检查通过；点击导出 ZIP 保存到磁盘。');}else save();updateStudioStatus();}catch(e){message(e.message);}};
+for(const b of document.querySelectorAll('[data-start]'))b.onclick=()=>selectPanel(b.dataset.start);
+$('sceneForLocation').onclick=()=>{try{if(dirty)save();selectPanel('scene');sceneEditor.open(n('mapId'));}catch(e){message(e.message);}};
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();$('saveCurrent').click();}});
+document.addEventListener('input',()=>updateStudioStatus());
+document.addEventListener('click',()=>queueMicrotask(()=>updateStudioStatus()));
+window.addEventListener('hashchange',()=>{if(location.hash==='#scene')selectPanel('scene');});
+
+</script>
+</html>

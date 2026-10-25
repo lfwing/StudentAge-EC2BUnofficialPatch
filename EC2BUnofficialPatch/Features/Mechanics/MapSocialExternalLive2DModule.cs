@@ -186,9 +186,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
             foreach (ContentRoot root in roots?.Roots ?? Array.Empty<ContentRoot>())
             {
-                sources.Add(new ExternalLive2DConfigSource(
-                    root.Id,
-                    Path.Combine(root.Path, "EC2BUnofficialPatch", FeatureDirectory, ConfigFileName)));
+                foreach (string file in FeatureContentDiscovery.ConfigFiles(root.Path, FeatureDirectory, ConfigFileName))
+                    sources.Add(new ExternalLive2DConfigSource(root.Id, file));
             }
 
             int existingFiles = 0;

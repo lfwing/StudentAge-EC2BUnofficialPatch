@@ -6,6 +6,12 @@ namespace EC2BUnofficialPatch.Core
 {
     internal static class TemplateMaintenance
     {
+        private const string LayoutReadme =
+            "\r\n统一安装规则：只需复制本次使用的功能文件夹，不必复制整套模板。\r\n" +
+            "推荐 Mod根目录/EC2BUnofficialPatch/功能文件夹，其次 Mod根目录/功能文件夹，\r\n" +
+            "也支持 Mod根目录/其他名称的容器/功能文件夹（可多层）。\r\n" +
+            "移动整个功能文件夹并保留其内部结构，资源相对路径仍以配置所在目录为准。\r\n" +
+            "模板生成位置不变；原版 Cfgs/zh-cn、Audios、Textures 仍遵循原版 Mod 注册及路径规则。\r\n";
         private const string ScreenPaperReadme =
             "5001屏幕纸条扩展模板\r\n\r\n" +
             "纸条文字、署名、缩放和对齐仍只在原版 PaperCfg.json 注册；插件不修改原版 CFG 结构。\r\n" +
@@ -16,13 +22,8 @@ namespace EC2BUnofficialPatch.Core
             "实际使用时，请把 ScreenPaper 文件夹放到 Steam Workshop Mod 根目录，\r\n" +
             "或放到 Mod 根目录/EC2BUnofficialPatch 下。本模板目录不会被插件读取。\r\n";
 
-        private const string RoleAvailabilityReadme =
-            "角色可用性外置配置\r\n\r\n" +
-            "RoleAvailabilityCfg.json 只控制已登记角色何时进入社交系统，以及是否参加考试；不改变角色是否存在。\r\n" +
-            "cond 完全使用原版 Condition 数组，并由 CommonEvtMgr.IsMatchCondition 执行。\r\n" +
-            "takeExam=false 时不要求提供考试数据；takeExam=true 时必须具有完整 Person、PersonGrow、ExamRank 与 Classmate 数据。\r\n" +
-            "重复 personId、非法 Condition、缺失字段或不完整考试数据都会记录日志并安全排除。\r\n\r\n" +
-            "Workshop Mod 中请放到：Mod根目录/EC2BUnofficialPatch/RoleAvailabilityCfg.json。\r\n";
+        private const string RoleAvailabilityReadmeResource =
+            "EC2BUnofficialPatch.Embedded.RoleAvailability.Readme.txt";
 
         private const string RoleAvailabilityJson =
             "{\r\n" +
@@ -112,7 +113,7 @@ namespace EC2BUnofficialPatch.Core
             "4016 漫画显示扩展模板\r\n\r\n" +
             "本说明位于 comic 文件夹中。实际 Mod 中，comic 文件夹可以放在 Mod 内任意位置，\r\n" +
             "例如 EC2BUnofficialPatch/comic、Textures/comic；插件会递归嗅探文件夹名恰好为 comic 的目录。\r\n" +
-            "插件只读取 comic 文件夹内部内容。comic 下必须再建立漫画子文件夹。\r\n" +
+            "插件只读取 comic 下漫画子文件夹中的 PNG/JPG/JPEG。comic 根目录文件、说明文件及其他非图片文件均忽略。\r\n" +
             "图片文件名必须严格为 {图号}-{分镜号}.png/.jpg/.jpeg，例如 1-1.png。\r\n" +
             "每个图号实际存在的连续分镜数必须与 CGCfg.json 的 comic 数组完全一致。\r\n" +
             "建议 urls 使用 Mods/<packageId>/.../comic/<漫画子文件夹>；packageId 是 ModMetadata.packageId，不是 Workshop 数字 ID。\r\n" +
@@ -138,10 +139,11 @@ namespace EC2BUnofficialPatch.Core
             "资源目录支持：\r\n" +
             "1. Steam Workshop Mod 根目录/LoveDraw\r\n" +
             "2. Mod 根目录/EC2BUnofficialPatch/LoveDraw\r\n" +
-            "3. BepInEx/plugins/EC2BUnofficialPatch/LoveDraw（本目录）\r\n\r\n" +
+            "3. Mod 根目录/其他名称的容器/LoveDraw\r\n" +
+            "BepInEx/plugins/EC2BUnofficialPatch/LoveDraw 仅为作者模板，不参与 Workshop 扫描。\r\n\r\n" +
             "没有命中外置文件时会保留原版 Addressables 加载方式，因此官方 cfg 无需修改。\r\n\r\n" +
             "可选 CFG 双版本：保留 Mod/Cfgs/zh-cn/LoveDrawCfg.json 作为无插件兼容版；\r\n" +
-            "若同一 Mod 的 EC2BUnofficialPatch/LoveDraw/LoveDrawCfg.json 存在，插件会仅在运行时改读该文件。\r\n" +
+            "若同一 Mod 的任意受支持布局中存在 LoveDraw/LoveDrawCfg.json，插件会仅在运行时改读该文件。\r\n" +
             "不会覆盖磁盘上的兼容版文件，也绝不会从其他 Workshop Mod 借用 CFG。\r\n";
 
         private const string MinigameReadme =
@@ -156,13 +158,15 @@ namespace EC2BUnofficialPatch.Core
             "- alias：玩法别名，targetId 指向原版玩法，例如 110 -> 5。\r\n" +
             "- dialogue：纯对话，仅可作为后备；startTalk 完成后自动按成功结算。\r\n" +
             "- external：外部 DLL；dll 为相对本 JSON 的路径，class 必须实现 ICustomMinigame。\r\n\r\n" +
+            "dll 可以使用 .. 引用同一 Mod 内的兄弟目录，例如 ../../plugins/CampusMinigames.dll；\r\n" +
+            "以本 JSON 所在目录解析并规范化后，目标必须仍在所属 Mod 内，不接受绝对路径。\r\n\r\n" +
             "参数型玩法（如 6 话术、21 战斗）必须在 Talk/Option 中内嵌打开。\r\n" +
             "特殊/情侣玩法用于社交阶段时，若没有更明确结果，正常关闭将按成功推进。\r\n" +
             "插件会递归扫描 workshop/content/1991040 的所有 Mod 目录内同名文件。\r\n" +
             "外部 DLL 每次打开都会创建新实例，并可读取 context.LaunchParameters。\r\n" +
             "结束时调用 context.Complete(win, selectId)。\r\n\r\n" +
             "可选 CFG 双版本：保留 Mod/Cfgs/zh-cn/MinigameActionCfg.json 作为无插件兼容版；\r\n" +
-            "若同一 Mod 的 EC2BUnofficialPatch/Minigame/MinigameActionCfg.json 存在，插件会仅在运行时改读该文件。\r\n" +
+            "若同一 Mod 的任意受支持布局中存在 Minigame/MinigameActionCfg.json，插件会仅在运行时改读该文件。\r\n" +
             "不会覆盖磁盘上的兼容版文件，也不会跨 Mod 查找替代 CFG。\r\n";
 
         private const string ScreenLyrcisJson =
@@ -237,6 +241,7 @@ namespace EC2BUnofficialPatch.Core
                 CustomBadmintonReadme,
                 "custombadmintoncfg.json",
                 CustomBadmintonJson);
+            Features.Mechanics.MapExtend.MapExtendAuthorTemplates.Ensure();
         }
 
         private static void WriteRoleAvailabilityTemplate(string templateRoot)
@@ -244,7 +249,7 @@ namespace EC2BUnofficialPatch.Core
             try
             {
                 Directory.CreateDirectory(templateRoot);
-                WriteTextFile(Path.Combine(templateRoot, "RoleAvailability说明.txt"), RoleAvailabilityReadme);
+                WriteTextFile(Path.Combine(templateRoot, "RoleAvailability说明.txt"), ReadEmbeddedText(RoleAvailabilityReadmeResource));
                 string jsonPath = Path.Combine(templateRoot, "RoleAvailabilityCfg.json");
                 if (!File.Exists(jsonPath))
                     WriteTextFile(jsonPath, RoleAvailabilityJson);
@@ -272,7 +277,7 @@ namespace EC2BUnofficialPatch.Core
                     else
                         File.Delete(legacyReadme);
                 }
-                WriteTextFile(readme, ComicReadme);
+                WriteTextFile(readme, ComicReadme + LayoutReadme);
             }
             catch (System.Exception exception)
             {
@@ -293,7 +298,7 @@ namespace EC2BUnofficialPatch.Core
                 Directory.CreateDirectory(directory);
                 UTF8Encoding encoding = new UTF8Encoding(false);
                 string readmePath = Path.Combine(directory, "readme.txt");
-                File.WriteAllText(readmePath, readme, encoding);
+                File.WriteAllText(readmePath, readme + LayoutReadme, encoding);
 
                 if (!string.IsNullOrEmpty(jsonFileName) && json != null)
                 {

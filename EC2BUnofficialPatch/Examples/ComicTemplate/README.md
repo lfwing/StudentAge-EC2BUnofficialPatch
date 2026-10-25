@@ -8,6 +8,8 @@ EC2BUnofficialPatch/comic/cg_01/
 
 图片严格使用 `{图号}-{分镜号}.png/.jpg/.jpeg`。
 
+只索引 `comic` 下漫画子文件夹中的图片；`comic` 根目录文件、`comic说明.txt` 和其他非图片文件均忽略。子文件夹内漫画图片的分镜命名、数量和资源冲突仍会校验。
+
 CGCfg 推荐逻辑路径：
 
 ```text

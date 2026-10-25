@@ -9,7 +9,7 @@ using HarmonyLib;
 using Sdk;
 using View.Main;
 
-namespace EC2BUnofficialPatch.Features.Optimization
+namespace EC2BUnofficialPatch.Features.Mechanics.MapExtend
 {
     internal sealed class MapFloorCompatibilityModule : IPluginModule
     {
@@ -18,28 +18,31 @@ namespace EC2BUnofficialPatch.Features.Optimization
         internal MapFloorCompatibilityModule()
         {
             var items = new List<ModuleLogItem>();
-            if (PluginConfig.MapFloorCompatibility?.Value == true)
-                items.Add(new ModuleLogItem("优化", "多mod地图子地点兼容"));
+            if (PluginConfig.MapExtend?.Value == true)
+                items.Add(new ModuleLogItem("机制", "地图扩展与优化"));
             if (PluginConfig.MapFloorHierarchyExtension?.Value == true)
-                items.Add(new ModuleLogItem("优化", "地图子地点扩展"));
+                items.Add(new ModuleLogItem("机制", "地图子地点扩展"));
             _items = items;
         }
 
-        public string Key => "optimization.map-floor-compatibility";
+        public string Key => "mechanics.map-extend.floors";
         public IReadOnlyList<ModuleLogItem> LogItems => _items;
 
         public void Load(Harmony harmony, PluginServices services)
         {
+            if (MapExtendCompatibility.FloorProvider != null)
+            {
+                PatchLog.Registration("地图子地点已由另一发行版加载，复用现有提供者。");
+                return;
+            }
             MethodInfo merge = AccessTools.Method(typeof(ModCtrl), "MergeCfgsAsync")
                 ?? throw new MissingMethodException(typeof(ModCtrl).FullName, "MergeCfgsAsync");
             harmony.Patch(
                 merge,
-                prefix: new HarmonyMethod(
-                    typeof(GameModCfgHotReload),
-                    nameof(GameModCfgHotReload.CaptureBaseBeforeModMerge)),
                 postfix: new HarmonyMethod(
                     typeof(MapFloorCompatibilityModule),
                     nameof(MergePostfix)));
+            MapExtendCompatibility.EnsureCfgCapture(harmony);
 
             MethodInfo refreshFloor = AccessTools.Method(typeof(MapSceneView), "RefreshFloor")
                 ?? throw new MissingMethodException(typeof(MapSceneView).FullName, "RefreshFloor");
@@ -51,8 +54,8 @@ namespace EC2BUnofficialPatch.Features.Optimization
                     nameof(MapFloorViewPatches.RefreshFloorPrefix)));
 
             PatchLog.Registration(
-                "优化模块-地图子地点兼容已启用：" +
-                $"多mod合并={PluginConfig.MapFloorCompatibility?.Value == true}, " +
+                "机制模块-地图扩展与优化已启用：" +
+                $"多mod合并={PluginConfig.MapExtend?.Value == true}, " +
                 $"分层扩展={PluginConfig.MapFloorHierarchyExtension?.Value == true}");
         }
 
@@ -66,12 +69,12 @@ namespace EC2BUnofficialPatch.Features.Optimization
             await mergeTask;
             try
             {
-                GameModCfgHotReload.RebuildMapFloors();
+                MapExtendCompatibility.RebuildCapturedFloors();
             }
             catch (Exception exception)
             {
                 PatchLog.Error(
-                    "优化模块-地图子地点兼容注册失败，已保留重建前地图数据：" +
+                    "机制模块-地图扩展与优化注册失败，已保留重建前地图数据：" +
                     ModuleHost.GetReason(exception));
             }
         }
@@ -110,7 +113,7 @@ namespace EC2BUnofficialPatch.Features.Optimization
             catch (Exception exception)
             {
                 PatchLog.Error(
-                    "优化模块-地图子地点兼容刷新楼层栏失败，回退原版逻辑：" +
+                    "机制模块-地图扩展与优化刷新楼层栏失败，回退原版逻辑：" +
                     ModuleHost.GetReason(exception));
                 return true;
             }

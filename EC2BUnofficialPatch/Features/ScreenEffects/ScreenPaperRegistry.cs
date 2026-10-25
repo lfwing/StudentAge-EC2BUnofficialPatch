@@ -239,15 +239,9 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (ContentRoot root in roots ?? Array.Empty<ContentRoot>())
             {
-                string[] directories =
+                foreach (string directory in FeatureContentDiscovery.Directories(root.Path, "ScreenPaper"))
                 {
-                    Path.Combine(root.Path, "EC2BUnofficialPatch", "ScreenPaper"),
-                    Path.Combine(root.Path, "ScreenPaper")
-                };
-
-                foreach (string directory in directories)
-                {
-                    string file = Path.Combine(directory, "Custompaper.json");
+                    string file = FeatureContentDiscovery.ChildFile(directory, "Custompaper.json");
                     if (File.Exists(file))
                     {
                         string fullPath = Path.GetFullPath(file);

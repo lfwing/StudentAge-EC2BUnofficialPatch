@@ -142,14 +142,9 @@ namespace EC2BUnofficialPatch.Features.ScreenEffects
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (ContentRoot root in roots ?? Array.Empty<ContentRoot>())
             {
-                string[] directories =
+                foreach (string directory in FeatureContentDiscovery.Directories(root.Path, FolderName))
                 {
-                    Path.Combine(root.Path, "EC2BUnofficialPatch", FolderName),
-                    Path.Combine(root.Path, FolderName)
-                };
-                foreach (string directory in directories)
-                {
-                    string file = Path.Combine(directory, FileName);
+                    string file = FeatureContentDiscovery.ChildFile(directory, FileName);
                     if (!File.Exists(file)) continue;
                     string fullPath = Path.GetFullPath(file);
                     if (seen.Add(fullPath)) yield return fullPath;

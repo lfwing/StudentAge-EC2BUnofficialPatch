@@ -61,8 +61,7 @@ namespace LFBetterAudio.Config
                          .Where(p => p != null)
                          .OrderBy(p => p.IsWorkshopPackage ? 0 : 1)
                          .ThenBy(p => ParseWorkshopId(p.WorkshopItemId))
-                         .ThenBy(p => p.SourceLabel ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                         .ThenBy(p => p.ConfigPath ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                         .ThenBy(p => p.SourceLabel ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 if (!TryMergePackage(package, entries))
                 {
@@ -112,18 +111,12 @@ namespace LFBetterAudio.Config
                 return null;
             }
 
-            string path = relativeOrAbsolutePath.Trim();
-            if (Path.IsPathRooted(path))
-            {
-                return Path.GetFullPath(path);
-            }
-
             if (string.IsNullOrWhiteSpace(baseDirectory))
             {
                 throw new ArgumentException("解析相对路径时 baseDirectory 不能为空。", nameof(baseDirectory));
             }
 
-            return Path.GetFullPath(Path.Combine(baseDirectory, path));
+            return EC2BUnofficialPatch.Workshop.FeatureContentDiscovery.RelativeFile(baseDirectory, relativeOrAbsolutePath);
         }
 
         private static bool TryMergePackage(
@@ -183,6 +176,13 @@ namespace LFBetterAudio.Config
                     SourceConfigPath = Path.GetFullPath(package.ConfigPath),
                     SourceLabel = package.SourceLabel
                 };
+
+                if ((!string.IsNullOrWhiteSpace(entry.AudioPath) && ResolvePath(entry, entry.AudioPath) == null) ||
+                    (!string.IsNullOrWhiteSpace(entry.TimelinePath) && ResolvePath(entry, entry.TimelinePath) == null))
+                {
+                    Plugin.ReportStartupIssue($"音频 ID={entry.Id} 的 audioPath/timelinePath 必须是 BetterAudio 目录内的相对路径；来源={entry.SourceLabel}");
+                    continue;
+                }
 
                 if (entries.TryGetValue(entry.Id, out BetterAudioEntry existing))
                 {

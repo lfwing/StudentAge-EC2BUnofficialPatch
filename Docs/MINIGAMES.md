@@ -1,4 +1,6 @@
-# 外部小游戏接入契约 1.0.23
+# 外部小游戏接入契约（UP 1.0.23.1）
+
+当前接口与阶段协议沿用既有实现；发布版本变化不改变下述程序集身份。
 
 接口命名空间保持 EC2BUnofficialPatch.Features.Mechanics.Minigames，程序集身份仍为 EC2BUnofficialPatch, Version=1.0.9.0。外部类实现 ICustomMinigame.Open(CustomMinigameContext)，提供公开无参构造。
 
@@ -8,7 +10,7 @@
 {"minigames":[{"id":9102,"type":"external","dll":"StudentAge.CampusMinigames.dll","class":"实际入口全名","parameters":{"deferStart":"true"}}]}
 ```
 
-示例中的 DLL/class 必须替换成实际产物。可位于 Mod 的 EC2BUnofficialPatch 目录，也可位于 BepInEx/plugins 下已安装的插件目录；dll 相对 JSON 文件解析。UP 不自动把任意本地 Cfgs 文件写入原版配置：小游戏插件负责只补缺失元数据，或由原版 Mod 提供 MinigameCfg/MinigameActionCfg/PersonGrowCfg。
+示例中的 DLL/class 必须替换成实际产物。推荐配置位于 `<Mod>/EC2BUnofficialPatch/Minigame/`，也支持Mod根目录中的Minigame或其他容器。dll相对配置JSON解析，最终路径必须仍在所属Mod内；允许用 `../../plugins/StudentAge.CampusMinigames.dll` 指向同一Mod的兄弟目录，拒绝绝对路径和越出Mod的路径。单独放入全局BepInEx/plugins不会被当作该Mod的注册配置读取。UP 不自动把任意本地 Cfgs 文件写入原版配置：小游戏插件负责只补缺失元数据，或由原版 Mod 提供 MinigameCfg/MinigameActionCfg/PersonGrowCfg。
 
 阶段 ID 是逻辑小游戏 ID*100+阶段，NPC 的 PersonGrowCfg.minigame 选择玩法。NPC 存档使用独立键，两个 NPC 玩同一种游戏也分别推进。游戏只读取 Context 的 NpcId、GameId、ActionCfgId 等上下文，不另存阶段。
 

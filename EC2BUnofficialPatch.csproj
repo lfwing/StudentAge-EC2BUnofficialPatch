@@ -3,9 +3,9 @@
     <TargetFramework>net472</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AssemblyName>EC2BUnofficialPatch</AssemblyName>
-    <Version>1.0.23</Version>
+    <Version>1.0.23.1</Version>
     <AssemblyVersion>1.0.9.0</AssemblyVersion>
-    <FileVersion>1.0.23.0</FileVersion>
+    <FileVersion>1.0.23.1</FileVersion>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <Deterministic>true</Deterministic>
@@ -17,6 +17,10 @@
   <ItemGroup>
     <Compile Include="EC2BUnofficialPatch/**/*.cs" Exclude="**/bin/**/*.cs;**/obj/**/*.cs;EC2BUnofficialPatch/UpdaterHelper/**/*.cs;EC2BUnofficialPatch/Examples/**/*.cs" />
     <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/ExternalLive2D/readme.txt" LogicalName="EC2BUnofficialPatch.Embedded.ExternalLive2D.Readme.txt" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/RoleAvailability说明.txt" LogicalName="EC2BUnofficialPatch.Embedded.RoleAvailability.Readme.txt" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/MapExtend/readme.txt" LogicalName="EC2BUnofficialPatch.Embedded.MapExtend.Readme.txt" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/MapExtend/map-extend.html" LogicalName="EC2BUnofficialPatch.Embedded.MapExtend.Tool.html" />
+    <EmbeddedResource Include="EC2BUnofficialPatch/ModAuthorTemplate/MapExtend/scene-objects.html" LogicalName="EC2BUnofficialPatch.Embedded.MapExtend.SceneTool.html" />
     <Reference Include="0Harmony">
       <HintPath>$(BepInExCoreDir)/0Harmony.dll</HintPath>
       <Private>false</Private>
@@ -75,6 +79,10 @@
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(ManagedDir)/UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(ManagedDir)/UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">

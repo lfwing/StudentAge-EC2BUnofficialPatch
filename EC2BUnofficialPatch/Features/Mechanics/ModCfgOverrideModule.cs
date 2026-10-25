@@ -132,13 +132,9 @@ namespace EC2BUnofficialPatch.Features.Mechanics
             if (!TryGetWorkshopModRoot(originalCfgPath, out string modRoot))
                 return false;
 
-            string pluginDirectory = ExternalResourceResolver.FindChildDirectory(modRoot, "EC2BUnofficialPatch");
-            if (pluginDirectory == null)
-                return false;
-
             CfgOverlayDecision loveDraw = TryCreateDecision(
                 originalCfgPath,
-                pluginDirectory,
+                modRoot,
                 PluginConfig.LoveDrawExternalResources != null && PluginConfig.LoveDrawExternalResources.Value,
                 "情侣画修复",
                 "LoveDraw",
@@ -148,7 +144,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
             CfgOverlayDecision minigame = TryCreateDecision(
                 originalCfgPath,
-                pluginDirectory,
+                modRoot,
                 PluginConfig.MinigameMechanics != null && PluginConfig.MinigameMechanics.Value,
                 "社交小游戏修复",
                 "Minigame",
@@ -197,7 +193,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
         private static CfgOverlayDecision TryCreateDecision(
             string originalCfgPath,
-            string pluginDirectory,
+            string modRoot,
             bool featureEnabled,
             string featureName,
             string featureDirectoryName,
@@ -206,13 +202,12 @@ namespace EC2BUnofficialPatch.Features.Mechanics
             if (!featureEnabled)
                 return null;
 
-            string featureDirectory = ExternalResourceResolver.FindChildDirectory(pluginDirectory, featureDirectoryName);
-            if (featureDirectory == null)
-                return null;
-
-            string enhancedFile = ExternalResourceResolver.FindChildFile(featureDirectory, canonicalFileName);
+            string[] candidates = FeatureContentDiscovery.ConfigFiles(modRoot, featureDirectoryName, canonicalFileName).ToArray();
+            string enhancedFile = candidates.FirstOrDefault();
             if (enhancedFile == null)
                 return null;
+            if (candidates.Length > 1)
+                PatchLog.Warning($"机制模块-同 Mod 存在多份 {canonicalFileName}，按目录优先顺序使用 {enhancedFile}；忽略：{string.Join(", ", candidates.Skip(1))}");
 
             bool originalExists = Directory.Exists(originalCfgPath) &&
                                   Directory.EnumerateFiles(originalCfgPath, "*", SearchOption.TopDirectoryOnly)

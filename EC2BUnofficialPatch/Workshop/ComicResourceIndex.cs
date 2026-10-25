@@ -47,10 +47,9 @@ namespace EC2BUnofficialPatch.Workshop
             foreach (ContentRoot root in catalog.Roots)
             {
                 RootComicIndex index = new RootComicIndex(root);
-                foreach (string comicDirectory in ExternalResourceResolver.FindDirectoriesNamed(
+                foreach (string comicDirectory in FeatureContentDiscovery.Directories(
                     root.Path,
                     "comic",
-                    true,
                     (path, exception) => PatchLog.Warning($"屏幕特效模块-4016漫画目录嗅探跳过不可访问目录：path={path}, reason={exception.Message}")))
                 {
                     index.DirectoryCount++;
@@ -318,12 +317,12 @@ namespace EC2BUnofficialPatch.Workshop
 
                 if (!ExternalResourceResolver.HasSupportedExtension(file, ExternalResourceResolver.ImageExtensions))
                 {
-                    issues.Add(new ComicScanIssue(file, $"comic 文件夹内只读取 PNG/JPG/JPEG；当前扩展名={extension}"));
+                    // Readmes and other authoring files are not comic resources.
                     continue;
                 }
                 if (segments.Length < 2)
                 {
-                    issues.Add(new ComicScanIssue(file, "漫画图片必须位于 comic/<漫画子文件夹>/ 下，不能直接放在 comic 根目录"));
+                    // Only images inside a manga subdirectory participate in the index.
                     continue;
                 }
                 if (!TryParseFrameName(segments[segments.Length - 1], out _, out _))

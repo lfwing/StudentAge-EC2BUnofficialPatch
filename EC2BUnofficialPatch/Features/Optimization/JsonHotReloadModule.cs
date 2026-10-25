@@ -6,6 +6,7 @@ using EC2BUnofficialPatch.Core;
 using EC2BUnofficialPatch.Services;
 using HarmonyLib;
 using UnityEngine.InputSystem;
+using EC2BUnofficialPatch.Features.Mechanics.MapExtend;
 
 namespace EC2BUnofficialPatch.Features.Optimization
 {
@@ -23,11 +24,7 @@ namespace EC2BUnofficialPatch.Features.Optimization
         {
             MethodInfo merge = AccessTools.Method(typeof(ModCtrl), "MergeCfgsAsync")
                 ?? throw new MissingMethodException(typeof(ModCtrl).FullName, "MergeCfgsAsync");
-            harmony.Patch(
-                merge,
-                prefix: new HarmonyMethod(
-                    typeof(GameModCfgHotReload),
-                    nameof(GameModCfgHotReload.CaptureBaseBeforeModMerge)));
+            MapExtendCompatibility.EnsureCfgCapture(harmony);
 
             JsonHotReloadRuntime.Initialize();
             PatchLog.Registration(
@@ -47,7 +44,7 @@ namespace EC2BUnofficialPatch.Features.Optimization
             JsonHotReloadApi.EnsureBuiltIn(
                 "up.game-mod-cfg",
                 "普通 Mod CFG",
-                GameModCfgHotReload.Reload,
+                MapExtendCompatibility.ReloadCapturedCfg,
                 100);
             JsonHotReloadApi.EnsureBuiltIn(
                 "up.extension-json",

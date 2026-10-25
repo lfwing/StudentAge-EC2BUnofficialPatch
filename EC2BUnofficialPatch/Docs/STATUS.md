@@ -1,51 +1,123 @@
-# 当前状态：UP 1.0.23 开发副本
+# 当前状态：UP 1.0.23.1 开发副本
 
-2026-09-28 本轮改动的本地发布候选文件已生成：`dist/release/EC2BUnofficialPatch.dll` 为 586240 字节，SHA-256 `601086a74d41cb6f6700ba7da0a30adb9a93bd409bb1da9056f92f0bd37c1d91`；`dist/release/update.json`、`release-manifests/update.json` 与根目录 `update.json` 内容一致，版本 1.0.23、游戏版本 1.94，大小及哈希均匹配 DLL。构建为 0 错误、1 个既有未使用字段警告。仅制作本地候选，尚未发布或安装到游戏。
+## 当前使用文档补全（2026-10-26）
 
-2026-09-28 本轮按限定范围实现三项改动，尚待游戏内复测。CG：`CGOptimization` 接管图鉴格子的缩略图请求，格子每次重绑递增代次并清除旧图；回调仅在格子仍显示同一 CG 时写入贴图，成功、空结果、路径错误和 20 秒超时都会结束当前转圈，翻页重试会发起新请求。此处理仅限图鉴缩略图，未修改全局 `UISprite` 或 `ResInfo` 行为；若原版 `ResInfo.GetSpriteAsync` 内部异常令共享请求永久停在 `isLoading`，需要后续实机日志再单独定位。配置键迁至 `[优化] CG播放与图鉴优化`，沿用旧键的值，说明同步加入分页缩略图修复。
+- 两份README按当前实现统一正文，纠正模块README的游戏1.93和旧安装说法、旧配置分组及角色仅由cond控制的说明。完整默认cfg、全部新效果/前提入口、无冷却、空间可见性、四候选/长文本、F9与控制台历史均提供说明和导航。
+- 新增CHANGELOG_1.0.23.1，更新文档索引、合并迁移、自动更新步骤与小游戏DLL路径约束。1.0.23及其他旧日志保留历史版本号并标明现行入口；不把尚未实机验证的画面/输入/磁盘存档写成已验收。
+- RoleAvailability说明标明适用版本；MapExtend的两份作者说明统一现行内容，清理content-readme中重复的旧段落，补齐F9按提供者跳过规则。内嵌模板变动后重建同版DLL及三处update.json，不能继续使用文档变动前的摘要。
 
-2026-09-28 羽毛球：新增默认开启的 `[机制] 羽毛球模型贴图新增` 开关；对手 `custombadmintoncfg.json` 可用 `outfits` 数组逐套登记 `url/prefab`，同一 ID 跨 Mod 追加，重复 url 仅保留先加载的有效项，资源无效则逐套跳过。每次打开小游戏时，原版 `BadmintonModelCfg` 中存在该 ID 则将原版球服作为一项，连同全部有效外置球服等概率随机选择；新 Mod ID 只在有效外置项间选择。旧对手 `url` 数组仍只取首项作为一套；`id=0` 玩家保持既有配置和男女选择逻辑，不随机换装。实例加载失败沿用模板回退路径。作者模板 readme/JSON、数据格式和 README 已同步。
+## VS工程同步与版本修订（2026-10-26）
 
-2026-09-28 作者模板：运行时生成的 `comic说明.txt` 改放 `comic/comic说明.txt`；启动时迁移旧根目录说明文件，模板说明文字也改为与新位置一致。构建使用游戏目录 `G:\SteamLibrary\steamapps\common\StudentAge` 的 `net472` 引用，0 错误、1 个既有未使用字段警告；未进行游戏内 CG 快速翻页及羽毛球概率/对象池复测。
+- 当前工作区的源码、模板与文档同步到用户指定VS工程；保留目标工程已有的游戏1.94与长路径构建适配。插件版本、产品版本和文件版本统一为1.0.23.1，程序集绑定身份仍为1.0.9.0。
+- build.py改为直接读取csproj的FileVersion，支持四段版本，避免在1.0.23.1后再追加“.0”。重新构建DLL并同步根目录、release-manifests和dist/release的update.json，包含同版本Release地址、实际大小及SHA-256；仅准备本地发布文件。
 
-2026-09-28 大地图新增地点（需求已记录，待设计/实现）：目标是让普通 Mod 声明全新的大地图地点，并自定义地点标签文字、颜色、位置与尺寸、地点图标、鼠标悬停描边区域及点击/跳转行为。现有“多 Mod 地图子地点兼容”和“地图子地点扩展”只处理已有地图层级的合并/嵌套，不等同于注册新的大地图地点。用户提供的 `D:\VS2026 project\studentages\StudentAgeMapModGenerator\StudentAgeMapModGenerator.zip`（标点与自动描边工具，并生成独立 BepInEx DLL）作为算法参考；后续评估改为 UP 共用运行时读取 Mod 数据/资源的注册流程，避免作者按地点单独生成 DLL。数据 schema、轮廓/命中区域、点击事件路由、跨 Mod 冲突与兼容策略尚未确定；本条仅记录需求，尚无实现或游戏内验证。
+## 特质无冷却、角色社交/空间可见性与控制台历史（2026-10-25）
 
-2026-09-28 羽毛球对手多套球服（原始需求记录；实现见上方，待实机验证）：仅影响对手，不修改玩家模型。原版 `BadmintonModelCfg` 角色始终保留为候选；`custombadminton` 中同一角色 ID 的有效 Mod 服装作为追加项。每次打开羽毛球小游戏时，在原版服装及所有追加服装中等概率随机选择一套。按等概率规则，无追加的原版角色始终为 100%；原版加 20 套 Mod 服装共 21 套，各为 1/21（约 4.76%）；只有一套的新 Mod 角色为 100%，有 10 套时各为 10%。此前外置角色模块是每个 ID 一条登记，重复 ID 会保留先加载项；普通 NPC 只取该条目的 `url[0]`，因此现有 `url` 数组不代表同角色随机换装。上述跨 Mod 追加、逐套 `url/prefab`、重复资源处理、随机选择及失败回退已按本轮记录实现；尚未实机验证。制作流程见 [羽毛球模型贴图制作指南](BADMINTON_MODEL_TEXTURE_GUIDE.md)。
+- 新效果扩展增加严格四项`[20,5418,1,1]`，游戏内说明为“特质卡片可随时切换，无冷却限制”。只解除切换按钮的四回合计时，保留关系及候选门槛；不擦除traitChangeCnt，持续效果移除后恢复原版计时判断。效果节点按原版UID/关系倍率与存档管理。
+- “控制角色可见性”接入`22,999,2/3,personId`。显示/隐藏决定保存到当前主角节点，优先于默认cond；显示只用于原版候选中的已关注对象，不自动关注。考试仍独立沿用cond、takeExam与数据完整性检查。
+- RoleAvailabilityCfg.roles增加可选hiddenkzone，默认false，空间默认可见性与社交cond独立。按作者控制动态、日志、附属图片、评论、留言/留言回复与署名点赞，包括在别人空间中的内容。23/3的±1控制已发布动态/日志，±2控制已发布评论，±999控制该作者当前已经发布且需要改变可见性的内容。批量指令不预约未来内容，未发布单条无副作用；最近一次实际处理的指令优先于hiddenkzone。父动态/评论/留言隐藏时，其附属内容暂不展示，子项自己的决定保留。
+- 仅在原版主页/说说/日志/相册/评论/点赞/留言展示处投影过滤，不移除KZoneData中的发布记录，不改时间/楼层/奖励。原版发布和后续定时评论、点赞继续运行；揭示后按原发布时间排序，同时间戳以ID稳定排序。F9更换默认配置时保留已保存的显式决定并刷新相关列表；相册补齐原版缺少的更新监听，日志详情被隐藏时回到列表，留言目标被隐藏时关闭该回复输入。
+- [Debug]新增默认启用的“控制台调取历史记录”。控制台可见且输入框聚焦时，上/下调取本次运行提交过的命令，保留原始大小写，向下越过最新项恢复草稿；不自动执行命令、不自动打开控制台。显式false经过配置重写后保留。
+- RoleAvailability说明.txt补全字段、完整JSON、全部指令、优先级、先发布后揭示、跨作者评论/留言/点赞、存读档、F9与排查示例。改为单份内嵌文档，两种构建均嵌入；模板更新不覆盖作者已有JSON。
+- 发布构建与指定GameDir的net472 Release通过；438项检查通过，见qa/effect-extensions-2026-10-25/result.json与Docs/VALIDATION.md。检查执行真实效果工厂、原版社交列表/发布/排序/留言读取、原生MessagePack节点往返及实际模块挂钩。Unity窗口绘制、方向键输入和完整磁盘存读档尚未实机复测；没有改写游戏安装目录或Workshop文件。
+- 原版先读拆分源码并内部对照2026-09-25托管快照：[特质切换按钮](D:/codex/assembly_ref/Assembly-CSharp/View/Main/DetailSocialView.cs:533)、[冷却说明](D:/codex/assembly_ref/Assembly-CSharp/ActionDescHelper.cs:1217)、[空间发布](D:/codex/assembly_ref/Assembly-CSharp/KZoneData.cs:165)、[留言读取](D:/codex/assembly_ref/Assembly-CSharp/KZoneData.cs:388)、[空间排序](D:/codex/assembly_ref/Assembly-CSharp/View/Common/KZoneCommon.cs:112)、[控制台提交](D:/codex/assembly_ref/Assembly-CSharp/Sdk/DebugView.cs:64)。CFG仍为参考快照，未据相同方法断言源码DLL与安装版本指纹一致。
 
-2026-09-28 CG 图鉴分页缩略图偶发转圈（源码诊断；实现见上方，待实机验证）：实测翻页后同一缩略图有时正常、有时转圈，更符合“格子复用 + 异步回调竞争”，不能只归因于图片文件随机缺失。原版 `CGLibraryView.SetPage` 每页最多 9 项并复用 `UIItemGroup` 中已显示的 `UICell`；`UICell.SetData` 会重跑渲染，令同一个 `UISprite` 在前一页请求尚未完成时改绑到新 CG。`UISprite.SetTextureUrl` 的回调只绑定实例方法，不捕获/校验本次 URL 或绑定代次；旧请求完成可把旧 Sprite 写入当前格，空结果还会清掉新 URL。换 URL 时图片对象会先重新显示，而旧 Sprite 未清空。`ResInfo` 按路径缓存并合并进行中的请求，缓存命中可立即回调、冷加载异步完成，时序变化能解释间歇性。另有独立加载状态问题：原版 `OnRenderCG` 每次都启用 `root_loading`，C# 渲染路径没有对应完成关闭；因归档不含 prefab/Animator，若实测转圈有时自行消失，还需确认 prefab 是否另行控制。修复前 `CGOptimizationModule.LibraryOnRenderCgPostfix` 只改图号，不处理贴图加载。修复方向：为每次贴图请求及格子绑定加 URL/代次校验，过期回调不得写图或改加载状态；增加同时覆盖成功、失败/取消的完成回调，以结束转圈并显示占位/重试状态；换 URL 时清除旧图；`ResInfo.GetSpriteAsync` 加异常收尾，确保 `isLoading` 复位并通知等待者；核对 `cg_min/`、`cg2_min/` 对应资源 key。共享资源请求不宜因单格翻页而整体取消。证据为 `D:\codex\StudentAge-CodeOnly\assemblies\Assembly-CSharp\Assembly-CSharp.cs`（2026-09-25 快照）：`CGLibraryView.SetPage/OnRenderCG` 61638、61676，`UIItemGroup.SetData/UICell.SetData` 107456、108906，`UISprite.SetTextureUrl/OnLoadSpriteEnd` 108441、108523，`ResInfo.GetSpriteAsync` 105289；缩略图请求保护已按本轮记录实现；快速连续翻页复测尚未进行。
+## 扩展开关cfg描述简化（2026-10-25）
 
-2026-09-28 CG 图鉴排序修复：在原有 `CGOptimizationModule` 内调整 Mod Group 3 的排序。`idx > 0` 的 CG 先按 idx 升序排列（相同 idx 按 ID 升序），其余 CG 再按 ID 升序排列；显示图号仍从 001 连续编号。以 2026-09-27 SHA-256 为 `3401d10d07ef789ad3965b607e23ff29882d3a0437318d4f0dc6b7db43d0ebc6` 的 release DLL 为基线；新候选 DLL 版本仍为 1.0.23，大小 580608 字节，SHA-256 为 `285a9fafec781f1b0846fc8f4272f9238cc0859f0419a6975be674b0ab73257e`。net472 编译通过，游戏内图鉴显示待复测。
+- 按用户原文将“新效果扩展”描述改为“优化特质说明、支持四特质候选、扩展一系列新效果”，“新前提扩展”描述改为“扩展一系列新前提”。具体语法继续放在GAME_DATA_FORMATS.md；开关名称、分类、默认值及功能不变。
+- F9系统级自动点击已定位到外部快捷键冲突：运行中的“塔科夫妙妙工具箱”config_按键配置.json启用了tools.gym_macro，按键为f9；config_用户配置.json启用了健身宏并保存15段点击延迟序列。UP源码及当前安装的六个相关插件DLL未发现SendInput/mouse_event等系统鼠标注入入口。没有改动UP的F9，也没有在未获文件写入许可时更改外部工具箱配置。
 
-2026-09-27 羽毛球外置角色实机修复：1.0.23 初版在同一 `Armature` GameObject 上释放并重建 DragonBones，旧 `UnitySlot` 的显示对象由 Unity 延迟销毁，新骨骼在当帧复用了这些对象，随后产生 `UnitySlot._UpdateTransform` 空引用。敌方骨骼的异常还会中断共享 `WorldClock`，使未替换的玩家小人也停止运动。现改为在全新 RectTransform 宿主中完整构建、校验全部插槽及七个玩法动画，成功后再切换 `anim_enermy/Armature` 或 `anim_player/Armature`，最后释放旧宿主；对象池恢复模板也使用相同替换流程。已通过 net472 编译，等待游戏内复测。
 
-2026-09-27 羽毛球角色外置贴图：新增 `custombadminton/custombadmintoncfg.json` 注册表。每条登记沿用 `BadmintonModelCfg` 的 `id/url`，并以 `prefab` 指定复用的原版模板；运行时改载模板 prefab，再从 url 同名子目录读取 `_ske.json`、`_tex.json` 与 tex 中 `imagePath` 指定的 PNG，克隆模板材质并只重建当前实例的 DragonBones Armature。无需 Mod 作者提供 `.mat`。支持 NPC 和 `id=0` 玩家男女 url，F9 可重载登记和资源版本；失败时恢复模板角色。已通过 net472 编译，游戏内动画、对象池复用与多 Mod 冲突仍待实测。
+## 特质显示文案按用户原述统一（2026-10-25）
 
-2026-09-27 1.0.23 羽毛球实机修复候选构建完成：`dist/release/EC2BUnofficialPatch.dll` 大小 580608 字节，SHA-256 为 `3401d10d07ef789ad3965b607e23ff29882d3a0437318d4f0dc6b7db43d0ebc6`；根目录、`release-manifests/` 与 `dist/release/` 的 `update.json` 已同步为游戏 1.94、版本 1.0.23。编译为 0 错误、1 个既有未使用字段警告；尚未发布，修复后游戏内复测待完成。
+- 11种1145/1524效果的游戏内说明改为用户提供的简化句式，实际属性名、整数、小数与百分比从效果参数填入。获取率改成“每x点属性增加y%的属性获取率，最高z%”；双/三倍、减耗奖励、节点减耗、心情系数、洞察移除额外补充语句，严格使用用户文本。错误配置的明确提示继续保留。
+- 属性获取率的动态增益说明与效果说明共用新文本，节点减耗说明同步措辞。特质卡片CommonEvtMgr.ToEffectorStr与详情GetTraitEffect使用同一套结果；没有修改效果数值、触发条件、消耗、门槛或Workshop文件。
+- 本地发布构建与指定GameDir的net472 Release通过，372项检查通过。新增核对全部11种效果四种文本模式的确切句式、两个原版特质说明入口，以及不同属性名/小数参数替换；证据仍为qa/effect-extensions-2026-10-25/。未启动Unity进行画面复测。
 
-2026-09-22 DialogueSave 0.1.5 兼容：本机订阅包 `3804899191` 与已安装 cfg（`DialogueStyle = ADV`）确认问题场景。其 [`AdvDialogueController`](https://github.com/360478712scy-gif/StudentAge-DialogueSave/blob/c40402ce621e47d3c27c8291e3265d996a0ae8d9/src/UI/AdvDialogueController.cs) 把 CG 实际文字移到排序 29000 的独立 `DialogueSave.ADV` Canvas，并把原 `mask_talk_cg` 移进透明 `ADV.NativeShield`；上一版将视频放在该 mask 的父节点，因而被透明遮罩隐藏。现在按文字是否位于 ADV Canvas 自动切换：ADV 时将视频层挂在遮罩外的原 CG 根下，排序在 CG 图片与 ADV 文字之间，不再改隐藏的原生文字 Canvas；切回原版/退出 CG 时恢复上一布局。播放期间 DebugCanvas 也会高于 DialogueSave 的模态画布。未修改 DialogueSave 或游戏文件，游戏内联动视觉效果仍待实测。
 
-2026-09-22 CG 视频层级重做：移除上一版仅将 `roleOnTop=true` 视频插到 `mask_talk_cg` 前的方案；CG 子视图出现时建立临时视频 Canvas，按实际 CG 图片 Canvas 的排序层和值，将视频设在图片之上；原版文字模式下，再将 `mask_talk_cg` 排在视频之上。CG 退出或视频结束时销毁临时视频层并恢复文字 Canvas 原设置；Debug 控制台保持最上层。普通对话仍把动态背景置于角色后方。视频画面及底色保留与 CG 优化相同的 0.22 秒渐变节奏：首帧出现后淡入，正常播完、跳过、显式停止和替换时淡出，淡出完成才释放视频占用的原版音道；错误、准备失败和场景销毁立即清理。游戏内视觉效果仍待实测。
+## 效果1145/1524编号迁移与特质机制实现（2026-10-25）
 
-2026-09-22 CG 与编辑器预览：视频播放期间检测剧情 `CGView`（正常对话和编辑器预览的子视图），将完整覆盖视频画布调到当前 CG 画布上方，并让原版 `DebugCanvas` 始终高于视频；视频结束时恢复调试画布原层级。编辑器 `ModPreviewTipsView` 打开预览时仅加载当前 Mod 根目录的 `ScreenVideo` 注册表；`PreviewTalkView` 在有字对话的 `DoText` 和空文本对话的 `RefreshTalk` 执行 1164，预览关闭时停止其视频。动态背景和长按左键跳过也接受预览对话视图。未把游戏目录作者模板加入资源扫描。
+- 按用户确认只采用`1,1145,1,attr1,x,attr2,y,z`八项获取率协议；替换旧1/102入口。消耗组迁移为999/1145，包含1固定减耗、-1固定增耗、2按强化/批判数减耗、3心情系数、999减耗奖励。原来的999/50不作新编号别名；既有合法存档节点仍可计算和按UID撤销。没有修改Workshop CFG，已选特质修改后仍需切换以重建UID。
+- 新增40/1524/1双倍、/2额外无损行动、/3恢复上限额外成本三倍，及20/1524/1首次关注社交奖励。普通属性收益行动包含打工/吃饭，排除事件、小游戏及功能入口。连续效果从第二次开始，不同已执行行动/社交打断；失败的成本检查不打断。双/三倍仅重复正向属性奖励，保留原版倍率与附加增量，不重复计数；无损追加复用HelpAction计数/精通与奖励，跳过扣损、展示、事件和小游戏，不触发追加概率连锁。
+- 增减耗统一为原成本×max(0,1+增耗-减耗)，先求和再限到最低0。999/1145/999只奖励同一特质装饰链自身的有效扣款差，范围固定0/1/2/3/4/7/11/30，保留小数及原版获取率/提示；不计其他来源、不额外返还整份节省、不在预览或资格检查中发奖。嵌套独立效果树有独立来源组，组号随原版节点存档。补齐原来遗漏的StudyData方法论计数，与ValueviewData价值观分别去重求和。
+- 普通社交在完成回调后发奖，事件社交延后到事件结束回调，纯效果事件同步结算。当前回合目标列表/次数保存为独立原版节点历史，切换特质或洞察重建不会重置同一来源的回合上限。
+- 新增999/1524/1洞察：只在已关注对象排名中选目标，保留原版挚友关系门槛，仅展开实际已解锁前三/四张候选，排除已选Trait、Trait2和递归洞察项。同一候选不重复叠加；排名、关注、候选/选择变化时撤销旧借用UID并重建。借用状态可序列化，移除控制器撤销子UID；关闭新效果开关后读档仅执行借用清理，避免留下原版属性增益。为避免Get/GetValue已内联而首次漏算，属性倍率计算入口也刷新。
+- 所有新标准格式在四种原版说明模式有文本；无效项显示错误且不执行。仍归入`[效果] 新效果扩展`，cfg说明与格式/架构文档已同步。没有新增配置开关，不使用20/95，也没有自动填入苏夏秋墨Workshop特质表。
+- build.py与指定GameDir的net472 Release构建通过；363项实际效果/条件/存档/配置检查通过，结果见`qa/effect-extensions-2026-10-25/result.json`及[VALIDATION.md](../../Docs/VALIDATION.md)。测试使用安装目录游戏程序集与工作区Unity隔离夹具；UI回调、随机与无关音频/成就边界在夹具中代替，执行实际扣款、奖励、行动计数及精通代码。未替换游戏文件；真实Unity界面、完整磁盘存读档仍需实机复测。
+- 原版先读拆分源码，再内部对照2026-09-25托管快照与对应IL： [行动结算](D:/codex/assembly_ref/Assembly-CSharp/ActionData.cs:472)、[普通社交完成](D:/codex/assembly_ref/Assembly-CSharp/ActionData.cs:143)、[事件社交](D:/codex/assembly_ref/Assembly-CSharp/ActionData.cs:77)、[ShowEvent同步分支](D:/codex/assembly_ref/Assembly-CSharp/CommonEvtMgr.cs:1313)、[原版特质登记](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:1787)、[方法论强化](D:/codex/assembly_ref/Assembly-CSharp/StudyData.cs:213)。CFG为参考快照，未声称与安装版本全部一致；源码归档没有Unity预制体/场景资产。
 
-2026-09-22 模板行为修正：恢复启动时在游戏 `BepInEx/plugins/EC2BUnofficialPatch` 创建 UP 作者模板；启用 BA 时也恢复在 `BepInEx/plugins/BetterAudio` 创建 BA 作者模板。仅创建供作者复制的文件，运行时 `ContentRootCatalog` 仍只纳入 Workshop Mod，不自动读取这两个模板目录作为资源。模板创建不覆盖现有 JSON，原有模板写入失败日志保留。
 
-2026-09-21 后续优化：视频播放时将原版独立 `DebugCanvas` 临时提升到视频画布之上，结束后还原；若调试画布晚于视频创建，播放期间会继续检测。此举让控制台画面与输入位于视频遮挡层之上，不改变原版控制台快捷键逻辑。BA 启动自检成功时始终报告音频条目和资源包数量，视频模块启动时始终报告注册视频数量；两项日志开关现在只控制运行期间的信息日志，启动失败及资源错误仍始终输出。cfg 注释已同步。
+## 历史：可消耗属性约束补正与特质方案确认（2026-10-25，扩展实现前）
 
-2026-09-22 最新发布候选构建：按 `AGENTS.md` 指定的 `net472` / `GameDir` 流程构建通过（1 个原有未使用字段警告、0 错误），随后由 `build.py` 生成内置更新助手的单 DLL 和本地候选清单。发布 DLL 位于 `dist/release/EC2BUnofficialPatch.dll`，版本 `1.0.22`，对应游戏 `1.94`，大小 558592 字节，SHA-256 为 `71474b74ea9befc945872160323a4b808212168a20aaf3c2469369d111f121ce`。根目录、`release-manifests/` 与 `dist/release/` 的 `update.json` 完全一致，清单大小及哈希与发布 DLL 相符。游戏内运行测试和 GitHub 发布尚未进行。
+- 本轮实际代码修正仅针对已有999/50消耗减免：模式1/2现在要求PersonAttrCfg.consume为1或2，参数错误显示具体原因；运行时再次校验，使旧档在consume=0属性上的错误减免节点失效。原先减免来源已是加法叠加，无连乘错误。自定义属性只要声明consume=1/2仍可使用。
+- build.py与指定GameDir的net472 Release均构建通过，173项检查通过；覆盖全部8个原版可消耗属性、固定/动态加法、100%上限、不可消耗属性拒绝、旧节点序列化后失效、自定义可消耗属性恢复支持。证据qa/effect-extensions-2026-10-25/；未替换游戏文件。
+- 用户确认的后续方案（尚未实现）：偏执25%概率、额外消耗当前恢复上限5%、三倍属性；未来增耗与所有减耗采用加法相消，统一最终系数max(0,1+增耗总比例-减耗总比例)，不使用连乘、不先将减耗截到100%再加增耗。独立奖励只计算自身加入前后的有效扣款差。
+- 细腻后续方案保留社交好感额外+1，新增每回合与每位关注对象首次完成社交后心情+2、每回合最多3次；不使用20,95。
+- 洞察确定为至交Trait2，不属于挚友候选轴。挚友四张卡为执着/自持/温柔/纯粹，剧情通过20,63将当前旧版本替换为新版本，保证每轴一张。未来洞察仅展开目标实际挚友候选并保留其关系门槛，排除至交层，阻止递归展开；不再按同轴正负版本同时存在设计平衡。原版ReplaceTrait删除旧项并追加新项，不保持卡片位置，也不认识人格轴；脚本必须引用当前旧ID，不能在旧项已不存在时用过期ID盲替换。
 
-2026-09-21：基于提交 `7c9d16b` 的独立克隆修改，原项目未改动。视频 1164、5002 歌词音频与内置《更好的音频效果》共用原版音乐通道优先级；视频从启动到真正退出一直持有暂停，循环到下一轮不会释放。跳过、`1164,0`、替换、报错和离开场景均通过统一结束路径释放。BA 的独立音源不被视频暂停；若 BA 或 5002 仍在播放，原版音乐继续保持暂停。
+## F9 无变更提供者误报更新修复（2026-10-22）
 
-视频配置取消 `block`，由 `roleOnTop` 决定动态背景或盖住界面；动态背景优先于 `skippable`。盖住界面且允许跳过时，长按左键约一秒，复用原版歌词跳过素材。旧 JSON 中的 `block` 会被忽略。
+- 原因：F9调度按设计调用所有提供者；羽毛球、地图登记、场景对象三个回调此前每次无条件Load并返回Completed，全量登记数被汇入成功摘要，场景Revision也无条件增加。不是TraitsCfg变更引起这些文件被修改。
+- 三个回调各自保存启动/上次成功加载的输入内容快照，无变化返回Skip，不替换注册表、不调用场景刷新；使用既有调度的跳过计数，不打印该提供者的完成日志。首次F9也与启动基线比较。
+- 羽毛球跟踪功能目录内JSON/PNG；地图登记跟踪Worldmapscfg.json、MapLocationscfg.json及其引用图片；场景对象单独跟踪SceneObjectscfg.json及其引用图片。内容比较涵盖新增/修改/删除，时间戳变化但内容相同跳过；TraitsCfg及另一个地图提供者的配置不使本提供者失效。
+- 31项针对性检查通过：实际三个回调首次/连续F9跳过、普通TraitsCfg隔离、羽毛球/大地图变更后成功刷新及再次跳过、场景注册表和Revision保持、引用PNG变化、同长度同时间戳内容变化、删除与无效JSON重复失败可重试。结果见qa/reload-inputs-2026-10-22/result.json；Unity场景渲染未由夹具执行。
+- 当前安装日志确认地图回调由UP提供，独立MapExtend处于待命。本次交付为UP DLL，未修改游戏或Workshop文件。
 
-配置区合并为“屏幕特效与效果”，3003 迁入“优化”；《更好的音频效果》及视频模块在“机制”中分别有启用开关（默认开启）和信息日志开关（默认关闭），旧开关值迁移。作者模板照常创建，但内容扫描不把插件安装目录的模板作为 Mod 数据读取。Release 构建通过（net472，0 错误，1 个原有未使用字段警告）；运行时尚未在游戏内实测。
+## 消耗属性与效果模式复核（2026-10-22，后续修订）
 
-复核：旧 `[屏幕特效] 1164屏幕视频扩展` 仅作为配置迁移输入，新 cfg 不再生成该键，视频开关统一写在 `[机制]`。5002 继续先解析原版 AudioCfg，再解析 BA 音频 ID；BA 关闭时仍支持原版。5002 播放自身音频期间持有原版音乐暂停，结束时先归还原有 BA 会话，再释放原版通道；内置 BA 的解析与暂停接口改为直接调用，移除了同程序集内的反射桥接。视频替换改走完整释放路径，动态背景无法嵌入对话时跳过播放。
+- 核对原版PersonAttrCfg：consume=2为心情0、信任3；consume=1为精力7、热情11、探索点20、零花钱30、动力301、策略点303。不能把这些属性ID与效果模式1/2/3混为一谈。
+- 保持用户最初指定的五项协议：`999,50,效果模式,personAttrId,百分比`。模式1固定减免、模式2按强化/批判节点数减免；属性取第4项并按CFG查找，未限制为1/2/3。模式3仍为四项心情系数协议。未擅自交换参数位置或把错误子类型当属性解析。
+- 修复笼统错误提示：区分第3项模式、第4项属性、百分比和参数数量错误；说明模式1/2的属性位置，并给出`999,50,1,7,20`精力减免示例。日志与游戏文本使用同一校验原因，不再把所有无效参数都归为“只支持1/2/3”。
+- 新增CFG中全部8个consume=1/2属性的实际扣减回归：普通负向效果减少20%、原版Cost叠加固定/动态减免、总减免100%不反向加值，全部通过。连同参数定位提示检查共169项通过；证据仍位于`qa/effect-extensions-2026-10-22/`。没有发现“只允许属性1/2/3”的执行限制。
 
-本版统一为 UP 单 DLL、单 BepInEx 入口，音频演出内置，不再发布 BA 或分离版。音频功能由 UP 持久运行时初始化、保活和清理，F9 热重载直接使用内置音频注册表。1.0.24 的音频弱引用/有界日志缓存、版本比较和测试输出隔离，以及 1.0.25 的原 schema=1 更新流程、layout 匹配、嵌入助手和退出后单文件替换，均以合并版实现保留。
+## 特质效果排查与原版完整说明窗口（2026-10-22）
 
-保留 Mod 的旧 JSON、资源路径、1163 指令及 UP 小游戏接口。根工程为 EC2BUnofficialPatch.csproj。在线更新恢复原 update.json 入口及 EC2BUnofficialPatch.dll 发布附件名。旧 BA 用户升级前须移除独立 BA DLL。1.0.23～1.0.25 测试版改为本版需手动覆盖一次。
+- 用户实测新增特质无文字。核查安装目录日志和 Workshop 3672553808 当前 TraitsCfg：15240002“自持”使用 `[999,50,7,0,10]`，15240007“独立”使用 `[999,50,7,0,15]`；未定义子类型7，原工厂校验返回空，描述和执行同时被跳过。若要固定减少心情消耗，应分别写 `[999,50,1,0,10]`、`[999,50,1,0,15]`。没有把7作为别名，也没有改写Workshop文件。
+- 无效999/50现在保留原版安全节点供说明使用，显示原始参数与“此项不生效”；运行仍拒绝，且不打断同一特质中的其他合法效果。四项简写仍不支持。
+- 核对原版机制：角色详情 GetTraitEffect 和选择卡片 OnRenderTrait 均从 TraitsCfg.effect 生成说明；选择时 Role.SetTrait 使用 toRoleId=0/fromRoleId=该NPC，登记增益UID到主角，切换时移除旧UID。未选择的候选仅显示说明；CFG中effect为空的特质也没有效果文字。已选特质存在UID时再次选择同一ID会提前返回，修改CFG后需先切换其他特质再切回以重建效果，不能以文案刷新代表被动已更新。
+- 删除上一版自绘黑色完整说明面板，新增独立 TraitDescriptionView，继承原版 CommonComfirmView 并使用同一个 CommonConfirmView@Hint 预制体。背景、标题、字体、关闭按钮、遮罩与动画沿用原版；仅在正文区域加入滚动，不改普通确认窗口。关闭或复用候选卡片时释放所属说明窗口。
+- 标准102、999/50的1/2/3及当前“纯粹”1001配置均补充原版特质调用链检查，覆盖详情列表、卡片文本、选中生效和切换撤销。126项自动检查、两种本地构建通过；真实Unity画面/滚动/点击仍需游戏内复测。证据见 `qa/effect-extensions-2026-10-22/` 和 [VALIDATION.md](../../Docs/VALIDATION.md)。
+- 源码证据：[详情说明](D:/codex/assembly_ref/Assembly-CSharp/View/Main/DetailSocialView.cs:418)、[卡片说明](D:/codex/assembly_ref/Assembly-CSharp/View/Main/DetailSocialView.cs:596)、[选择生效与UID清理](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:1787)、[原版确认窗口](D:/codex/assembly_ref/Assembly-CSharp/View/Hint/CommonComfirmView.cs:11)。已与2026-09-25托管快照相应方法对照；界面样式来自运行时原版预制体，源归档不含该资产。
 
-[安装与完整功能说明](../../README.md) · [结构与兼容](../../Docs/MERGE.md) · [在线更新](../../Docs/AUTO_UPDATE.md) · [验证范围](../../Docs/VALIDATION.md)
+## 属性效果、新效果与新前提扩展（2026-10-19）
 
-原 CHANGELOG/Validation 文件仍保留历史版本标注；1.0.24/1.0.25 的内容和验收边界已在 1.0.21 当前记录中合并说明。
+- 已实现并接入三个独立开关，默认开启：`[效果] 1属性改变修复与扩展`、`[效果] 新效果扩展`、`[前提] 新前提扩展`。前提节从本轮起包含真实功能；八组布局和既有用户值迁移保持。当前生成配置共 39 项。
+- `1,97,条件属性,阈值,受益属性,倍率增量` 修正受益属性与百分数文案，复用 3027 模板。例如 `1,97,361,80,0,0.1` 为“当二次元浓度≥80时，心情获取率+10%”。0 在这里指心情；原版阈值与数值行为保留。
+- `1,1001,每次累计点数,来源属性,奖励点数,目标属性` 修复：原版联动仅由 UpdateAttr 通知，UpdateAttr2/直接 SetAttr 不通知，且计算忽略累计点数。现在按实际写入后的正向增量累计，达到每次点数才奖励，余量通过原版增益节点字段存档；包含 361，不对 361 做特例。保留原版金钱消耗分支，防止属性联动循环。旧存档无法恢复此前漏记的历史增长。
+- 新增 `1,102`、`999,50,1/2/3` 效果，完整参数、单位和公式见 [GAME_DATA_FORMATS.md](GAME_DATA_FORMATS.md)。同属性消耗减免加法叠加并限制 0～100%，覆盖 UpdateAttr 最终负增量（含 AttrAddInc）、UpdateAttr2、直接 SetAttr 及消耗资格检查；增加属性不减免。只支持标准五项 `999,50,1,属性,百分比`，不兼容误写的四项简写。
+- 特质卡片代码已实现：在专用渲染回调内按实际正文和标题边界换行/自适应；极长说明提供“查看完整说明”滚动窗口；对象池复用/关闭时恢复原属性。已解锁列表达到四项时显示前四项，否则保留三槽；保持原顺序，不解锁或删除候选，不改变原版单选生效、切换门槛和 UID 清理。存在 `com.lyy.traits4` 时让出槽位数据控制。第五项及以上分页未实现。
+- `7,2,角色ID,名次` 在已结识角色（Relation>0，不含主角）中按好感降序排名，同好感共享名次，采用 1、2、2、4 的排名方式。
+- `101,100,ModID` 从原始 `List<double>` 取整数并与 activeMods 的 ulong 精确比较，不经过原版 int 字段或 float。10 位 ID 可精确判定；非正数、小数及超过 2^53-1 的值判为失败。
+
+### 验证与交付边界
+
+- build.py 发布构建和指定 GameDir 的 net472 Release 构建均成功，0 错误、1 个既有 BetterAudio CS0414 警告。已在本地生成 DLL、更新清单及配置预览，没有替换游戏安装目录文件或发布。
+- `tools/verify_effect_extensions.py`：112 项实际游戏/UP 方法检查通过，包括原版缺陷复现、97 文案和阈值、1001 的 361 增长/累计/钳制/余量序列化、102 上限、消耗叠加/强化批判动态计数/UID 撤销、心情正负系数、排名/AND、10 位 Mod ID/原始前提序列化、配置独立开关及候选列表/原版单选切换。
+- 运行夹具仅在工作区隔离 Unity ECall，Mathf 使用 System.Math，其他引擎 API 抛出异常。存档验证为原版 MessagePack 模型往返，不代表磁盘存读档、Unity 画面或输入验证。结果见 `qa/effect-extensions-2026-10-19/result.json`，范围见 [VALIDATION.md](../../Docs/VALIDATION.md)。
+- 待实机：1920×1080、2560×1440 与 UI 缩放下的三/四卡片、富文本、问号、长说明入口和点击区；关闭/重开/对象池复用/其他奖励窗口；第三方四槽插件共存；旧档及完整磁盘存读档。不得把布局公式与钩子安装检查称为实际画面通过。
+
+### 原版依据
+
+先读取拆分源码，再对照 2026-09-25 托管快照的对应分支；CFG 为参考快照，未据此宣称安装版本一致。源归档不含 prefab、场景或原开发工程。
+
+- [97 参数](D:/codex/assembly_ref/Assembly-CSharp/Effect/EffectorChangeAttr.cs:157)、[97 注册](D:/codex/assembly_ref/Assembly-CSharp/Effect/EffectorChangeAttr.cs:834)、[错误文案](D:/codex/assembly_ref/Assembly-CSharp/Effect/EffectorChangeAttr.cs:1196)、[阈值判断](D:/codex/assembly_ref/Assembly-CSharp/Increase/IncreaserOther.cs:295)。
+- [1001 原版联动](D:/codex/assembly_ref/Assembly-CSharp/Increase/IncreaserAttrPerAttr2.cs:33)、[属性写入](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:546)、[UpdateAttr](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:673)、[UpdateAttr2](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:766)。
+- [三槽限制](D:/codex/assembly_ref/Assembly-CSharp/View/Main/DetailSocialView.cs:582)、[特质渲染](D:/codex/assembly_ref/Assembly-CSharp/View/Main/DetailSocialView.cs:596)、[原版单选效果清理](D:/codex/assembly_ref/Assembly-CSharp/TheEntity/Role.cs:1787)。
+
+## 历史：配置分组再次调整（2026-10-19，本轮扩展前）
+
+- 按新版用户附件输出“优化 / 机制 / 效果 / 前提 / 指令 / 替换规则 / Debug / 更新”八组；`[前提]` 仅保留空节，不添加占位开关或未来功能。
+- “控制角色在列表显示”更名为“控制角色可见性”，说明同步附件。沿用原开关实现，保留旧值；拆分后的分类优先于上一轮合并分类，继续支持更早版本的分类与名称。
+- 本地发布构建成功，207 项实际 DLL 配置生成检查通过：36 项的分组/顺序/说明/类型/默认值匹配附件，八组完整且前提为空；两轮旧布局、角色旧名称、显式 true/false 冲突及二次启动均保留正确值。预览为 `dist/release/sa.EC2B.UnofficialPatch.cfg`，结果位于 `qa/config-layout-2026-10-19/result.json`。
+
+## 配置分类与说明调整（2026-10-18）
+
+- `sa.EC2B.UnofficialPatch.cfg` 按用户提供的样例输出“优化 / 效果、前提、指令、替换规则 / 机制 / Debug / 更新”五组，组内项目顺序与样例一致。
+- 36、100,1、20、音频、视频、3003、屏幕指令和 Steam 昵称替换统一放入第二组；音频/视频运行日志及音频监控仍在“机制”。1163/1164 的说明改为音频播放效果/屏幕视频效果。
+- 12 个移动项目优先读取新分类，缺项时继承原分类及既有旧版迁移值；保留用户取值。新建配置的控制台仍默认关闭，其余默认值不变。
+- 本地发布构建成功；实际 DLL 配置生成检查 138 项通过，覆盖 36 项的分类/顺序/说明/类型/默认值、附件原样重载、旧用户值、冲突优先级、更早旧名称及二次启动。输出预览见 `dist/release/sa.EC2B.UnofficialPatch.cfg`，证据见 `qa/config-layout-2026-10-18/result.json`。
+
+## 历史记录归档（2026-10-19）
+
+- 2026-10-11 及之前的记录已移至 [STATUS_ARCHIVE_through_2026-10-11.md](STATUS_ARCHIVE_through_2026-10-11.md)，按原顺序、原文保留，包含当时的候选构建、哈希、验收边界和后续历史说明。
+- 当前文件保留 2026-10-18 配置调整记录，并记录本轮效果与前提的实现及验证范围。归档不表示撤销历史功能，旧构建数据也不代表当前待发布产物。

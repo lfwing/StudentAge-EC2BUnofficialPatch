@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
+using EC2BUnofficialPatch.Workshop;
 
 namespace LFBetterAudio.Discovery
 {
@@ -63,46 +64,42 @@ namespace LFBetterAudio.Discovery
 
                 foreach (string itemRoot in itemRoots)
                 {
-                    string betterAudioDirectory = FindDirectChildDirectory(
-                        itemRoot,
-                        BetterAudioFolderName);
-                    if (betterAudioDirectory == null)
+                    foreach (string betterAudioDirectory in FeatureContentDiscovery.Directories(
+                        itemRoot, BetterAudioFolderName,
+                        (path, ex) => Plugin.ReportStartupIssue($"无法枚举音频目录 {path}：{ex.Message}")))
                     {
-                        continue;
-                    }
+                        string configPath = FeatureContentDiscovery.ChildFile(
+                            betterAudioDirectory,
+                            BetterAudioConfigFileName);
+                        if (configPath == null)
+                        {
+                            // 用户已说明 Mod 作者会按模板创建；这里静默跳过非 BetterAudio 包。
+                            continue;
+                        }
 
-                    string configPath = FindDirectChildFile(
-                        betterAudioDirectory,
-                        BetterAudioConfigFileName);
-                    if (configPath == null)
-                    {
-                        // 用户已说明 Mod 作者会按模板创建；这里静默跳过非 BetterAudio 包。
-                        continue;
-                    }
+                        string fullConfigPath = SafeFullPath(configPath);
+                        if (!seenConfigPaths.Add(fullConfigPath))
+                        {
+                            continue;
+                        }
 
-                    string fullConfigPath = SafeFullPath(configPath);
-                    if (!seenConfigPaths.Add(fullConfigPath))
-                    {
-                        continue;
+                        string workshopItemId = new DirectoryInfo(itemRoot).Name;
+                        packages.Add(new BetterAudioPackage
+                        {
+                            ModRootDirectory = SafeFullPath(itemRoot),
+                            BetterAudioDirectory = SafeFullPath(betterAudioDirectory),
+                            ConfigPath = fullConfigPath,
+                            SourceLabel = $"Workshop:{workshopItemId}",
+                            WorkshopItemId = workshopItemId,
+                            IsWorkshopPackage = true
+                        });
                     }
-
-                    string workshopItemId = new DirectoryInfo(itemRoot).Name;
-                    packages.Add(new BetterAudioPackage
-                    {
-                        ModRootDirectory = SafeFullPath(itemRoot),
-                        BetterAudioDirectory = SafeFullPath(betterAudioDirectory),
-                        ConfigPath = fullConfigPath,
-                        SourceLabel = $"Workshop:{workshopItemId}",
-                        WorkshopItemId = workshopItemId,
-                        IsWorkshopPackage = true
-                    });
                 }
             }
 
             return packages
                 .OrderBy(p => GetNumericWorkshopId(p.WorkshopItemId))
                 .ThenBy(p => p.WorkshopItemId ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(p => p.ConfigPath ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
 
@@ -274,40 +271,6 @@ namespace LFBetterAudio.Discovery
                 {
                     return key?.GetValue(valueName) as string;
                 }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static string FindDirectChildDirectory(string parentDirectory, string expectedName)
-        {
-            try
-            {
-                return Directory.EnumerateDirectories(parentDirectory)
-                    .FirstOrDefault(path =>
-                        string.Equals(
-                            new DirectoryInfo(path).Name,
-                            expectedName,
-                            StringComparison.OrdinalIgnoreCase));
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static string FindDirectChildFile(string parentDirectory, string expectedName)
-        {
-            try
-            {
-                return Directory.EnumerateFiles(parentDirectory)
-                    .FirstOrDefault(path =>
-                        string.Equals(
-                            Path.GetFileName(path),
-                            expectedName,
-                            StringComparison.OrdinalIgnoreCase));
             }
             catch
             {

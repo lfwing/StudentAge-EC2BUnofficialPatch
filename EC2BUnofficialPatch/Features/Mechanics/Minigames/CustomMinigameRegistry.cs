@@ -65,7 +65,12 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             CustomMinigameRegistry registry = new CustomMinigameRegistry();
             foreach (string file in DiscoverFiles(roots))
             {
-                registry.LoadFile(file);
+                // Keep the owning Mod from discovery; wrapper depth is not a Mod boundary.
+                ContentRoot owner = roots.Roots.FirstOrDefault(root => file.StartsWith(
+                    Path.GetFullPath(root.Path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                if (owner != null)
+                    registry.LoadFile(file, owner.Path);
             }
 
             PatchLog.Registration($"机制模块-自定义小游戏注册完成：count={registry.ExplicitCount}");
@@ -275,9 +280,9 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 IEnumerable<string> files;
                 try
                 {
-                    files = Directory.EnumerateFiles(root.Path, FileName, SearchOption.AllDirectories)
-                        .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                        .ToArray();
+                    files = FeatureContentDiscovery.ConfigFiles(root.Path, "Minigame", FileName)
+                        .Concat(FeatureContentDiscovery.FilesNamed(root.Path, FileName))
+                        .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 }
                 catch (Exception exception)
                 {
@@ -294,7 +299,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             }
         }
 
-        private void LoadFile(string file)
+        private void LoadFile(string file, string modRoot)
         {
             try
             {
@@ -308,7 +313,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
 
                 foreach (JToken token in entries)
                 {
-                    ParseEntry(token as JObject, file);
+                    ParseEntry(token as JObject, file, modRoot);
                 }
             }
             catch (Exception exception)
@@ -317,7 +322,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             }
         }
 
-        private void ParseEntry(JObject entry, string source)
+        private void ParseEntry(JObject entry, string source, string modRoot)
         {
             if (entry == null) return;
             int? id = ReadInt(entry, "id", "gameId");
@@ -369,7 +374,14 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
                 case "external":
                 case "dll":
                     definition.Kind = CustomMinigameKind.External;
-                    definition.DllPath = ResolveRelativePath(source, entry["dll"]?.ToString());
+                    string dll = entry["dll"]?.ToString();
+                    definition.DllPath = ResolveRelativePath(source, dll, modRoot);
+                    if (string.IsNullOrWhiteSpace(definition.DllPath))
+                    {
+                        WarnInvalid(source, definition.Id,
+                            $"dll 必须是相对于配置文件、最终位于所属 Mod 内的路径：dll={dll}, modRoot={modRoot}");
+                        return;
+                    }
                     definition.TypeName = entry["class"]?.ToString() ?? entry["typeName"]?.ToString();
                     if (!TryLoadExternal(definition)) return;
                     break;
@@ -430,13 +442,20 @@ namespace EC2BUnofficialPatch.Features.Mechanics.Minigames
             }
         }
 
-        private static string ResolveRelativePath(string jsonFile, string value)
+        private static string ResolveRelativePath(string jsonFile, string value, string modRoot)
         {
             if (string.IsNullOrWhiteSpace(value)) return string.Empty;
-            return Path.GetFullPath(
-                Path.IsPathRooted(value)
-                    ? value
-                    : Path.Combine(Path.GetDirectoryName(jsonFile) ?? string.Empty, value));
+            string relative = value.Trim().Replace('\\', '/');
+            if (Path.IsPathRooted(relative) || relative.Contains(":") || string.IsNullOrWhiteSpace(modRoot))
+                return null;
+
+            string root = Path.GetFullPath(modRoot).TrimEnd(
+                Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string config = Path.GetFullPath(jsonFile);
+            if (!config.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return null;
+            // ../ is valid for a sibling folder inside this Mod (e.g. ../../plugins/CampusMinigames.dll).
+            string resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(config), relative));
+            return resolved.StartsWith(root, StringComparison.OrdinalIgnoreCase) ? resolved : null;
         }
 
         private static IReadOnlyDictionary<string, string> ReadParameters(JToken token)

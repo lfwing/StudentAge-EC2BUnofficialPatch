@@ -14,7 +14,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
     {
         private static readonly IReadOnlyList<ModuleLogItem> Items = new[]
         {
-            new ModuleLogItem("机制", "控制角色在列表显示")
+            new ModuleLogItem("机制", "控制角色可见性")
         };
 
         public string Key => "mechanics.role-availability";
@@ -23,6 +23,7 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         public void Load(Harmony harmony, PluginServices services)
         {
             RoleAvailabilityPatches.Initialize(RoleAvailabilityService.Load(services.ContentRoots));
+            RoleVisibilityPatches.Install(harmony);
             Patch(harmony, AccessTools.Method(typeof(RelationData), "GetAllSocialNpcs"), postfix: nameof(RoleAvailabilityPatches.SocialListPostfix));
             Patch(harmony, AccessTools.Method(typeof(RelationData), "GetOtherRelation"), postfix: nameof(RoleAvailabilityPatches.OtherRelationPostfix));
             Patch(harmony, AccessTools.Method(typeof(StudyData), "UpdateClassmateEnable"), postfix: nameof(RoleAvailabilityPatches.ClassmateEnablePostfix));
@@ -53,13 +54,28 @@ namespace EC2BUnofficialPatch.Features.Mechanics
 
         internal static void Initialize(RoleAvailabilityService service)
         {
+            bool replacing = _service != null;
             _service = service;
             LoggedUses.Clear();
+            if (replacing && Singleton<RoleMgr>.Ins.GetRole() != null)
+            {
+                EventMgr.Send(401);
+                EventMgr.Send(13001);
+            }
         }
 
         internal static void SocialListPostfix(ref List<int> __result)
         {
             FilterSocial(ref __result, "GetAllSocialNpcs");
+        }
+
+        internal static bool HiddenKZone(int personId) => _service?.HiddenKZone(personId) == true;
+        internal static bool SocialAvailable(int personId)
+        {
+            bool? decision = RoleVisibilityState.Get(RoleVisibilityState.Social(personId));
+            if (decision.HasValue)
+                return decision.Value && Singleton<RoleMgr>.Ins.GetRole(personId)?.Relation > 0;
+            return _service?.IsSocialAvailable(personId) ?? true;
         }
 
         internal static void OtherRelationPostfix(int _type, ref List<int> __result)
@@ -125,8 +141,8 @@ namespace EC2BUnofficialPatch.Features.Mechanics
         {
             if (list == null)
                 return;
-            List<int> removed = list.FindAll(personId => !_service.IsSocialAvailable(personId));
-            list = list.FindAll(personId => _service.IsSocialAvailable(personId));
+            List<int> removed = list.FindAll(personId => !SocialAvailable(personId));
+            list = list.FindAll(SocialAvailable);
             if (removed.Count > 0)
             {
                 string ids = string.Join(",", removed);

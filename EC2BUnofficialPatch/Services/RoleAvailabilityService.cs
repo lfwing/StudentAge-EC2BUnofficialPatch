@@ -34,7 +34,7 @@ namespace EC2BUnofficialPatch.Services
             List<string> files = new List<string>();
 
             foreach (ContentRoot root in roots.Roots)
-                files.Add(Path.Combine(root.Path, "EC2BUnofficialPatch", "RoleAvailabilityCfg.json"));
+                files.AddRange(FeatureContentDiscovery.FilesNamed(root.Path, "RoleAvailabilityCfg.json"));
 
             foreach (string file in files.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
             {
@@ -103,6 +103,9 @@ namespace EC2BUnofficialPatch.Services
         }
 
         internal bool IsSocialAvailable(int personId) => !IsConfigured(personId) || IsConditionMet(personId);
+
+        internal bool HiddenKZone(int personId) => !_conflicts.Contains(personId) &&
+            _entries.TryGetValue(personId, out var entry) && entry.hiddenkzone;
 
         internal bool CanTakeExam(int personId, int gradeState, int classType)
         {
@@ -212,6 +215,7 @@ namespace EC2BUnofficialPatch.Services
             public int personId { get; set; }
             public List<List<double>> cond { get; set; }
             public bool? takeExam { get; set; }
+            public bool hiddenkzone { get; set; }
             [JsonIgnore] public string source { get; set; }
         }
     }

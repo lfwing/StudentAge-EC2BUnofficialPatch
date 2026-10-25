@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 namespace EC2BUnofficialPatch.Services
 {
     /// <summary>
-    /// UP 自有 JSON 的统一预检约定。新增 UP JSON 应放在 EC2BUnofficialPatch 目录下，
+    /// UP 自有 JSON 的统一预检约定。目录发现与启动注册共用 FeatureContentDiscovery，
     /// 并由对应模块通过 JsonHotReloadApi 注册原子重载回调。
     /// </summary>
     internal static class UpExtensionJsonHotReload
@@ -110,6 +110,11 @@ namespace EC2BUnofficialPatch.Services
                 {
                     if (!IsGameCfg(file)) yield return file;
                 }
+
+                foreach (string feature in FeatureContentDiscovery.FeatureNames.Concat(new[] { "WorldMaps" }))
+                    foreach (string directory in FeatureContentDiscovery.Directories(root.Path, feature))
+                        foreach (string file in EnumerateDirectory(directory, "*.json"))
+                            if (!IsGameCfg(file)) yield return file;
 
                 // 兼容 1.0.20 以前已经公开的直放路径。
                 foreach (string file in EnumerateDirectory(root.Path, "*.json"))

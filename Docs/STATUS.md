@@ -1,9 +1,7 @@
-# 当前状态：UP 1.0.23 开发副本
+# UP 1.0.23.1 当前状态
 
-本工程已同步 UP 1.0.23，面向游戏 1.94。源码目录、构建目录和文档目录沿用原工程结构；模块实现与技术状态记录仍位于 [详细状态](../EC2BUnofficialPatch/Docs/STATUS.md)。
+面向游戏1.94，内置BetterAudio，单DLL发布。当前效果、前提、角色可见性、控制台与地图等功能见[本版更新](../EC2BUnofficialPatch/Docs/CHANGELOG_1.0.23.1.md)；具体协议见[数据格式](../EC2BUnofficialPatch/Docs/GAME_DATA_FORMATS.md)。
 
-2026-09-28 同步内容包含 CG 图鉴缩略图异步回调保护、羽毛球对手跨 Mod 多套球服、配置与作者模板更新，以及此前已合入的 1.0.23 音频、视频和小游戏改动。目标项目额外保留了本地游戏 1.94 适配。
+[README](../README.md)与[文档索引](README.md)按当前实现维护，详细开发状态见[状态记录](../EC2BUnofficialPatch/Docs/STATUS.md)。438项检查及未实机项见[验证记录](VALIDATION.md)。发布候选的大小和SHA-256以同次构建的update.json为准。
 
-本地发布候选：dist/release/EC2BUnofficialPatch.dll，586240 字节，SHA-256 601086a74d41cb6f6700ba7da0a30adb9a93bd409bb1da9056f92f0bd37c1d91。根目录、release-manifests/ 和 dist/release/ 的 update.json 与 DLL 信息一致。net472 构建通过，0 错误、1 个既有未使用字段警告；游戏内验证和线上发布尚未完成。
-
-为支持当前工程较长的目录路径，build.py 保留调用时的绝对路径别名；发布构建通过临时盘符运行，结束后会移除映射。
+版本源码、GitHub Release附件与工坊发布分别进行，源码版本号不代表附件或工坊条目已经公开。

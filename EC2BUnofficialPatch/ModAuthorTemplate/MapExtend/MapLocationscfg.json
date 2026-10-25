@@ -1,0 +1,211 @@
+{
+  "schema": 2,
+  "locations": [
+    {
+      "mapId": 13,
+      "priority": 3,
+      "hitArea": {
+        "type": "polygon",
+        "points": [
+          [
+            645,
+            520
+          ],
+          [
+            1020,
+            704
+          ],
+          [
+            1070,
+            704
+          ],
+          [
+            658,
+            484
+          ]
+        ]
+      },
+      "visual": {
+        "normal": null,
+        "hover": {
+          "image": "Images/img_bridge.png",
+          "position": [
+            861,
+            616
+          ],
+          "size": [
+            451,
+            189
+          ]
+        },
+        "fallbackOutline": {
+          "color": "#FFE89FFF",
+          "width": 3
+        }
+      },
+      "label": {
+        "text": "大桥",
+        "visible": true,
+        "position": [
+          825,
+          578
+        ],
+        "scale": 1,
+        "backgroundColor": "#00BFE8FF",
+        "textColor": "#FFFFFFFF"
+      },
+      "worldId": 0
+    },
+    {
+      "mapId": 31,
+      "priority": 3,
+      "hitArea": {
+        "type": "polygon",
+        "points": [
+          [
+            -1270,
+            -110
+          ],
+          [
+            -730,
+            25
+          ],
+          [
+            -430,
+            -115
+          ],
+          [
+            -480,
+            -530
+          ],
+          [
+            -1000,
+            -455
+          ]
+        ]
+      },
+      "visual": {
+        "normal": null,
+        "hover": null,
+        "fallbackOutline": {
+          "color": "#FFE89FFF",
+          "width": 3
+        }
+      },
+      "label": {
+        "text": "江畔车站",
+        "visible": true,
+        "position": [
+          -855,
+          -165
+        ],
+        "scale": 1,
+        "backgroundColor": "#DE807AFF",
+        "textColor": "#FFFFFFFF"
+      },
+      "worldId": 990001
+    },
+    {
+      "mapId": 32,
+      "priority": 3,
+      "hitArea": {
+        "type": "polygon",
+        "points": [
+          [
+            -465,
+            325
+          ],
+          [
+            160,
+            210
+          ],
+          [
+            375,
+            20
+          ],
+          [
+            150,
+            -90
+          ],
+          [
+            -270,
+            30
+          ],
+          [
+            -605,
+            220
+          ]
+        ]
+      },
+      "visual": {
+        "normal": null,
+        "hover": null,
+        "fallbackOutline": {
+          "color": "#FFE89FFF",
+          "width": 3
+        }
+      },
+      "label": {
+        "text": "江畔商业街",
+        "visible": true,
+        "position": [
+          -65,
+          235
+        ],
+        "scale": 1,
+        "backgroundColor": "#E74646FF",
+        "textColor": "#FFFFFFFF"
+      },
+      "worldId": 990001
+    },
+    {
+      "mapId": 33,
+      "priority": 3,
+      "hitArea": {
+        "type": "polygon",
+        "points": [
+          [
+            620,
+            210
+          ],
+          [
+            1060,
+            205
+          ],
+          [
+            1240,
+            -155
+          ],
+          [
+            860,
+            -320
+          ],
+          [
+            475,
+            -70
+          ]
+        ]
+      },
+      "visual": {
+        "normal": null,
+        "hover": null,
+        "fallbackOutline": {
+          "color": "#FFE89FFF",
+          "width": 3
+        }
+      },
+      "label": {
+        "text": "江畔公园",
+        "visible": true,
+        "position": [
+          910,
+          190
+        ],
+        "scale": 1,
+        "backgroundColor": "#20B857FF",
+        "textColor": "#FFFFFFFF"
+      },
+      "worldId": 990001
+    }
+  ]
+}

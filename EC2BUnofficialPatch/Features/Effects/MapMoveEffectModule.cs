@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using EC2BUnofficialPatch.Core;
-using Effect;
 using HarmonyLib;
+using EC2BUnofficialPatch.Features.Mechanics.MapExtend;
 
 namespace EC2BUnofficialPatch.Features.Effects
 {
@@ -20,31 +18,8 @@ namespace EC2BUnofficialPatch.Features.Effects
 
         public void Load(Harmony harmony, PluginServices services)
         {
-            Patch(
-                harmony,
-                AccessTools.Method(typeof(EffectorUseful), nameof(EffectorUseful.OnRun)),
-                prefix: AccessTools.Method(
-                    typeof(MapMoveEffectPatches),
-                    nameof(MapMoveEffectPatches.OnRunPrefix)));
-            Patch(
-                harmony,
-                AccessTools.Method(typeof(EffectorUseful), nameof(EffectorUseful.OnToString)),
-                prefix: AccessTools.Method(
-                    typeof(MapMoveEffectPatches),
-                    nameof(MapMoveEffectPatches.OnToStringPrefix)));
+            MapExtendEffects.InstallMove(harmony);
         }
 
-        private static void Patch(
-            Harmony harmony,
-            MethodInfo target,
-            MethodInfo prefix)
-        {
-            if (target == null || prefix == null)
-            {
-                throw new MissingMethodException("移动到地点效果所需的游戏方法不存在。");
-            }
-
-            harmony.Patch(target, new HarmonyMethod(prefix));
-        }
     }
 }
